@@ -1,0 +1,11 @@
+coaches_career.csv,﻿#coachid,firstname,lastname,season_win,season_loss,playoff_win,playoff_loss
+coaches_data.csv,﻿#coachid,year,yr_order,firstname,lastname,season_win,season_loss,playoff_win,playoff_loss,team
+draft.csv,﻿#draft_year,draft_round,selection,team,firstname,lastname,ilkid,draft_from,leag
+player_allstar.csv,﻿#ilkid,year,firstname,lastname,conference,leag,gp,minutes,pts,dreb,oreb,reb,asts,stl,blk,turnover,pf,fga,fgm,fta,ftm,tpa,tpm
+player_career.csv,﻿#ilkid,firstname,lastname,leag,gp,minutes,pts,oreb,dreb,reb,asts,stl,blk,turnover,pf,fga,fgm,fta,ftm,tpa,tpm
+player_playoffs_career.csv,﻿#ilkid,firstname,lastname,leag,gp,minutes,pts,dreb,oreb,reb,asts,stl,blk,turnover,pf,fga,fgm,fta,ftm,tpa,tpm
+player_playoffs.csv,﻿#ilkid,year,firstname,lastname,team,leag,gp,minutes,pts,dreb,oreb,reb,asts,stl,blk,turnover,pf,fga,fgm,fta,ftm,tpa,tpm
+player_regular_season.csv,#ilkid,year,firstname,lastname,team,leag,gp,minutes,pts,oreb,dreb,reb,asts,stl,blk,turnover,pf,fga,fgm,fta,ftm,tpa,tpm
+players.csv,#ilkid,firstname,lastname,position,firstseason,lastseason,h_feet,h_inches,weight,college,birthdate
+teams.csv,﻿#team,location,name,leag
+team_season.csv,﻿#team,year,leag,o_fgm,o_fga,o_ftm,o_fta,o_oreb,o_dreb,o_reb,o_asts,o_pf,o_stl,o_to,o_blk,o_3pm,o_3pa,o_pts,d_fgm,d_fga,d_ftm,d_fta,d_oreb,d_dreb,d_reb,d_asts,d_pf,d_stl,d_to,d_blk,d_3pm,d_3pa,d_pts,pace,won,lost
