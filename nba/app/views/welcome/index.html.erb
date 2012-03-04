@@ -1,0 +1,19 @@
+<h1>NBA</h1>
+<%= form_tag do -%>
+  <p>
+    <%= label_tag(:q , "Search for:") -%>
+    <%= text_field_tag(:q, "TODO") -%>
+    <%= submit_tag("Search") -%>
+  </p>
+<%- end -%>
+<h2>People</h2>
+<ul>
+<%- @people.each do |person| -%>
+  <li><%= link_to(
+    person.firstname + " " + person.lastname,
+    :controller => 'person',
+    :action => 'details',
+    :id => person.ilkid
+  ) -%> <strong>TODO</strong></li>
+<%- end -%>
+</ul>
