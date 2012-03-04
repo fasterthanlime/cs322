@@ -6,3 +6,13 @@
 
 # Sphinx
 documents/report/build
+
+# Ignore bundler config
+nba/.bundle
+
+# Ignore the default SQLite database.
+nba/db/*.sqlite3
+
+# Ignore all logfiles and tempfiles.
+nba/log/*.log
+nba/tmp
