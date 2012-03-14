@@ -12,3 +12,11 @@
 
 You will find the `er.dia` file in the design subdirectory. It's been made using
 [Dia](https://live.gnome.org/Dia) (GTK+ apps aren't super nice on OSX/Windows but it's _Libre_ software my friend).
+
+### Changelog
+
+#### 2012-03-14 Yoan
+
+I've taken the file from Sebastien (er_sz.dia) as a base for er.dia.
+
+I've added the Conference entity which is part of the _All Star_ stats. All stars are game played by two teams formed of the top notch players of each conference (Western vs Eastern). RIP Tupak.
