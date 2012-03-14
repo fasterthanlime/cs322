@@ -20,3 +20,5 @@ You will find the `er.dia` file in the design subdirectory. It's been made using
 I've taken the file from Sebastien (er_sz.dia) as a base for er.dia.
 
 I've added the Conference entity which is part of the _All Star_ stats. All stars are game played by two teams formed of the top notch players of each conference (Western vs Eastern). RIP Tupak.
+
+First/last seasons and college has been dropped since they are denormalized values.
