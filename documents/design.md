@@ -15,6 +15,10 @@ You will find the `er.dia` file in the design subdirectory. It's been made using
 
 ### Changelog
 
+#### 2012-03-18 Yoan
+
+The drafts have a link to a team too. Like _drafted from_ (a school), and _drafted to_ (a team).
+
 #### 2012-03-14 Yoan
 
 I've taken the file from Sebastien (er_sz.dia) as a base for er.dia.
