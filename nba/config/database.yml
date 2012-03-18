@@ -24,12 +24,11 @@ test:
   password: nba_Test
   timeout: 5000
 
-# TBD
-#production:
-#  adapter: oracle_enhanced
-#  host: localhost
-#  port: 1521
-#  database: xe
-#  username:
-#  password:
-#  timeout: 5000
+production:
+  adapter: oracle_enhanced
+  host: icoracle.epfl.ch
+  port: 1521
+  database: srso4.epfl.ch
+  username: DB2012_G06
+  password: DB2012_G06
+  timeout: 5000
