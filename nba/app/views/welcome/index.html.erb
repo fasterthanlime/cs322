@@ -17,3 +17,25 @@
   ) -%> <strong>TODO</strong></li>
 <%- end -%>
 </ul>
+<h2>Leagues</h2>
+<ul>
+<%- @leagues.each do |league| -%>
+  <li><%= link_to(
+    league.name,
+    :controller => 'league',
+    :action => 'details',
+    :id => league.name
+  ) -%></li>
+<%- end -%>
+</ul>
+<h2>Conferences</h2>
+<ul>
+<%- @conferences.each do |conference| -%>
+  <li><%= link_to(
+    conference.name,
+    :controller => 'conference',
+    :action => 'details',
+    :id => conference.name
+  ) -%></li>
+<%- end -%>
+</ul>
