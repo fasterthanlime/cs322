@@ -39,6 +39,15 @@ DROP SEQUENCE player_seasons_seq;
 DROP TABLE team_seasons CASCADE CONSTRAINTS PURGE;
 DROP SEQUENCE team_seasons_seq;
 
+DROP TABLE player_regular_seasons CASCADE CONSTRAINTS PURGE;
+DROP SEQUENCE player_regular_seasons_seq;
+
+DROP TABLE player_playoff_seasons CASCADE CONSTRAINTS PURGE;
+DROP SEQUENCE player_playoff_seasons_seq;
+
+DROP TABLE player_allstar_seasons CASCADE CONSTRAINTS PURGE;
+DROP SEQUENCE player_allstar_seasons_seq;
+
 --
 -- People
 -- ======
@@ -249,12 +258,68 @@ CREATE TABLE team_seasons (
     id NUMBER,
     year NUMBER NOT NULL,
     team_id NUMBER NOT NULL,
+    offensive_stat_id NUMBER NOT NULL,
+    defensive_stat_id NUMBER NOT NULL,
     PRIMARY KEY (id),
     UNIQUE (team_id, year),
     FOREIGN KEY (team_id)
-        REFERENCES teams (id) ON DELETE CASCADE
+        REFERENCES teams (id) ON DELETE CASCADE,
+    FOREIGN KEY (offensive_stat_id)
+        REFERENCES stats (id) ON DELETE CASCADE,
+    FOREIGN KEY (defensive_stat_id)
+        REFERENCES stats (id) ON DELETE CASCADE
 );
 
 CREATE SEQUENCE team_seasons_seq
+    START WITH 1
+    INCREMENT BY 1;
+
+-- FIXME: Should we group these 3 with a “kind of” season attr ? —Yoan
+
+CREATE TABLE player_regular_seasons (
+    id NUMBER,
+    player_season_id NUMBER,
+    stat_id NUMBER,
+    PRIMARY KEY (id),
+    UNIQUE (player_season_id, stat_id),
+    FOREIGN KEY (player_season_id)
+        REFERENCES player_seasons (id) ON DELETE CASCADE,
+    FOREIGN KEY (stat_id)
+        REFERENCES stats (id) ON DELETE CASCADE
+);
+
+CREATE SEQUENCE player_regular_seasons_seq
+    START WITH 1
+    INCREMENT BY 1;
+
+CREATE TABLE player_playoff_seasons (
+    id NUMBER,
+    player_season_id NUMBER,
+    stat_id NUMBER,
+    PRIMARY KEY (id),
+    UNIQUE (player_season_id, stat_id),
+    FOREIGN KEY (player_season_id)
+        REFERENCES player_seasons (id) ON DELETE CASCADE,
+    FOREIGN KEY (stat_id)
+        REFERENCES stats (id) ON DELETE CASCADE
+);
+
+CREATE SEQUENCE player_playoff_seasons_seq
+    START WITH 1
+    INCREMENT BY 1;
+
+CREATE TABLE player_allstar_seasons (
+    id NUMBER,
+    player_season_id NUMBER NOT NULL,
+    stat_id NUMBER NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE (player_season_id, stat_id),
+    FOREIGN KEY (player_season_id)
+        REFERENCES player_seasons (id) ON DELETE CASCADE,
+    FOREIGN KEY (stat_id)
+        REFERENCES stats (id) ON DELETE CASCADE
+);
+
+CREATE SEQUENCE player_allstar_seasons_seq
     START WITH 1
     INCREMENT BY 1;
