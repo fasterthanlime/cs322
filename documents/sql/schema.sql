@@ -6,38 +6,38 @@
 --
 
 -- Drop all the things!!
-DROP TABLE "people" CASCADE CONSTRAINTS PURGE;
-DROP SEQUENCE "people_seq";
+DROP TABLE people CASCADE CONSTRAINTS PURGE;
+DROP SEQUENCE people_seq;
 
-DROP TABLE "players" CASCADE CONSTRAINTS PURGE;
-DROP SEQUENCE "players_seq";
+DROP TABLE players CASCADE CONSTRAINTS PURGE;
+DROP SEQUENCE players_seq;
 
-DROP TABLE "coaches" CASCADE CONSTRAINTS PURGE;
-DROP SEQUENCE "coaches_seq";
+DROP TABLE coaches CASCADE CONSTRAINTS PURGE;
+DROP SEQUENCE coaches_seq;
 
-DROP TABLE "teams" CASCADE CONSTRAINTS PURGE;
-DROP SEQUENCE "teams_seq";
+DROP TABLE teams CASCADE CONSTRAINTS PURGE;
+DROP SEQUENCE teams_seq;
 
-DROP TABLE "conferences" CASCADE CONSTRAINTS PURGE;
-DROP SEQUENCE "conferences_seq";
+DROP TABLE conferences CASCADE CONSTRAINTS PURGE;
+DROP SEQUENCE conferences_seq;
 
-DROP TABLE "leagues" CASCADE CONSTRAINTS PURGE;
-DROP SEQUENCE "leagues_seq";
+DROP TABLE leagues CASCADE CONSTRAINTS PURGE;
+DROP SEQUENCE leagues_seq;
 
-DROP TABLE "schools" CASCADE CONSTRAINTS PURGE;
-DROP SEQUENCE "schools_seq";
+DROP TABLE schools CASCADE CONSTRAINTS PURGE;
+DROP SEQUENCE schools_seq;
 
-DROP TABLE "drafts" CASCADE CONSTRAINTS PURGE;
-DROP SEQUENCE "drafts_seq";
+DROP TABLE drafts CASCADE CONSTRAINTS PURGE;
+DROP SEQUENCE drafts_seq;
 
-DROP TABLE "stats" CASCADE CONSTRAINTS PURGE;
-DROP SEQUENCE "stats_seq";
+DROP TABLE stats CASCADE CONSTRAINTS PURGE;
+DROP SEQUENCE stats_seq;
 
-DROP TABLE "player_seasons" CASCADE CONSTRAINTS PURGE;
-DROP SEQUENCE "player_seasons_seq";
+DROP TABLE player_seasons CASCADE CONSTRAINTS PURGE;
+DROP SEQUENCE player_seasons_seq;
 
-DROP TABLE "team_seasons" CASCADE CONSTRAINTS PURGE;
-DROP SEQUENCE "team_seasons_seq";
+DROP TABLE team_seasons CASCADE CONSTRAINTS PURGE;
+DROP SEQUENCE team_seasons_seq;
 
 --
 -- People
@@ -49,49 +49,49 @@ DROP SEQUENCE "team_seasons_seq";
 -- ilkit can be NULL for drafted only players
 --
 
-CREATE TABLE "people" (
-    "id" NUMBER,
-    "ilkid" VARCHAR(9),
-    "firstname" VARCHAR(255),
-    "lastname" VARCHAR(255),
-    PRIMARY KEY ("id"),
-    UNIQUE ("ilkid")
+CREATE TABLE people (
+    id NUMBER,
+    ilkid VARCHAR(9),
+    firstname VARCHAR(255),
+    lastname VARCHAR(255),
+    PRIMARY KEY (id),
+    UNIQUE (ilkid)
 );
 
-CREATE SEQUENCE "people_seq"
+CREATE SEQUENCE people_seq
     START WITH 1
     INCREMENT BY 1;
 
-CREATE TABLE "players" (
-    "id" NUMBER,
-    "person_id" NUMBER NOT NULL,
-    "position" CHAR(1) NOT NULL,
-    "height_feet" NUMBER,
-    "height_inches" NUMBER,
-    "weight" NUMBER,
-    "birthdate" DATE,
-    PRIMARY KEY ("id"),
-    FOREIGN KEY ("person_id")
-        REFERENCES "people" ("id") ON DELETE CASCADE
+CREATE TABLE players (
+    id NUMBER,
+    person_id NUMBER NOT NULL,
+    position CHAR(1) NOT NULL,
+    height_feet NUMBER,
+    height_inches NUMBER,
+    weight NUMBER,
+    birthdate DATE,
+    PRIMARY KEY (id),
+    FOREIGN KEY (person_id)
+        REFERENCES people (id) ON DELETE CASCADE
 );
 
-CREATE SEQUENCE "players_seq"
+CREATE SEQUENCE players_seq
     START WITH 1
     INCREMENT BY 1;
 
-CREATE TABLE "coaches" (
-    "id" NUMBER,
-    "person_id" NUMBER NOT NULL,
-    "season_win" NUMBER,
-    "season_loss" NUMBER,
-    "playoff_win" NUMBER,
-    "playoff_loss" NUMBER,
-    PRIMARY KEY ("id"),
-    FOREIGN KEY ("person_id")
-        REFERENCES "people" ("id") ON DELETE CASCADE
+CREATE TABLE coaches (
+    id NUMBER,
+    person_id NUMBER NOT NULL,
+    season_win NUMBER,
+    season_loss NUMBER,
+    playoff_win NUMBER,
+    playoff_loss NUMBER,
+    PRIMARY KEY (id),
+    FOREIGN KEY (person_id)
+        REFERENCES people (id) ON DELETE CASCADE
 );
 
-CREATE SEQUENCE "coaches_seq"
+CREATE SEQUENCE coaches_seq
     START WITH 1
     INCREMENT BY 1;
 
@@ -103,44 +103,44 @@ CREATE SEQUENCE "coaches_seq"
 --
 
 -- NBA/ABA
-CREATE TABLE "leagues" (
-    "id" NUMBER,
-    "name" CHAR(3) NOT NULL,
-    PRIMARY KEY ("id"),
-    UNIQUE ("name")
+CREATE TABLE leagues (
+    id NUMBER,
+    name CHAR(3) NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE (name)
 );
 
-CREATE SEQUENCE "leagues_seq"
+CREATE SEQUENCE leagues_seq
     START WITH 1
     INCREMENT BY 1;
 
-CREATE TABLE "conferences" (
-    "id" NUMBER,
-    "name" VARCHAR(31) NOT NULL,
-    PRIMARY KEY ("id"),
-    UNIQUE ("name")
+CREATE TABLE conferences (
+    id NUMBER,
+    name VARCHAR(31) NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE (name)
 );
 
-CREATE SEQUENCE "conferences_seq"
+CREATE SEQUENCE conferences_seq
     START WITH 1
     INCREMENT BY 1;
 
-CREATE TABLE "teams" (
-    "id" NUMBER,
-    "trigram" CHAR(3) NOT NULL,
-    "name" VARCHAR(255),
-    "location" VARCHAR(255),
-    "league_id" NUMBER NOT NULL,
-    "conference_id" NUMBER NOT NULL,
-    PRIMARY KEY ("id"),
-    UNIQUE ("trigram"),
-    FOREIGN KEY ("league_id")
-        REFERENCES "leagues" ("id") ON DELETE CASCADE,
-    FOREIGN KEY ("conference_id")
-        REFERENCES "conferences" ("id") ON DELETE CASCADE
+CREATE TABLE teams (
+    id NUMBER,
+    trigram CHAR(3) NOT NULL,
+    name VARCHAR(255),
+    location VARCHAR(255),
+    league_id NUMBER NOT NULL,
+    conference_id NUMBER NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE (trigram),
+    FOREIGN KEY (league_id)
+        REFERENCES leagues (id) ON DELETE CASCADE,
+    FOREIGN KEY (conference_id)
+        REFERENCES conferences (id) ON DELETE CASCADE
 );
 
-CREATE SEQUENCE "teams_seq"
+CREATE SEQUENCE teams_seq
     START WITH 1
     INCREMENT BY 1;
 
@@ -151,14 +151,14 @@ CREATE SEQUENCE "teams_seq"
 -- A school is also a country if it's outside the U.S.
 --
 
-CREATE TABLE "schools" (
-    "id" NUMBER,
-    "name" VARCHAR(255),
-    PRIMARY KEY ("id"),
-    UNIQUE ("name")
+CREATE TABLE schools (
+    id NUMBER,
+    name VARCHAR(255),
+    PRIMARY KEY (id),
+    UNIQUE (name)
 );
 
-CREATE SEQUENCE "schools_seq"
+CREATE SEQUENCE schools_seq
     START WITH 1
     INCREMENT BY 1;
 
@@ -166,27 +166,27 @@ CREATE SEQUENCE "schools_seq"
 -- Drafts
 --
 
-CREATE TABLE "drafts" (
-    "id" NUMBER,
-    "year" NUMBER NOT NULL,
-    "round" NUMBER NOT NULL,
-    "selection" NUMBER NOT NULL,
-    "person_id" NUMBER NOT NULL,
-    "team_id" NUMBER NOT NULL,
-    "league_id" NUMBER NOT NULL,
-    "school_id" NUMBer NOT NULL,
-    PRIMARY KEY ("id"),
-    FOREIGN KEY ("person_id")
-        REFERENCES "people" ("id") ON DELETE CASCADE,
-    FOREIGN KEY ("team_id")
-        REFERENCES "teams" ("id") ON DELETE CASCADE,
-    FOREIGN KEY ("league_id")
-        REFERENCES "leagues" ("id") ON DELETE CASCADE,
-    FOREIGN KEY ("school_id")
-        REFERENCES "schools" ("id") ON DELETE CASCADE
+CREATE TABLE drafts (
+    id NUMBER,
+    year NUMBER NOT NULL,
+    round NUMBER NOT NULL,
+    selection NUMBER NOT NULL,
+    person_id NUMBER NOT NULL,
+    team_id NUMBER NOT NULL,
+    league_id NUMBER NOT NULL,
+    school_id NUMBer NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (person_id)
+        REFERENCES people (id) ON DELETE CASCADE,
+    FOREIGN KEY (team_id)
+        REFERENCES teams (id) ON DELETE CASCADE,
+    FOREIGN KEY (league_id)
+        REFERENCES leagues (id) ON DELETE CASCADE,
+    FOREIGN KEY (school_id)
+        REFERENCES schools (id) ON DELETE CASCADE
 );
 
-CREATE SEQUENCE "drafts_seq"
+CREATE SEQUENCE drafts_seq
     START WITH 1
     INCREMENT BY 1;
 
@@ -197,27 +197,27 @@ CREATE SEQUENCE "drafts_seq"
 -- All the kind of statistical data
 --
 
-CREATE TABLE "stats" (
-    "id" NUMBER,
-    "pts" NUMBER,
-    "oreb" NUMBER,
-    "dreb" NUMBER,
-    "reb" NUMBER,
-    "asts" NUMBER,
-    "steals" NUMBER,
-    "blocks" NUMBER,
-    "turnovers" NUMBER,
-    "tpf" NUMBER,
-    "fga" NUMBER,
-    "fgm" NUMBER,
-    "fta" NUMBER,
-    "ftm" NUMBER,
-    "3pa" NUMBER,
-    "3pm" NUMBER,
-    PRIMARY KEY ("id")
+CREATE TABLE stats (
+    id NUMBER,
+    pts NUMBER,
+    oreb NUMBER,
+    dreb NUMBER,
+    reb NUMBER,
+    asts NUMBER,
+    steals NUMBER,
+    blocks NUMBER,
+    turnovers NUMBER,
+    tpf NUMBER,
+    fga NUMBER,
+    fgm NUMBER,
+    fta NUMBER,
+    ftm NUMBER,
+    tpa NUMBER, -- 3pa
+    tpm NUMBER, -- 3pm
+    PRIMARY KEY (id)
 );
 
-CREATE SEQUENCE "stats_seq"
+CREATE SEQUENCE stats_seq
     START WITH 1
     INCREMENT BY 1;
 
@@ -228,33 +228,33 @@ CREATE SEQUENCE "stats_seq"
 -- Between players, teams, season and stats
 --
 
-CREATE TABLE "player_seasons" (
-    "id" NUMBER,
-    "year" NUMBER NOT NULL,
-    "person_id" NUMBER NOT NULL,
-    "team_id" NUMBER NOT NULL,
-    PRIMARY KEY ("id"),
-    UNIQUE ("person_id", "year"),
-    FOREIGN KEY ("person_id")
-        REFERENCES "people" ("id") ON DELETE CASCADE,
-    FOREIGN KEY ("team_id")
-        REFERENCES "teams" ("id") ON DELETE CASCADE
+CREATE TABLE player_seasons (
+    id NUMBER,
+    year NUMBER NOT NULL,
+    person_id NUMBER NOT NULL,
+    team_id NUMBER NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE (person_id, year),
+    FOREIGN KEY (person_id)
+        REFERENCES people (id) ON DELETE CASCADE,
+    FOREIGN KEY (team_id)
+        REFERENCES teams (id) ON DELETE CASCADE
 );
 
-CREATE SEQUENCE "player_seasons_seq"
+CREATE SEQUENCE player_seasons_seq
     START WITH 1
     INCREMENT BY 1;
 
-CREATE TABLE "team_seasons" (
-    "id" NUMBER,
-    "year" NUMBER NOT NULL,
-    "team_id" NUMBER NOT NULL,
-    PRIMARY KEY ("id"),
-    UNIQUE ("team_id", "year"),
-    FOREIGN KEY ("team_id")
-        REFERENCES "teams" ("id") ON DELETE CASCADE
+CREATE TABLE team_seasons (
+    id NUMBER,
+    year NUMBER NOT NULL,
+    team_id NUMBER NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE (team_id, year),
+    FOREIGN KEY (team_id)
+        REFERENCES teams (id) ON DELETE CASCADE
 );
 
-CREATE SEQUENCE "team_seasons_seq"
+CREATE SEQUENCE team_seasons_seq
     START WITH 1
     INCREMENT BY 1;
