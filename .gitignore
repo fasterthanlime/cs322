@@ -1,3 +1,5 @@
 # Ignore temp files
 *~
 .~*#
+# VIM FTW!
+.sw[op]
