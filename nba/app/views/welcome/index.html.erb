@@ -6,36 +6,18 @@
     <%= submit_tag("Search") -%>
   </p>
 <%- end -%>
-<h2>People</h2>
+<h2>Teams</h2>
+<%- unless @teams.nil? then -%>
 <ul>
-<%- @people.each do |person| -%>
-  <li><%= link_to(
-    person.firstname + " " + person.lastname,
-    :controller => 'person',
-    :action => 'details',
-    :id => person.ilkid
-  ) -%> <strong>TODO</strong></li>
+<%- @teams.each do |team| -%>
+<li><%= link_to(
+  "#{team.name} (#{team.trigram})",
+  :controller => 'team',
+  :action => 'view',
+  :id => team.id.to_i
+) -%></li>
 <%- end -%>
 </ul>
-<h2>Leagues</h2>
-<ul>
-<%- @leagues.each do |league| -%>
-  <li><%= link_to(
-    league.name,
-    :controller => 'league',
-    :action => 'details',
-    :id => league.name
-  ) -%></li>
+<%- else -%>
+<p>no teams</p>
 <%- end -%>
-</ul>
-<h2>Conferences</h2>
-<ul>
-<%- @conferences.each do |conference| -%>
-  <li><%= link_to(
-    conference.name,
-    :controller => 'conference',
-    :action => 'details',
-    :id => conference.name
-  ) -%></li>
-<%- end -%>
-</ul>

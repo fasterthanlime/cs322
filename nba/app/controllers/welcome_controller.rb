@@ -1,7 +1,5 @@
 class WelcomeController < ApplicationController
   def index
-    @people = Person.find(:all)
-    @leagues = League.find(:all)
-    @conferences = Conference.find(:all)
+    @teams = Team.find(:all, :order => :trigram)
   end
 end
