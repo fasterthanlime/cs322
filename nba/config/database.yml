@@ -8,8 +8,8 @@ development:
   host: localhost
   port: 1521
   database: XE
-  username: nba
-  password: nba
+  username: DB2012_G06
+  password: DB2012_G06
   timeout: 5000
 
 # Warning: The database defined as "test" will be erased and
@@ -20,8 +20,8 @@ test:
   host: localhost
   port: 1521
   database: XE
-  username: nba_test
-  password: nba_Test
+  username: TEST 
+  password: TEST
   timeout: 5000
 
 production:
