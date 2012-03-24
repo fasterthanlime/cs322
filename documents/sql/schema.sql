@@ -18,8 +18,8 @@
 CREATE TABLE people (
     id NUMBER,
     ilkid VARCHAR(9),
-    firstname VARCHAR(255),
-    lastname VARCHAR(255),
+    firstname VARCHAR(255) NOT NULL,
+    lastname VARCHAR(255) NOT NULL,
     PRIMARY KEY (id),
     UNIQUE (ilkid)
 );
@@ -32,8 +32,7 @@ CREATE TABLE players (
     id NUMBER,
     person_id NUMBER NOT NULL,
     position CHAR(1) NOT NULL,
-    height_feet NUMBER,
-    height_inches NUMBER,
+    height NUMBER, -- in inches
     weight NUMBER,
     birthdate DATE,
     PRIMARY KEY (id),
@@ -96,12 +95,9 @@ CREATE TABLE teams (
     trigram CHAR(3) NOT NULL,
     name VARCHAR(255),
     location VARCHAR(255),
-    league_id NUMBER NOT NULL,
     conference_id NUMBER NOT NULL,
     PRIMARY KEY (id),
     UNIQUE (trigram),
-    FOREIGN KEY (league_id)
-        REFERENCES leagues (id) ON DELETE CASCADE,
     FOREIGN KEY (conference_id)
         REFERENCES conferences (id) ON DELETE CASCADE
 );
@@ -109,6 +105,18 @@ CREATE TABLE teams (
 CREATE SEQUENCE teams_seq
     START WITH 1
     INCREMENT BY 1;
+
+CREATE TABLE coaches_teams (
+    coach_id NUMBER NOT NULL,
+    team_id NUMBER NOT NULL,
+    year NUMBER,
+    year_order NUMBER,
+    PRIMARY KEY (coach_id, team_id, year),
+    FOREIGN KEY (coach_id)
+        REFERENCES coaches (id) ON DELETE CASCADE,
+    FOREIGN KEY (team_id)
+        REFERENCES teams (id) ON DELETE CASCADE
+);
 
 --
 -- Physical
@@ -133,28 +141,20 @@ CREATE SEQUENCE schools_seq
 --
 
 CREATE TABLE drafts (
-    id NUMBER,
+    player_id NUMBER NOT NULL,
     year NUMBER NOT NULL,
     round NUMBER NOT NULL,
     selection NUMBER NOT NULL,
-    person_id NUMBER NOT NULL,
     team_id NUMBER NOT NULL,
-    league_id NUMBER NOT NULL,
-    school_id NUMBer NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (person_id)
-        REFERENCES people (id) ON DELETE CASCADE,
+    school_id NUMBER NULL,
+    PRIMARY KEY (player_id),
+    FOREIGN KEY (player_id)
+        REFERENCES players (id) ON DELETE CASCADE,
     FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE,
-    FOREIGN KEY (league_id)
-        REFERENCES leagues (id) ON DELETE CASCADE,
     FOREIGN KEY (school_id)
         REFERENCES schools (id) ON DELETE CASCADE
 );
-
-CREATE SEQUENCE drafts_seq
-    START WITH 1
-    INCREMENT BY 1;
 
 --
 -- Stats
@@ -188,21 +188,64 @@ CREATE SEQUENCE stats_seq
     INCREMENT BY 1;
 
 --
--- Link entites
--- ============
+-- Teams stats
+-- ===========
+
+CREATE TABLE team_seasons (
+    id NUMBER,
+    team_id NUMBER NOT NULL,
+    year NUMBER NOT NULL,
+    league_id NUMBER NOT NULL,
+    won NUMBER,
+    pace NUMBER,
+    lost NUMBER,
+    PRIMARY KEY (id),
+    CONSTRAINT team_season_unique UNIQUE (team_id, year),
+    FOREIGN KEY (team_id)
+        REFERENCES teams (id) ON DELETE CASCADE,
+    FOREIGN KEY (league_id)
+        REFERENCES leagues (id) ON DELETE CASCADE
+);
+
+CREATE SEQUENCE team_seasons_seq
+    START WITH 1
+    INCREMENT BY 1;
+
+CREATE TABLE team_stat_tactiques (
+    id NUMBER NOT NULL,
+    name VARCHAR(31),
+    PRIMARY KEY (id),
+    UNIQUE (name)
+);
+
+CREATE SEQUENCE team_stat_tactiques_seq
+    START WITH 1
+    INCREMENT BY 1;
+
+CREATE TABLE team_stats (
+    team_season_id NUMBER NOT NULL,
+    stat_id NUMBER NOT NULL,
+    team_stat_tactique_id NUMBER NOT NULL,
+    PRIMARY KEY(team_season_id, stat_id, team_stat_tactique_id),
+    FOREIGN KEY (team_season_id)
+        REFERENCES team_seasons (id) ON DELETE CASCADE,
+    FOREIGN KEY (stat_id)
+        REFERENCES stats (id) ON DELETE CASCADE
+);
+
 --
--- Between players, teams, season and stats
---
+-- Players stats
+-- =============
 
 CREATE TABLE player_seasons (
     id NUMBER,
+    player_id NUMBER NOT NULL,
     year NUMBER NOT NULL,
-    person_id NUMBER NOT NULL,
     team_id NUMBER NOT NULL,
     PRIMARY KEY (id),
-    UNIQUE (person_id, year),
-    FOREIGN KEY (person_id)
-        REFERENCES people (id) ON DELETE CASCADE,
+    CONSTRAINT player_season_unique UNIQUE (player_id, year),
+    FOREIGN KEY (player_id)
+        REFERENCES players (id) ON DELETE CASCADE,
     FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE
 );
@@ -211,72 +254,28 @@ CREATE SEQUENCE player_seasons_seq
     START WITH 1
     INCREMENT BY 1;
 
-CREATE TABLE team_seasons (
+CREATE TABLE player_season_types (
     id NUMBER,
-    year NUMBER NOT NULL,
-    team_id NUMBER NOT NULL,
-    offensive_stat_id NUMBER NOT NULL,
-    defensive_stat_id NUMBER NOT NULL,
+    name VARCHAR (31),
     PRIMARY KEY (id),
-    UNIQUE (team_id, year),
-    FOREIGN KEY (team_id)
-        REFERENCES teams (id) ON DELETE CASCADE,
-    FOREIGN KEY (offensive_stat_id)
+    UNIQUE (name)
+);
+
+CREATE SEQUENCE player_season_types_seq
+    START WITH 1
+    INCREMENT BY 1;
+
+CREATE TABLE player_stats(
+    player_season_id NUMBER,
+    stat_id NUMBER,
+    player_season_type_id NUMBER,
+    gp NUMBER,
+    minutes NUMBER,
+    PRIMARY KEY (player_season_id, stat_id, player_season_type_id),
+    FOREIGN KEY (player_season_id)
+        REFERENCES player_seasons (id) ON DELETE CASCADE,
+    FOREIGN KEY (stat_id)
         REFERENCES stats (id) ON DELETE CASCADE,
-    FOREIGN KEY (defensive_stat_id)
-        REFERENCES stats (id) ON DELETE CASCADE
+    FOREIGN KEY (player_season_type_id)
+        REFERENCES player_season_types (id) ON DELETE CASCADE
 );
-
-CREATE SEQUENCE team_seasons_seq
-    START WITH 1
-    INCREMENT BY 1;
-
--- FIXME: Should we group these 3 with a “kind of” season attr ? —Yoan
-
-CREATE TABLE player_regular_seasons (
-    id NUMBER,
-    player_season_id NUMBER,
-    stat_id NUMBER,
-    PRIMARY KEY (id),
-    UNIQUE (player_season_id, stat_id),
-    FOREIGN KEY (player_season_id)
-        REFERENCES player_seasons (id) ON DELETE CASCADE,
-    FOREIGN KEY (stat_id)
-        REFERENCES stats (id) ON DELETE CASCADE
-);
-
-CREATE SEQUENCE player_regular_seasons_seq
-    START WITH 1
-    INCREMENT BY 1;
-
-CREATE TABLE player_playoff_seasons (
-    id NUMBER,
-    player_season_id NUMBER,
-    stat_id NUMBER,
-    PRIMARY KEY (id),
-    UNIQUE (player_season_id, stat_id),
-    FOREIGN KEY (player_season_id)
-        REFERENCES player_seasons (id) ON DELETE CASCADE,
-    FOREIGN KEY (stat_id)
-        REFERENCES stats (id) ON DELETE CASCADE
-);
-
-CREATE SEQUENCE player_playoff_seasons_seq
-    START WITH 1
-    INCREMENT BY 1;
-
-CREATE TABLE player_allstar_seasons (
-    id NUMBER,
-    player_season_id NUMBER NOT NULL,
-    stat_id NUMBER NOT NULL,
-    PRIMARY KEY (id),
-    UNIQUE (player_season_id, stat_id),
-    FOREIGN KEY (player_season_id)
-        REFERENCES player_seasons (id) ON DELETE CASCADE,
-    FOREIGN KEY (stat_id)
-        REFERENCES stats (id) ON DELETE CASCADE
-);
-
-CREATE SEQUENCE player_allstar_seasons_seq
-    START WITH 1
-    INCREMENT BY 1;
