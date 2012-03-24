@@ -95,11 +95,7 @@ CREATE TABLE teams (
     trigram CHAR(3) NOT NULL,
     name VARCHAR(255),
     location VARCHAR(255),
-    conference_id NUMBER NOT NULL,
-    PRIMARY KEY (id),
-    UNIQUE (trigram),
-    FOREIGN KEY (conference_id)
-        REFERENCES conferences (id) ON DELETE CASCADE
+    PRIMARY KEY (id)
 );
 
 CREATE SEQUENCE teams_seq
@@ -266,9 +262,10 @@ CREATE SEQUENCE player_season_types_seq
     INCREMENT BY 1;
 
 CREATE TABLE player_stats(
-    player_season_id NUMBER,
-    stat_id NUMBER,
-    player_season_type_id NUMBER,
+    player_season_id NUMBER NOT NULL,
+    stat_id NUMBER NOT NULL,
+    player_season_type_id NUMBER NOT NULL,
+    conference_id NUMBER NULL, -- for all star games only
     gp NUMBER,
     minutes NUMBER,
     PRIMARY KEY (player_season_id, stat_id, player_season_type_id),
@@ -277,5 +274,7 @@ CREATE TABLE player_stats(
     FOREIGN KEY (stat_id)
         REFERENCES stats (id) ON DELETE CASCADE,
     FOREIGN KEY (player_season_type_id)
-        REFERENCES player_season_types (id) ON DELETE CASCADE
+        REFERENCES player_season_types (id) ON DELETE CASCADE,
+    FOREIGN KEY (conference_id)
+        REFERENCES conferences (id) ON DELETE CASCADE
 );
