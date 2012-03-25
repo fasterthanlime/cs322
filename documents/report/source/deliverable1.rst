@@ -83,10 +83,7 @@ Create the SQL commands to create the tables in Oracle
 
 .. literalinclude:: ../../sql/schema.sql
 
-.. TODO: discussion on the constraints
-
-*We will take a quick look at the several tables and highlight their constraints.
-*PEOPLE: 
+.. TODO: discussion on the constraints 
 
 Conclusion
 ==========
