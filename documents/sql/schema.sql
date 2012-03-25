@@ -111,17 +111,17 @@ CREATE TABLE coaches_teams (
 -- Physical
 -- ========
 --
--- A school is also a country if it's outside the U.S.
+-- A school or a country if it's outside the U.S.
 --
 
-CREATE TABLE schools (
+CREATE TABLE location (
     id NUMBER,
     name VARCHAR(255),
     PRIMARY KEY (id),
     UNIQUE (name)
 );
 
-CREATE SEQUENCE schools_seq
+CREATE SEQUENCE location_seq
     START WITH 1
     INCREMENT BY 1;
 
@@ -142,7 +142,7 @@ CREATE TABLE drafts (
     FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE,
     FOREIGN KEY (school_id)
-        REFERENCES schools (id) ON DELETE CASCADE
+        REFERENCES location (id) ON DELETE CASCADE
 );
 
 --
