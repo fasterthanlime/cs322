@@ -56,8 +56,8 @@ One major change from the dataset here is that the *People* who go drafted but n
 
 **NB** it doesn't have any link with the *Team*'s location which is a city when here, it's the College where the *Player* got drafted from.
 
-Q: Shouldn't we link Drafts to People and not Players in that case?
-A: No because even players who have never played for an ABA or NBA team have played before for a European team or a school team. Therefore they already have the characteristics of player (position, height, weight, birthdate) when they are drafted.
+*Q: Shouldn't we link Drafts to People and not Players in that case?
+*A: No because even players who have never played for an ABA or NBA team have played before for a European team or a school team. Therefore they already have the characteristics of player (position, height, weight, birthdate) when they are drafted.
 
 Stats and Seasons
 '''''''''''''''''
@@ -76,12 +76,17 @@ Then *Teams* have *offensive* and *defensive* statistics while the *Players* hav
 Design the database and the constraints needed to maintain the database consistent
 ======================================================
 
+.. figure:: ../../design/logical.png
+
 Create the SQL commands to create the tables in Oracle
 ======================================================
 
 .. literalinclude:: ../../sql/schema.sql
 
 .. TODO: discussion on the constraints
+
+*We will take a quick look at the several tables and highlight their constraints.
+*PEOPLE: 
 
 Conclusion
 ==========

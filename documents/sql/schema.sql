@@ -92,7 +92,7 @@ CREATE TABLE teams (
 );
 
 CREATE SEQUENCE teams_seq
-    START WITH 1
+    START WITH 
     INCREMENT BY 1;
 
 CREATE TABLE coaches_teams (
@@ -135,13 +135,13 @@ CREATE TABLE drafts (
     round NUMBER NOT NULL,
     selection NUMBER NOT NULL,
     team_id NUMBER NOT NULL,
-    school_id NUMBER NULL,
+    location_id NUMBER NULL,
     PRIMARY KEY (player_id),
     FOREIGN KEY (player_id)
         REFERENCES players (id) ON DELETE CASCADE,
     FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE,
-    FOREIGN KEY (school_id)
+    FOREIGN KEY (l_id)
         REFERENCES location (id) ON DELETE CASCADE
 );
 
