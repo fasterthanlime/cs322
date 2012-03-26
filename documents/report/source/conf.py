@@ -171,7 +171,7 @@ htmlhelp_basename = 'Databaseprojectdoc'
 
 latex_elements = {
 # The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+    'papersize': 'a4paper',
 
 # The font size ('10pt', '11pt' or '12pt').
 #'pointsize': '10pt',
@@ -183,7 +183,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Databaseproject.tex', u'Database project Documentation',
+  ('index', 'Databaseproject.tex', u'Database project CS-322',
    u'Amos Wenger, Sebastien Zurfluh \\& Yoan Blanc', 'manual'),
 ]
 
@@ -227,9 +227,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'Databaseproject', u'Database project Documentation',
-   u'Amos Wenger, Sebastien Zurfluh & Yoan Blanc', 'Databaseproject', 'One line description of project.',
-   'Miscellaneous'),
+  ('index', 'Databaseproject', u'Database project CS-322',
+   u'Amos Wenger, Sebastien Zurfluh & Yoan Blanc', 'CS-322', 'Database project Sprint 2012',
+   'EPFL'),
 ]
 
 # Documents to append as an appendix to all manuals.

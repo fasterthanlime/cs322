@@ -10,7 +10,7 @@ Create the ER model for the data
 The Schema
 ----------
 
-See the figure on next page (since it's quite big).
+See the figure on next page.
 
 .. figure:: ../../design/er.png
    :scale: 75%
@@ -56,8 +56,11 @@ One major change from the dataset here is that the *People* who go drafted but n
 
 **NB** it doesn't have any link with the *Team*'s location which is a city when here, it's the College where the *Player* got drafted from.
 
-*Q: Shouldn't we link Drafts to People and not Players in that case?
-*A: No because even players who have never played for an ABA or NBA team have played before for a European team or a school team. Therefore they already have the characteristics of player (position, height, weight, birthdate) when they are drafted.
+**Q:**
+   *Shouldn't we link Drafts to People and not Players in that case?*
+
+**A:**
+   No because even players who have never played for an ABA or NBA team have played before for a European team or a school team. Therefore they already have the characteristics of player (position, height, weight, birthdate) when they are drafted.
 
 Stats and Seasons
 '''''''''''''''''
@@ -67,6 +70,7 @@ The *Stats* (statistics) being very standard, it'll live as itself and being kin
 Each *Player* and *Team* has a specific *Season* entity linked to it for each *year* played.
 
 Then *Teams* have *offensive* and *defensive* statistics while the *Players* have statistics per kind of *Seasons* played:
+
 * Regular
 * Playoff
 * and All Stars
@@ -76,12 +80,35 @@ Then *Teams* have *offensive* and *defensive* statistics while the *Players* hav
 Design the database and the constraints needed to maintain the database consistent
 ======================================================
 
+See the figure on next page.
+
 .. figure:: ../../design/logical.png
 
 Create the SQL commands to create the tables in Oracle
 ======================================================
 
+The following SQL schema is really a first shot, with very few constraints on numbers and strings (`varchar`).
+
+Not being familiar with the way Oracle works, we'll just explain some basic stuff.
+
+Oracle specificities
+''''''''''''''''''''
+
+Oracle being a very complex RDBMS (*Relational Database Management System*) that we are still learning, this section will simply clarify what we've discovered and wich might explain the following.
+
+It cannot *auto increment* like MySQL or SQLite, so one must use a `sequence` and use it to get the current value or the next value when insert new rows.
+
+.. literalinclude:: ../../sql/data.sql
+   :language: sql
+   :lines: 1
+
+It knows how to delete relations in cascade. It can remove an entire structure from one simple `DELETE`. If *PostgreSQL* can do that has well, the more common *MySQL* or *SQLite* cannot. In the following schema, we activated that cascaded deletion without thinking deeply about it. This schema will be refined in the future when used with the data.
+
+SQL code
+''''''''
+
 .. literalinclude:: ../../sql/schema.sql
+   :language: sql
 
 .. TODO: discussion on the constraints 
 
