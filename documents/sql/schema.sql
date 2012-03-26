@@ -1,3 +1,6 @@
+-- Note: ActiveRecord (Rails) don't support composite primary keys so the
+--       mention “Weak” has been put on top of the tables acting like so.
+
 --
 -- People
 -- ======
@@ -92,20 +95,27 @@ CREATE TABLE teams (
 );
 
 CREATE SEQUENCE teams_seq
-    START WITH 
+    START WITH 1
     INCREMENT BY 1;
 
+-- @weak
 CREATE TABLE coaches_teams (
+    id NUMBER,
     coach_id NUMBER NOT NULL,
     team_id NUMBER NOT NULL,
     year NUMBER,
     year_order NUMBER,
-    PRIMARY KEY (coach_id, team_id, year),
+    PRIMARY KEY (id),
+    CONSTRAINT coaches_team_unique UNIQUE (coach_id, team_id, year),
     FOREIGN KEY (coach_id)
         REFERENCES coaches (id) ON DELETE CASCADE,
     FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE
 );
+
+CREATE SEQUENCE coaches_teams_seq
+    START WITH 1
+    INCREMENT BY 1;
 
 --
 -- Physical
@@ -114,14 +124,14 @@ CREATE TABLE coaches_teams (
 -- A school or a country if it's outside the U.S.
 --
 
-CREATE TABLE location (
+CREATE TABLE locations (
     id NUMBER,
     name VARCHAR(255),
     PRIMARY KEY (id),
     UNIQUE (name)
 );
 
-CREATE SEQUENCE location_seq
+CREATE SEQUENCE locations_seq
     START WITH 1
     INCREMENT BY 1;
 
@@ -129,21 +139,29 @@ CREATE SEQUENCE location_seq
 -- Drafts
 --
 
+-- @weak
 CREATE TABLE drafts (
+    id NUMBER,
     player_id NUMBER NOT NULL,
     year NUMBER NOT NULL,
     round NUMBER NOT NULL,
     selection NUMBER NOT NULL,
     team_id NUMBER NOT NULL,
     location_id NUMBER NULL,
-    PRIMARY KEY (player_id),
+    PRIMARY KEY (id),
+    UNIQUE (player_id),
     FOREIGN KEY (player_id)
         REFERENCES players (id) ON DELETE CASCADE,
     FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE,
-    FOREIGN KEY (l_id)
-        REFERENCES location (id) ON DELETE CASCADE
+    FOREIGN KEY (location_id)
+        REFERENCES locations (id) ON DELETE CASCADE
 );
+
+CREATE SEQUENCE drafts_seq
+    START WITH 1
+    INCREMENT BY 1;
+
 
 --
 -- Stats
@@ -180,6 +198,7 @@ CREATE SEQUENCE stats_seq
 -- Teams stats
 -- ===========
 
+-- @weak
 CREATE TABLE team_seasons (
     id NUMBER,
     team_id NUMBER NOT NULL,
@@ -211,16 +230,23 @@ CREATE SEQUENCE team_stat_tactiques_seq
     START WITH 1
     INCREMENT BY 1;
 
+-- @weak
 CREATE TABLE team_stats (
+    id NUMBER,
     team_season_id NUMBER NOT NULL,
     stat_id NUMBER NOT NULL,
     team_stat_tactique_id NUMBER NOT NULL,
-    PRIMARY KEY(team_season_id, stat_id, team_stat_tactique_id),
+    PRIMARY KEY (id),
+    CONSTRAINT team_stat_unique UNIQUE (team_season_id, stat_id, team_stat_tactique_id),
     FOREIGN KEY (team_season_id)
         REFERENCES team_seasons (id) ON DELETE CASCADE,
     FOREIGN KEY (stat_id)
         REFERENCES stats (id) ON DELETE CASCADE
 );
+
+CREATE SEQUENCE team_stats_seq
+    START WITH 1
+    INCREMENT BY 1;
 
 --
 -- Players stats
@@ -254,14 +280,17 @@ CREATE SEQUENCE player_season_types_seq
     START WITH 1
     INCREMENT BY 1;
 
+-- @weak
 CREATE TABLE player_stats(
+    id NUMBER,
     player_season_id NUMBER NOT NULL,
     stat_id NUMBER NOT NULL,
     player_season_type_id NUMBER NOT NULL,
     conference_id NUMBER NULL, -- for all star games only
     gp NUMBER,
     minutes NUMBER,
-    PRIMARY KEY (player_season_id, stat_id, player_season_type_id),
+    PRIMARY KEY (id),
+    CONSTRAINT player_stat_unique UNIQUE (player_season_id, stat_id, player_season_type_id),
     FOREIGN KEY (player_season_id)
         REFERENCES player_seasons (id) ON DELETE CASCADE,
     FOREIGN KEY (stat_id)
@@ -271,3 +300,8 @@ CREATE TABLE player_stats(
     FOREIGN KEY (conference_id)
         REFERENCES conferences (id) ON DELETE CASCADE
 );
+
+CREATE SEQUENCE player_stats_seq
+    START WITH 1
+    INCREMENT BY 1;
+
