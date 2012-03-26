@@ -1,0 +1,44 @@
+<p>
+  <%= link_to '« Home', :controller => 'welcome' %>
+</p>
+<h1><%= @team.name -%> (<%= @team.trigram -%>)</h1>
+<%- if @team.seasons.count then -%>
+<table>
+  <caption>All the seasons for this team</caption>
+  <thead>
+    <tr>
+      <th scope=col>Year</th>
+      <th scope=col>Won</th>
+      <th scope=col>Pace</th>
+      <th scope=col>Lost</th>
+    </tr>
+  </thead>
+  <tfoot>
+    <tr>
+      <th scope=col>Year</th>
+      <th scope=col>Won</th>
+      <th scope=col>Pace</th>
+      <th scope=col>Lost</th>
+    </tr>
+  </tfoot>
+  <tbody>
+<%- @team.seasons.each do |season| -%>
+    <tr>
+      <th scope=row>
+        <%= link_to(
+          season.year.to_i,
+          :action => 'stat',
+          :id => season.year.to_i
+        ) -%>
+      </th>
+      <td><%= season.won.to_i -%></td>
+      <td><%= season.pace -%></td>
+      <td><%= season.lost.to_i -%></td>
+    </tr>
+<%- end -%>
+    <tr>
+  </tbody>
+</table>
+<%- else -%>
+<p>No seasons</p>
+<%- end -%>
