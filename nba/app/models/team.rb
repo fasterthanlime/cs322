@@ -1,8 +1,8 @@
 class Team < ActiveRecord::Base
-  belongs_to :conference
-  attr_accessible :name, :trigram, :location, :conference
+  has_many :seasons, :class_name => "TeamSeason"
+  attr_accessible :name, :trigram, :location
 
   def to_s
-    return "<Team (#{id.to_i}, #{name},#{trigram})>"
+    return "<Team (#{id.to_i}, #{trigram} #{name})>"
   end
 end
