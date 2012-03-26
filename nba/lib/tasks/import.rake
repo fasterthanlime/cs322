@@ -1,20 +1,94 @@
 require 'csv'
 
-desc "Import team data from the CSV"
-task :team_import => :environment do
-  text = File.read('../dataset/teams.csv')
-  csv = CSV.parse(text, :headers => true)
+namespace :import do
+  desc "Import teams data from the CSV"
+  task :teams => :environment do
+    text = File.read('../dataset/teams.csv')
+    csv = CSV.parse(text, :headers => true)
 
-  csv.each do |row|
-    puts "Adding #{row[0]}: " + Team.create(
-      :trigram => row[0],
-      :location => row[1],
-      :name => row[2],
-    ).to_s
+    csv.each do |row|
+      # because it starts with sharp
+      row["team"] = row[0]
+      puts "Adding #{row["team"]}: " + Team.create(
+        :trigram => row["team"],
+        :location => row["location"],
+        :name => row["name"],
+      ).to_s
+    end
   end
-end
 
-desc "Drop all data"
-task :drop => :environment do
-  Team.delete_all()
+  desc "Import team stats from the CSV"
+  task :team_stats => :environment do
+    text = File.read('../dataset/team_season.csv')
+    csv = CSV.parse(text, :headers => true)
+
+    csv.each do |row|
+      row["team"] = row[0]
+      team = Team.find_by_trigram(row["team"])
+      league = League.find_by_name("#{row["leag"]}BA")
+      ts = TeamSeason.create(
+         :team => team,
+         :year => row["year"],
+         :league => league,
+         :won => row["won"],
+         :pace => row["pace"],
+         :lost => row["lost"]
+      )
+      os = Stat.create(
+        :pts => row["o_pts"],
+        :oreb => row["o_oreb"],
+        :dreb => row["o_dreb"],
+        :reb => row["o_reb"],
+        :asts => row["o_asts"],
+        :steals => row["o_steals"],
+        :blocks => row["o_blocks"],
+        :turnovers => row["o_turnovers"],
+        :tpf => row["o_tpf"],
+        :fga => row["o_fga"],
+        :fgm => row["o_fgm"],
+        :ftm => row["o_ftm"],
+        :tpa => row["o_tpa"],
+        :tpm => row["o_tpm"]
+      )
+      ds = Stat.create(
+        :pts => row["d_pts"],
+        :oreb => row["d_oreb"],
+        :dreb => row["d_dreb"],
+        :reb => row["d_reb"],
+        :asts => row["d_asts"],
+        :steals => row["d_steals"],
+        :blocks => row["d_blocks"],
+        :turnovers => row["d_turnovers"],
+        :tpf => row["d_tpf"],
+        :fga => row["d_fga"],
+        :fgm => row["d_fgm"],
+        :ftm => row["d_ftm"],
+        :tpa => row["d_tpa"],
+        :tpm => row["d_tpm"]
+      )
+      ots = TeamStat.create(
+        :team_stat_tactique => TeamStatTactique.find_by_name("Offensive"),
+        :stat => os,
+        :team_season => ts
+      )
+      dts = TeamStat.create(
+        :team_stat_tactique => TeamStatTactique.find_by_name("Defensive"),
+        :stat => ds,
+        :team_season => ts
+      )
+      puts ts
+    end
+  end
+
+  desc "Drop all data"
+  task :drop => :environment do
+    Team.delete_all()
+  end
+
+  desc "All, remove everything and starts over"
+  task :all => :environment do
+    ["drop", "teams", "team_stats"].each do |t|
+      Rake::Task["import:#{t}"].invoke
+    end
+  end
 end
