@@ -87,6 +87,7 @@ namespace :import do
     csv = CSV.parse(text, :headers => true)
 
     csv.each do |row|
+      # One of the coach contains a non-breaking space (nbsp).
       row["coachid"] = row[0].tr(" ", " ").strip
       row["firstname"].strip!
       row["lastname"].strip!
@@ -137,6 +138,38 @@ namespace :import do
     end
   end
 
+  desc "Import players data from the CSV"
+  task :players => :environment do
+    text = File.read('../dataset/players.csv')
+    csv = CSV.parse(text, :headers => true)
+
+    csv.each do |row|
+      row["ilkid"] = row[0]
+
+      p = Person.find_by_ilkid(row["ilkid"])
+      if p.nil? then
+        p = Person.create(
+          :ilkid => row["ilkid"],
+          :firstname => row["firstname"],
+          :lastname => row["lastname"]
+        )
+        puts p
+      end
+
+      # One foot is 12 inches
+      height = row["h_feet"].to_i * 12 + row["h_inches"].to_i
+
+      pl = Player.create(
+        :person => p,
+        :position => row["position"],
+        :height => height,
+        :weight => row["weight"],
+        :birthdate => row["birthdate"]
+      )
+      puts " " + pl.to_s
+    end
+  end
+
   desc "Drop all data"
   task :drop => :environment do
     Team.delete_all
@@ -149,6 +182,7 @@ namespace :import do
      "teams",
      "team_stats",
      "coaches",
+     "players",
     ].each do |t|
       puts
       puts "rake import:#{t}"
