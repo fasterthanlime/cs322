@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'csv'
 
 namespace :import do
@@ -80,14 +81,78 @@ namespace :import do
     end
   end
 
+  desc "Import coaches data from the CSV"
+  task :coaches => :environment do
+    text = File.read('../dataset/coaches_data.csv')
+    csv = CSV.parse(text, :headers => true)
+
+    csv.each do |row|
+      row["coachid"] = row[0].tr(" ", " ").strip
+      row["firstname"].strip!
+      row["lastname"].strip!
+      p = Person.where(
+        :ilkid => row["coachid"],
+        :firstname => row["firstname"],
+        :lastname => row["lastname"]
+      )
+      if p.empty? then
+        p = Person.create(
+          :ilkid => row["coachid"],
+          :firstname => row["firstname"],
+          :lastname => row["lastname"]
+        )
+        puts p
+      else
+        p = p[0]
+      end
+
+      c = Coach.find_by_person_id(p.id.to_i)
+
+      if c.nil? then
+        c = Coach.create(
+          :person => p,
+          :season_win => row["season_win"],
+          :season_loss => row["season_loss"],
+          :playoff_win => row["playoff_win"],
+          :playoff_loss => row["playoff_loss"],
+        )
+        puts " " + c.to_s
+      end
+
+      t = Team.find_by_trigram(row["team"])
+      unless t.nil? then
+        ct = CoachesTeam.create(
+          :coach => c,
+          :team => t,
+          :year => row["year"],
+          :year_order => row["year_order"]
+        )
+        puts "  " + ct.to_s
+      else
+        # FIXME some teams are missing!
+        if row["team"] != "NOR" then
+          raise "Team not found! #{row["team"]}"
+        end
+      end
+    end
+  end
+
   desc "Drop all data"
   task :drop => :environment do
-    Team.delete_all()
+    Team.delete_all
+    Person.delete_all
   end
 
   desc "All, remove everything and starts over"
   task :all => :environment do
-    ["drop", "teams", "team_stats"].each do |t|
+    ["drop",
+     "teams",
+     "team_stats",
+     "coaches",
+    ].each do |t|
+      puts
+      puts "rake import:#{t}"
+      puts
       Rake::Task["import:#{t}"].invoke
     end
   end
