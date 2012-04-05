@@ -13,7 +13,7 @@
 
 CREATE TABLE people (
     id NUMBER,
-    ilkid VARCHAR(9),
+    ilkid VARCHAR(10),
     firstname VARCHAR(255) NOT NULL,
     lastname VARCHAR(255) NOT NULL,
     PRIMARY KEY (id),
