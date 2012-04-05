@@ -1,0 +1,15 @@
+<h1>People</h1>
+<%- unless @people.nil? then -%>
+<ul>
+<%- @people.each do |person| -%>
+<li><%= link_to(
+  "#{person.fullname} (#{person.ilkid})",
+  :controller => 'person',
+  :action => 'view',
+  :id => person.id.to_i
+) -%></li>
+<%- end -%>
+</ul>
+<%- else -%>
+<p>nobody</p>
+<%- end -%>

@@ -6,18 +6,13 @@
     <%= submit_tag("Search") -%>
   </p>
 <%- end -%>
-<h2>Teams</h2>
-<%- unless @teams.nil? then -%>
 <ul>
-<%- @teams.each do |team| -%>
-<li><%= link_to(
-  "#{team.name} (#{team.trigram})",
-  :controller => 'team',
-  :action => 'view',
-  :id => team.id.to_i
-) -%></li>
-<%- end -%>
+  <li><%= link_to(
+    "Teams (#{@teams_count})",
+    :controller => "team"
+  ) %></li>
+  <li><%= link_to(
+    "People (#{@people_count})",
+    :controller => "person"
+  ) %></li>
 </ul>
-<%- else -%>
-<p>no teams</p>
-<%- end -%>
