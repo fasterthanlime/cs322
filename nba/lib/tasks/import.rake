@@ -7,6 +7,14 @@ namespace :import do
     text = File.read('../dataset/teams.csv')
     csv = CSV.parse(text, :headers => true)
 
+    ['NOR', 'NYJ'].each do |trigram|
+      Team.create(
+        :trigram => trigram,
+        :location => 'unknown',
+        :name => 'unknown'
+      )
+    end
+
     csv.each do |row|
       # because it starts with sharp
       row["team"] = row[0]
@@ -130,10 +138,7 @@ namespace :import do
         )
         puts "  " + ct.to_s
       else
-        # FIXME some teams are missing!
-        if row["team"] != "NOR" then
-          raise "Team not found! #{row["team"]}"
-        end
+        raise "Team not found! #{row["team"]}"
       end
     end
   end
@@ -170,10 +175,75 @@ namespace :import do
     end
   end
 
+  desc "Import drafts data from the CSV"
+  task :drafts => :environment do
+    text = File.read('../dataset/draft.csv')
+    csv = CSV.parse(text, :headers => true)
+
+    csv.each do |row|
+      row["draft_year"] = row[0]
+
+      if row["ilkid"] == "NULL" then
+        p = Person.create(
+          :firstname => row["firstname"],
+          :lastname => row["lastname"]
+        )
+        puts p
+      else
+        p = Person.find_by_ilkid(row["ilkid"])
+        if p.nil? then
+          p = Person.create(
+            :ilkid => row["ilkid"],
+            :firstname => row["firstname"],
+            :lastname => row["lastname"]
+          )
+          puts p
+        end
+      end
+
+      if p.player.nil? then
+        # FIXME: because the position is mandatory, I put '0'
+        pl = Player.create(
+          :person => p,
+          :position => '0'
+        )
+        puts " " + pl.to_s
+      else
+        pl = p.player
+      end
+
+      c = Location.find_by_name(row["draft_from"])
+      if c.nil? then
+        c = Location.create(
+          :name => row["draft_from"]
+        )
+        puts " " + c.to_s
+      end
+
+      t = Team.find_by_trigram(row["team"])
+
+      if t.nil? then
+        raise "Team not found! #{row["team"]}"
+      end
+
+      d = Draft.create(
+        :player => pl,
+        :team => t,
+        :location => c,
+        :year => row["draft_year"],
+        :selection => row["selection"],
+        :round => row["draft_round"]
+      )
+      puts "  " + d.to_s
+    end
+  end
+
   desc "Drop all data"
   task :drop => :environment do
     Team.delete_all
     Person.delete_all
+    Location.delete_all
+    Draft.delete_all
   end
 
   desc "All, remove everything and starts over"
@@ -183,6 +253,7 @@ namespace :import do
      "team_stats",
      "coaches",
      "players",
+     "drafts"
     ].each do |t|
       puts
       puts "rake import:#{t}"

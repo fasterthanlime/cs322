@@ -149,7 +149,7 @@ CREATE TABLE drafts (
     team_id NUMBER NOT NULL,
     location_id NUMBER NULL,
     PRIMARY KEY (id),
-    UNIQUE (player_id),
+    CONSTRAINT draft_unique UNIQUE (player_id, team_id, location_id, year),
     FOREIGN KEY (player_id)
         REFERENCES players (id) ON DELETE CASCADE,
     FOREIGN KEY (team_id)
