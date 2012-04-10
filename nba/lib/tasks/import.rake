@@ -1,4 +1,16 @@
 # -*- coding: utf-8 -*-
+=begin
+
+This is maybe the most resource consuming tool to import CSV files into a
+database. But we don't care… young people have time to wait. Right?
+
+For better and quicker tool: use `sqlldr`
+
+TODO:
+ - unify similar import tasks
+ - follow the stinky donkey
+
+=end
 require 'csv'
 
 namespace :import do
@@ -7,7 +19,11 @@ namespace :import do
     text = File.read('../dataset/teams.csv')
     csv = CSV.parse(text, :headers => true)
 
-    ['NOR', 'NYJ'].each do |trigram|
+    # TOT from coaches
+    # NYJ from drafts
+    # TOT, PHW, SL1 from player regular season
+    # SAN from player playoff
+    %w(NOR NYJ TOT PHW SL1 SAN NEW).each do |trigram|
       Team.create(
         :trigram => trigram,
         :location => 'unknown',
@@ -175,6 +191,158 @@ namespace :import do
     end
   end
 
+  desc "Import regular season stats from the CSV"
+  task :regular_seasons => :environment do
+    text = File.read('../dataset/player_regular_season.csv')
+    csv = CSV.parse(text, :headers => true)
+
+    regular = PlayerSeasonType.find_by_name("Regular")
+
+    csv.each do |row|
+      row["ilkid"] = row[0]
+
+      p = Person.find_by_ilkid(row["ilkid"])
+      t = Team.find_by_trigram(row["team"])
+      if t.nil? then
+        raise "#{row["team"]} not found"
+      end
+      ps = PlayerSeason.create(
+        :player => p.player,
+        :team => t,
+        :year => row["year"]
+      )
+      s = Stat.create(
+        :pts => row["pts"],
+        :oreb => row["oreb"],
+        :dreb => row["dreb"],
+        :reb => row["reb"],
+        :asts => row["asts"],
+        :steals => row["stl"],
+        :blocks => row["blk"],
+        :turnovers => row["turnover"],
+        :tpf => row["pf"],
+        :fga => row["fga"],
+        :fgm => row["fgm"],
+        :ftm => row["ftm"],
+        :tpa => row["tpa"],
+        :tpm => row["tpm"]
+      )
+      stat = PlayerStat.create(
+        :stat => s,
+        :player_season => ps,
+        :player_season_type => regular,
+        :gp => row["gp"],
+        :minutes => row["minutes"]
+      )
+      puts ps
+    end
+  end
+
+  desc "Import playoff season stats from the CSV"
+  task :playoffs => :environment do
+    text = File.read('../dataset/player_playoffs.csv')
+    csv = CSV.parse(text, :headers => true)
+
+    playoff = PlayerSeasonType.find_by_name("Playoff")
+
+    csv.each do |row|
+      row["ilkid"] = row[0]
+
+      p = Person.find_by_ilkid(row["ilkid"])
+      t = Team.find_by_trigram(row["team"])
+      if t.nil? then
+        raise "#{row["team"]} not found"
+      end
+      ps = PlayerSeason.find(:first, :conditions => "
+        player_id = #{p.player.id.to_i} AND
+        team_id = #{t.id.to_i} AND
+        year = #{row["year"]}
+      ")
+      if ps.nil? then
+        ps = PlayerSeason.create(
+          :player => p.player,
+          :team => t,
+          :year => row["year"]
+        )
+      end
+      s = Stat.create(
+        :pts => row["pts"],
+        :oreb => row["oreb"],
+        :dreb => row["dreb"],
+        :reb => row["reb"],
+        :asts => row["asts"],
+        :steals => row["stl"],
+        :blocks => row["blk"],
+        :turnovers => row["turnover"],
+        :tpf => row["pf"],
+        :fga => row["fga"],
+        :fgm => row["fgm"],
+        :ftm => row["ftm"],
+        :tpa => row["tpa"],
+        :tpm => row["tpm"]
+      )
+      stat = PlayerStat.create(
+        :stat => s,
+        :player_season => ps,
+        :player_season_type => playoff,
+        :gp => row["gp"],
+        :minutes => row["minutes"]
+      )
+      puts ps
+    end
+  end
+
+  desc "Import all stars season stats from the CSV"
+  task :allstars => :environment do
+    text = File.read('../dataset/player_allstar.csv')
+    csv = CSV.parse(text, :headers => true)
+
+    allstars = PlayerSeasonType.find_by_name("All Stars")
+
+    csv.each do |row|
+      row["ilkid"] = row[0]
+
+      p = Person.find_by_ilkid(row["ilkid"])
+      ps = PlayerSeason.find(:first, :conditions => "
+        player_id = #{p.player.id.to_i} AND
+        year = #{row["year"]}
+      ")
+      if ps.nil? then
+        raise "#{row["ilkid"]} #{row["year"]} our model suck donkey balls"
+      end
+      s = Stat.create(
+        :pts => row["pts"],
+        :oreb => row["oreb"],
+        :dreb => row["dreb"],
+        :reb => row["reb"],
+        :asts => row["asts"],
+        :steals => row["stl"],
+        :blocks => row["blk"],
+        :turnovers => row["turnover"],
+        :tpf => row["pf"],
+        :fga => row["fga"],
+        :fgm => row["fgm"],
+        :ftm => row["ftm"],
+        :tpa => row["tpa"],
+        :tpm => row["tpm"]
+      )
+      c = Conference.find_by_name(row["conference"] == "west" ?
+        "Western" :
+        "Eastern"
+      )
+      stat = PlayerStat.create(
+        :stat => s,
+        :player_season => ps,
+        :player_season_type => allstars,
+        :conference => c,
+        :gp => row["gp"],
+        :minutes => row["minutes"]
+      )
+      puts ps
+    end
+  end
+
+
   desc "Import drafts data from the CSV"
   task :drafts => :environment do
     text = File.read('../dataset/draft.csv')
@@ -238,23 +406,11 @@ namespace :import do
     end
   end
 
-  desc "Drop all data"
-  task :drop => :environment do
-    Team.delete_all
-    Person.delete_all
-    Location.delete_all
-    Draft.delete_all
-  end
-
   desc "All, remove everything and starts over"
   task :all => :environment do
-    ["drop",
-     "teams",
-     "team_stats",
-     "coaches",
-     "players",
-     "drafts"
-    ].each do |t|
+    %w(
+      teams team_stats coaches players drafts regular_seasons playoffs allstars
+    ).each do |t|
       puts
       puts "rake import:#{t}"
       puts

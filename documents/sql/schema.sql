@@ -255,10 +255,10 @@ CREATE SEQUENCE team_stats_seq
 CREATE TABLE player_seasons (
     id NUMBER,
     player_id NUMBER NOT NULL,
-    year NUMBER NOT NULL,
     team_id NUMBER NOT NULL,
+    year NUMBER NOT NULL,
     PRIMARY KEY (id),
-    CONSTRAINT player_season_unique UNIQUE (player_id, year),
+    CONSTRAINT player_season_unique UNIQUE (player_id, team_id, year),
     FOREIGN KEY (player_id)
         REFERENCES players (id) ON DELETE CASCADE,
     FOREIGN KEY (team_id)
