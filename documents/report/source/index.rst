@@ -10,6 +10,7 @@ Welcome to Database project's documentation!
    :maxdepth: 2
 
    deliverable1
+   deliverable2
 
 .. Indices and tables
    ==================
