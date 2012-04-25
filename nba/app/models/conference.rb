@@ -3,6 +3,6 @@ class Conference < ActiveRecord::Base
   attr_accessible :name
 
   def to_s
-    name
+    "<Conference(#{name}>"
   end
 end

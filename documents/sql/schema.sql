@@ -281,27 +281,45 @@ CREATE SEQUENCE player_season_types_seq
     INCREMENT BY 1;
 
 -- @weak
-CREATE TABLE player_stats(
+CREATE TABLE player_stats (
     id NUMBER,
     player_season_id NUMBER NOT NULL,
     stat_id NUMBER NOT NULL,
     player_season_type_id NUMBER NOT NULL,
-    conference_id NUMBER NULL, -- for all star games only
     gp NUMBER,
     minutes NUMBER,
     PRIMARY KEY (id),
-    CONSTRAINT player_stat_unique UNIQUE (player_season_id, stat_id, player_season_type_id),
+    CONSTRAINT player_stat_unique UNIQUE (player_season_id, player_season_type_id),
     FOREIGN KEY (player_season_id)
         REFERENCES player_seasons (id) ON DELETE CASCADE,
     FOREIGN KEY (stat_id)
         REFERENCES stats (id) ON DELETE CASCADE,
     FOREIGN KEY (player_season_type_id)
-        REFERENCES player_season_types (id) ON DELETE CASCADE,
-    FOREIGN KEY (conference_id)
-        REFERENCES conferences (id) ON DELETE CASCADE
+        REFERENCES player_season_types (id) ON DELETE CASCADE
 );
 
 CREATE SEQUENCE player_stats_seq
     START WITH 1
     INCREMENT BY 1;
 
+CREATE TABLE player_allstars (
+    id NUMBER,
+    player_id NUMBER NOT NULL,
+    stat_id NUMBER NOT NULL,
+    conference_id NUMBER NOT NULL,
+    year NUMBER NOT NULL,
+    gp NUMBER,
+    minutes NUMBER,
+    PRIMARY KEY(id),
+    CONSTRAINT player_allstars_unique UNIQUE (player_id, conference_id, year),
+    FOREIGN KEY (player_id)
+        REFERENCES players (id) ON DELETE CASCADE,
+    FOREIGN KEY (stat_id)
+        REFERENCES stats (id) ON DELETE CASCADE,
+    FOREIGN KEY (conference_id)
+        REFERENCES conferences (id) ON DELETE CASCADE
+);
+
+CREATE SEQUENCE player_allstars_seq
+    START WITH 1
+    INCREMENT BY 1;

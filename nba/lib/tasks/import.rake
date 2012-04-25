@@ -297,18 +297,22 @@ namespace :import do
     text = File.read('../dataset/player_allstar.csv')
     csv = CSV.parse(text, :headers => true)
 
-    allstars = PlayerSeasonType.find_by_name("All Stars")
-
     csv.each do |row|
       row["ilkid"] = row[0]
 
+      # Fix a buggy ilkid
+      if (row["ilkid"] == "JOHNSMA01" and row["firstname"] == "Marques") then
+        row["ilkid"] = "JOHNSMA02"
+      end
+      # Ignore this particular entry
+      if (row["ilkid"] == "THOMPDA01" and row["year"] == "1982" and row["tpm"] == "NULL") then
+        next
+      end
       p = Person.find_by_ilkid(row["ilkid"])
-      ps = PlayerSeason.find(:first, :conditions => "
-        player_id = #{p.player.id.to_i} AND
-        year = #{row["year"]}
-      ")
-      if ps.nil? then
-        raise "#{row["ilkid"]} #{row["year"]} our model suck donkey balls"
+      pl = p.player
+
+      if pl.nil? then
+        raise "#{row["ilkid"]} our model suck donkey balls"
       end
       s = Stat.create(
         :pts => row["pts"],
@@ -330,15 +334,15 @@ namespace :import do
         "Western" :
         "Eastern"
       )
-      stat = PlayerStat.create(
+      pa = PlayerAllstar.create(
         :stat => s,
-        :player_season => ps,
-        :player_season_type => allstars,
+        :player => pl,
         :conference => c,
+        :year => row["year"],
         :gp => row["gp"],
         :minutes => row["minutes"]
       )
-      puts ps
+      puts pa
     end
   end
 
