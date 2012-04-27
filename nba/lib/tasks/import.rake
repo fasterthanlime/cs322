@@ -204,7 +204,7 @@ namespace :import do
       p = Person.find_by_ilkid(row["ilkid"])
       t = Team.find_by_trigram(row["team"])
       if t.nil? then
-        raise "#{row["team"]} not found"
+        raise "Team not found! #{row["team"]}"
       end
       ps = PlayerSeason.create(
         :player => p.player,
@@ -247,11 +247,12 @@ namespace :import do
 
     csv.each do |row|
       row["ilkid"] = row[0]
+      row["team"] = row["team"].upcase
 
       p = Person.find_by_ilkid(row["ilkid"])
       t = Team.find_by_trigram(row["team"])
       if t.nil? then
-        raise "#{row["team"]} not found"
+        raise "Team not found! #{row["team"]}"
       end
       ps = PlayerSeason.find(:first, :conditions => "
         player_id = #{p.player.id.to_i} AND
