@@ -78,7 +78,7 @@ Then *Teams* have *offensive* and *defensive* statistics while the *Players* hav
 **NB:** All the career stats were seen as denormalized and thus removed. We can get those data back from the yearly *Stats*.
 
 Design the database and the constraints needed to maintain the database consistent
-======================================================
+==================================================================================
 
 See the figure on next page.
 
