@@ -12,7 +12,7 @@
 --
 
 CREATE TABLE people (
-    id NUMBER,
+    id INT,
     ilkid VARCHAR(10),
     firstname VARCHAR(255) NOT NULL,
     lastname VARCHAR(255) NOT NULL,
@@ -25,11 +25,11 @@ CREATE SEQUENCE people_seq
     INCREMENT BY 1;
 
 CREATE TABLE players (
-    id NUMBER,
-    person_id NUMBER NOT NULL,
+    id INT,
+    person_id INT NOT NULL,
     position CHAR(1) NOT NULL,
-    height NUMBER, -- in inches
-    weight NUMBER,
+    height INT, -- in inches
+    weight INT,
     birthdate DATE,
     PRIMARY KEY (id),
     FOREIGN KEY (person_id)
@@ -41,12 +41,12 @@ CREATE SEQUENCE players_seq
     INCREMENT BY 1;
 
 CREATE TABLE coaches (
-    id NUMBER,
-    person_id NUMBER NOT NULL,
-    season_win NUMBER,
-    season_loss NUMBER,
-    playoff_win NUMBER,
-    playoff_loss NUMBER,
+    id INT,
+    person_id INT NOT NULL,
+    season_win INT,
+    season_loss INT,
+    playoff_win INT,
+    playoff_loss INT,
     PRIMARY KEY (id),
     FOREIGN KEY (person_id)
         REFERENCES people (id) ON DELETE CASCADE
@@ -65,7 +65,7 @@ CREATE SEQUENCE coaches_seq
 
 -- NBA/ABA
 CREATE TABLE leagues (
-    id NUMBER,
+    id INT,
     name CHAR(3) NOT NULL,
     PRIMARY KEY (id),
     UNIQUE (name)
@@ -76,7 +76,7 @@ CREATE SEQUENCE leagues_seq
     INCREMENT BY 1;
 
 CREATE TABLE conferences (
-    id NUMBER,
+    id INT,
     name VARCHAR(31) NOT NULL,
     PRIMARY KEY (id),
     UNIQUE (name)
@@ -87,7 +87,7 @@ CREATE SEQUENCE conferences_seq
     INCREMENT BY 1;
 
 CREATE TABLE teams (
-    id NUMBER,
+    id INT,
     trigram CHAR(3) NOT NULL,
     name VARCHAR(255),
     location VARCHAR(255),
@@ -100,11 +100,11 @@ CREATE SEQUENCE teams_seq
 
 -- @weak
 CREATE TABLE coaches_teams (
-    id NUMBER,
-    coach_id NUMBER NOT NULL,
-    team_id NUMBER NOT NULL,
-    year NUMBER,
-    year_order NUMBER,
+    id INT,
+    coach_id INT NOT NULL,
+    team_id INT NOT NULL,
+    year INT,
+    year_order INT,
     PRIMARY KEY (id),
     CONSTRAINT coaches_team_unique UNIQUE (coach_id, team_id, year),
     FOREIGN KEY (coach_id)
@@ -125,7 +125,7 @@ CREATE SEQUENCE coaches_teams_seq
 --
 
 CREATE TABLE locations (
-    id NUMBER,
+    id INT,
     name VARCHAR(255),
     PRIMARY KEY (id),
     UNIQUE (name)
@@ -141,13 +141,13 @@ CREATE SEQUENCE locations_seq
 
 -- @weak
 CREATE TABLE drafts (
-    id NUMBER,
-    player_id NUMBER NOT NULL,
-    year NUMBER NOT NULL,
-    round NUMBER NOT NULL,
-    selection NUMBER NOT NULL,
-    team_id NUMBER NOT NULL,
-    location_id NUMBER NULL,
+    id INT,
+    player_id INT NOT NULL,
+    year INT NOT NULL,
+    round INT NOT NULL,
+    selection INT NOT NULL,
+    team_id INT NOT NULL,
+    location_id INT NULL,
     PRIMARY KEY (id),
     CONSTRAINT draft_unique UNIQUE (player_id, team_id, location_id, year),
     FOREIGN KEY (player_id)
@@ -171,22 +171,22 @@ CREATE SEQUENCE drafts_seq
 --
 
 CREATE TABLE stats (
-    id NUMBER,
-    pts NUMBER,
-    oreb NUMBER,
-    dreb NUMBER,
-    reb NUMBER,
-    asts NUMBER,
-    steals NUMBER,
-    blocks NUMBER,
-    turnovers NUMBER,
-    tpf NUMBER,
-    fga NUMBER,
-    fgm NUMBER,
-    fta NUMBER,
-    ftm NUMBER,
-    tpa NUMBER, -- 3pa
-    tpm NUMBER, -- 3pm
+    id INT,
+    pts INT,
+    oreb INT,
+    dreb INT,
+    reb INT,
+    asts INT,
+    steals INT,
+    blocks INT,
+    turnovers INT,
+    tpf INT,
+    fga INT,
+    fgm INT,
+    fta INT,
+    ftm INT,
+    tpa INT, -- 3pa
+    tpm INT, -- 3pm
     PRIMARY KEY (id)
 );
 
@@ -200,13 +200,13 @@ CREATE SEQUENCE stats_seq
 
 -- @weak
 CREATE TABLE team_seasons (
-    id NUMBER,
-    team_id NUMBER NOT NULL,
-    year NUMBER NOT NULL,
-    league_id NUMBER NOT NULL,
-    won NUMBER,
-    pace NUMBER,
-    lost NUMBER,
+    id INT,
+    team_id INT NOT NULL,
+    year INT NOT NULL,
+    league_id INT NOT NULL,
+    won INT,
+    pace INT,
+    lost INT,
     PRIMARY KEY (id),
     CONSTRAINT team_season_unique UNIQUE (team_id, year),
     FOREIGN KEY (team_id)
@@ -220,7 +220,7 @@ CREATE SEQUENCE team_seasons_seq
     INCREMENT BY 1;
 
 CREATE TABLE team_stat_tactiques (
-    id NUMBER NOT NULL,
+    id INT NOT NULL,
     name VARCHAR(31),
     PRIMARY KEY (id),
     UNIQUE (name)
@@ -232,10 +232,10 @@ CREATE SEQUENCE team_stat_tactiques_seq
 
 -- @weak
 CREATE TABLE team_stats (
-    id NUMBER,
-    team_season_id NUMBER NOT NULL,
-    stat_id NUMBER NOT NULL,
-    team_stat_tactique_id NUMBER NOT NULL,
+    id INT,
+    team_season_id INT NOT NULL,
+    stat_id INT NOT NULL,
+    team_stat_tactique_id INT NOT NULL,
     PRIMARY KEY (id),
     CONSTRAINT team_stat_unique UNIQUE (team_season_id, stat_id, team_stat_tactique_id),
     FOREIGN KEY (team_season_id)
@@ -253,10 +253,10 @@ CREATE SEQUENCE team_stats_seq
 -- =============
 
 CREATE TABLE player_seasons (
-    id NUMBER,
-    player_id NUMBER NOT NULL,
-    team_id NUMBER NOT NULL,
-    year NUMBER NOT NULL,
+    id INT,
+    player_id INT NOT NULL,
+    team_id INT NOT NULL,
+    year INT NOT NULL,
     PRIMARY KEY (id),
     CONSTRAINT player_season_unique UNIQUE (player_id, team_id, year),
     FOREIGN KEY (player_id)
@@ -270,7 +270,7 @@ CREATE SEQUENCE player_seasons_seq
     INCREMENT BY 1;
 
 CREATE TABLE player_season_types (
-    id NUMBER,
+    id INT,
     name VARCHAR (31),
     PRIMARY KEY (id),
     UNIQUE (name)
@@ -282,12 +282,12 @@ CREATE SEQUENCE player_season_types_seq
 
 -- @weak
 CREATE TABLE player_stats (
-    id NUMBER,
-    player_season_id NUMBER NOT NULL,
-    stat_id NUMBER NOT NULL,
-    player_season_type_id NUMBER NOT NULL,
-    gp NUMBER,
-    minutes NUMBER,
+    id INT,
+    player_season_id INT NOT NULL,
+    stat_id INT NOT NULL,
+    player_season_type_id INT NOT NULL,
+    gp INT,
+    minutes INT,
     PRIMARY KEY (id),
     CONSTRAINT player_stat_unique UNIQUE (player_season_id, player_season_type_id),
     FOREIGN KEY (player_season_id)
@@ -303,13 +303,13 @@ CREATE SEQUENCE player_stats_seq
     INCREMENT BY 1;
 
 CREATE TABLE player_allstars (
-    id NUMBER,
-    player_id NUMBER NOT NULL,
-    stat_id NUMBER NOT NULL,
-    conference_id NUMBER NOT NULL,
-    year NUMBER NOT NULL,
-    gp NUMBER,
-    minutes NUMBER,
+    id INT,
+    player_id INT NOT NULL,
+    stat_id INT NOT NULL,
+    conference_id INT NOT NULL,
+    year INT NOT NULL,
+    gp INT,
+    minutes INT,
     PRIMARY KEY(id),
     CONSTRAINT player_allstars_unique UNIQUE (player_id, conference_id, year),
     FOREIGN KEY (player_id)
