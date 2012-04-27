@@ -7,6 +7,10 @@ class Person < ActiveRecord::Base
     return "#{firstname} #{lastname}"
   end
 
+  def name
+    return fullname
+  end
+
   def to_s
     return "<Person (#{id.to_i}, #{ilkid}, #{firstname} #{lastname})>"
   end
