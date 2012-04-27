@@ -1,21 +1,36 @@
 -- Compute the highest scoring and lowest scoring player for each season.
 
-CREATE OR REPLACE VIEW best_player AS SELECT id, counter
+CREATE OR REPLACE VIEW best_players AS
+SELECT player_id best_player_id, year
 FROM (
-    SELECT id, counter, RANK() OVER (ORDER BY counter DESC) r
+    SELECT player_id, year, pts, RANK() OVER (PARTITION BY year ORDER BY pts DESC) r
     FROM (
-        SELECT pl.id, SUM(stat.pts) counter
+        SELECT pl.id player_id, psea.year year, stat.pts pts
         FROM players pl
         JOIN player_seasons psea ON psea.player_id = pl.id
          JOIN player_stats psta ON psta.player_season_id = psea.id
-          JOIN stats stat ON stat.id = psta.stat_id
-        GROUP BY pl.id
+          JOIN stats stat ON psta.stat_id = stat.id
+    )
+)
+WHERE r = 1;
+
+CREATE OR REPLACE VIEW worst_players AS
+SELECT player_id worst_player_id, year
+FROM (
+    SELECT player_id, year, pts, RANK() OVER (PARTITION BY year ORDER BY pts ASC) r
+    FROM (
+        SELECT pl.id player_id, psea.year year, stat.pts pts
+        FROM players pl
+        JOIN player_seasons psea ON psea.player_id = pl.id
+         JOIN player_stats psta ON psta.player_season_id = psea.id
+          JOIN stats stat ON psta.stat_id = stat.id
     )
 )
 WHERE r = 1;
 
 CREATE OR REPLACE VIEW query_e AS
-SELECT firstname, lastname
-FROM best_player bp
-JOIN players pl ON pl.id = bp.id
-JOIN people p ON p.id = pl.person_id;
+SELECT bp.year, bp.best_player_id, wp.worst_player_id
+FROM best_players bp
+  JOIN worst_players wp ON wp.year = bp.year
+;
+
