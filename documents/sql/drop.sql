@@ -46,3 +46,6 @@ DROP SEQUENCE player_season_types_seq;
 
 DROP TABLE player_stats CASCADE CONSTRAINTS PURGE;
 DROP SEQUENCE player_stats_seq;
+
+DROP TABLE player_allstars CASCADE CONSTRAINTS PURGE;
+DROP SEQUENCE player_allstars_seq;
