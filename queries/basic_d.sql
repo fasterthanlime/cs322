@@ -16,6 +16,7 @@ JOIN coaches c ON c.person_id = p.id
       JOIN leagues l ON ts.league_id = l.id
 WHERE l.name = 'ABA';
 
---SELECT * FROM nba_coaches;
-  --INTERSECT
+CREATE OR REPLACE VIEW query_a AS
+SELECT * FROM nba_coaches
+  INTERSECT
 SELECT * FROM aba_coaches;

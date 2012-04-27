@@ -14,6 +14,7 @@ FROM (
 )
 WHERE r = 1;
 
+CREATE OR REPLACE VIEW query_e AS
 SELECT firstname, lastname
 FROM best_player bp
 JOIN players pl ON pl.id = bp.id

@@ -3,6 +3,7 @@
 --
 -- Result = 155
 
+CREATE OR REPLACE VIEW query_a AS
 SELECT DISTINCT p.lastname, p.firstname
 FROM people p
  JOIN players pl ON pl.person_id = p.id

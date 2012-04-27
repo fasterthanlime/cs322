@@ -1,6 +1,7 @@
 -- Print the name of the school with the highest number of players sent to the
 -- NBA
 
+CREATE OR REPLACE VIEW query_c AS
 SELECT name
 FROM ( 
     SELECT name, counter, RANK() OVER (ORDER BY counter DESC) r
