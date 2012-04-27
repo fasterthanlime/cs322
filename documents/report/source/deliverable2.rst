@@ -14,10 +14,31 @@ Accommodate the import of new data in the database they created in the 1st deliv
 
 *TODO*
 
-Implement the simple search queries and the follow-up search queries of the result of the initial search
-========================================================================================================
+Implement the simple search queries 
+===================================
 
-*TODO*
+The SQL command is right below. Without any external fulltext search engine, we have to perform a `LIKE '%term%'` on any candidates fields of each tables we would like to be searchable. As it's basically *n* queries, we join them together with the table name to be able to figure out where does it come from.
+
+.. literalinclude:: ../../../queries/search.sql
+   :language: sql
+   :lines: 1-
+
+Implement the follow-up search queries of the result of the initial search
+--------------------------------------------------------------------------
+
+The result of the initial search may look like this.
+
++------------+-------+-----------------------+
+| table name | id    | string                |
++============+=======+=======================+
+| people     | 4050  | JAMESMA01 Max Jameson |
++------------+-------+-----------------------+
+| teams      | 20    | CHI Bulls             |
++------------+-------+-----------------------+
+| …          | …     | …                     |
++------------+-------+-----------------------+
+
+From there, we can display something directly and add a link to the proper view for each line.
 
 Implement using SQL the following queries
 =========================================
@@ -74,7 +95,7 @@ Print the names of oldest and youngest player that have participated in the play
 
 .. literalinclude:: ../../../queries/basic_f.sql
    :language: sql
-   :lines: 4
+   :lines: 4-
 
 Build an interface to access and visualize the data
 ===================================================
