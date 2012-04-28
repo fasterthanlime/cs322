@@ -1,37 +1,54 @@
-
-Result of query <%= params[:action] %>
-
-<table>
-  <thead>
-    <tr>
-      <th>Year</th>
-      <th>Best ID</th>
-      <th>Best First Name</th>
-      <th>Best Last Name</th>
-      <th>Best Points</th>
-      <th>Worst ID</th>
-      <th>Worst First Name</th>
-      <th>Worst Last Name</th>
-      <th>Worst Points</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <%- while line = @results.fetch() -%>
-      <tr>
-        <td><%= line[0] %></td>
-        <td><%= line[1] %></td>
-        <td><%= line[2] %></td>
-        <td><%= line[3] %></td>
-        <td><%= line[4] %></td>
-        <td><%= line[5] %></td>
-        <td><%= line[6] %></td>
-        <td><%= line[7] %></td>
-        <td><%= line[8] %></td>
-      </tr>
-    <%- end -%>
-  </tbody>
-
-</table>
-
-
+<div class=row-fluid>
+  <div class=span6>
+    <h2>Result of query <%= params[:action].upcase %></h2>
+    <p>
+      Compute the highest scoring and lowest scoring player for each season.
+    </p>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <td></td>
+          <th scope=colgroup colspan=4>Best Player</th>
+          <th scope=colgroup colspan=4>Worst Player</th>
+        </tr>
+        <tr>
+          <th scope=col>Year</th>
+          <th scope=col>#</th>
+          <th scope=col>First Name</th>
+          <th scope=col>Last Name</th>
+          <th scope=col>Points</th>
+          <th scope=col>#</th>
+          <th scope=col>First Name</th>
+          <th scope=col>Last Name</th>
+          <th scope=col>Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%- while line = @results.fetch() -%>
+          <tr>
+            <th scope=row><%= line[0] %></th>
+            <td><%= link_to(
+              line[1],
+              :controller => "person",
+              :action => "view",
+              :id => line[1]
+            ) %></th>
+            <td><%= line[2] %></td>
+            <td><%= line[3] %></td>
+            <td><%= line[4] %></td>
+            <td><%= link_to(
+              line[5],
+              :controller => "person",
+              :action => "view",
+              :id => line[5]
+            ) %></th>
+            <td><%= line[6] %></td>
+            <td><%= line[7] %></td>
+            <td><%= line[8] %></td>
+          </tr>
+        <%- end -%>
+      </tbody>
+    </table>
+  </div>
+  <%= render :partial => "sql" %>
+</div>

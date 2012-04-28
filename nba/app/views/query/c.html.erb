@@ -1,21 +1,19 @@
-
-Result of query <%= params[:action] %>
-
-<table>
-  <thead>
-    <tr>
-      <th>School Name</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <%- while line = @results.fetch() -%>
-      <tr>
-        <td><%= line[0] %></td>
-      </tr>
+<div class=row-fluid>
+  <div class=span6>
+    <h2>Result of query <%= params[:action].upcase %></h2>
+    <p>
+      Print the name of the school with the highest number of players sent to the NBA
+    </p>
+    <%- if line = @results.fetch() then -%>
+    <p class=well>
+      <strong><%= link_to(
+        line[1],
+        :controller => 'location',
+        :action => 'view',
+        :id => line[0]
+      ) %></strong> sent <%= line[2].to_i %> players to NBA.
+    </p>
     <%- end -%>
-  </tbody>
-
-</table>
-
-
+  </div>
+  <%= render :partial => 'sql' %>
+</div>

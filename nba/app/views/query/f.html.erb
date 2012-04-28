@@ -1,37 +1,54 @@
-
-Result of query <%= params[:action] %>
-
-<table>
-  <thead>
-    <tr>
-      <th>Year</th>
-      <th>Youngest ID</th>
-      <th>Youngest First Name</th>
-      <th>Youngest Last Name</th>
-      <th>Youngest Birthdate</th>
-      <th>Oldest ID</th>
-      <th>Oldest First Name</th>
-      <th>Oldest Last Name</th>
-      <th>Oldest Birthdate</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <%- while line = @results.fetch() -%>
-      <tr>
-        <td><%= line[0] %></td>
-        <td><%= line[1] %></td>
-        <td><%= line[2] %></td>
-        <td><%= line[3] %></td>
-        <td><%= line[4] %></td>
-        <td><%= line[5] %></td>
-        <td><%= line[6] %></td>
-        <td><%= line[7] %></td>
-        <td><%= line[8] %></td>
-      </tr>
-    <%- end -%>
-  </tbody>
-
-</table>
-
-
+<div class=row-fluid>
+  <div class=span6>
+    <h2>Result of query <%= params[:action].upcase %></h2>
+    <p>
+      Print the names of oldest and youngest player that have participated in the playoffs for each season.
+    </p>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <td></td>
+          <th scope=colgroup colspan=4>Yougest Player</th>
+          <th scope=colgroup colspan=4>Oldest Player</th>
+        </tr>
+        <tr>
+          <th scope=col>Year</th>
+          <th scope=col>#</th>
+          <th scope=col>First Name</th>
+          <th scope=col>Last Name</th>
+          <th scope=col>Date of Birth</th>
+          <th scope=col>#</th>
+          <th scope=col>First Name</th>
+          <th scope=col>Last Name</th>
+          <th scope=col>Date of Birth</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%- while line = @results.fetch() -%>
+          <tr>
+            <th scope=row><%= line[0] %></th>
+            <td><%= link_to(
+              line[1],
+              :controller => "person",
+              :action => "view",
+              :id => line[1]
+            ) %></th>
+            <td><%= line[2] %></td>
+            <td><%= line[3] %></td>
+            <td><%= line[4].strftime('%Y-%m-%d') unless line[4].nil? %></td>
+            <td><%= link_to(
+              line[5],
+              :controller => "person",
+              :action => "view",
+              :id => line[5]
+            ) %></th>
+            <td><%= line[6] %></td>
+            <td><%= line[7] %></td>
+            <td><%= line[8].strftime('%Y-%m-%d') unless line[8].nil? %></td>
+          </tr>
+        <%- end -%>
+      </tbody>
+    </table>
+  </div>
+  <%= render :partial => "sql" %>
+</div>

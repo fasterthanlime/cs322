@@ -1,5 +1,9 @@
 class QueryController < ApplicationController
 
+  def index
+
+  end
+
   def a
     fetch_results
   end
@@ -30,8 +34,8 @@ class QueryController < ApplicationController
     query_name = params[:action]
     rc = ActiveRecord::Base.connection.raw_connection
 
-    sql = File.read("../queries/basic_#{query_name}.sql")
-    sql.split(";").slice(0..-2).each { |query|
+    @sql = File.read("../queries/basic_#{query_name}.sql")
+    @sql.split(";").slice(0..-2).each { |query|
       rc.exec(query)
     }
 

@@ -1,16 +1,16 @@
-<p>
-  <a href="/">« home!</a>
-</p>
-<h1>Searching for: <%= params[:q] -%></h1>
-<%= form_tag({:controller => :search}, :method => "get") do -%>
+<div class=row-fluid>
+<div class=span9>
+
+<%= form_tag({:controller => :search}, :method => "get", :class => "form-search") do -%>
   <p>
     <%= label_tag(:q , "Search for:") -%>
     <%= text_field_tag(:q, params[:q]) -%>
     <%= submit_tag("Search") -%>
   </p>
 <%- end -%>
-<h2>Results</h2>
-<table>
+<%- unless @results.nil? -%>
+<h2>Results for <%= params[:q] %></h2>
+<table class="table table-striped">
   <thead>
     <tr>
       <th scope=col>id</th>
@@ -19,7 +19,7 @@
     </tr>
   </thead>
   <tbody>
-<%- while line = @results.fetch() -%>
+  <%- while line = @results.fetch() -%>
     <tr>
       <th scope=row><%= link_to(
         line[1],
@@ -30,6 +30,10 @@
       <td><%= line[0] -%></td>
       <td><%= line[2] -%></td>
     </tr>
-<%- end -%>
+  <%- end -%>
   </tbody>
 </table>
+<%- end -%>
+
+</div>
+</div>
