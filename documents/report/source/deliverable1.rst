@@ -12,7 +12,7 @@ The Schema
 
 See the figure on next page.
 
-.. figure:: ../../design/er.png
+.. figure:: _static/1/er.png
    :scale: 75%
 
    ER Schema made using Dia_.
@@ -82,7 +82,7 @@ Design the database and the constraints needed to maintain the database consiste
 
 See the figure on next page.
 
-.. figure:: ../../design/logical.png
+.. figure:: _static/1/logical.png
 
 Create the SQL commands to create the tables in Oracle
 ======================================================
@@ -98,7 +98,7 @@ Oracle being a very complex RDBMS (*Relational Database Management System*) that
 
 It cannot *auto increment* like MySQL or SQLite, so one must use a `sequence` and use it to get the current value or the next value when insert new rows.
 
-.. literalinclude:: ../../sql/data.sql
+.. literalinclude:: _static/1/data.sql
    :language: sql
    :lines: 1
 
@@ -107,7 +107,7 @@ It knows how to delete relations in cascade. It can remove an entire structure f
 SQL code
 ''''''''
 
-.. literalinclude:: ../../sql/schema.sql
+.. literalinclude:: _static/1/schema.sql
    :language: sql
 
 .. TODO: discussion on the constraints 

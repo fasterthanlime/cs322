@@ -1,5 +1,5 @@
 <div class=row-fluid>
-<div class=span9>
+<div class=span6>
 
 <%= form_tag({:controller => :search}, :method => "get", :class => "form-search") do -%>
   <p>
@@ -36,4 +36,5 @@
 <%- end -%>
 
 </div>
+<%= render :partial => 'query/sql' %>
 </div>
