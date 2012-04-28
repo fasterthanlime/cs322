@@ -1,0 +1,37 @@
+
+Result of query <%= params[:action] %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Year</th>
+      <th>Youngest ID</th>
+      <th>Youngest First Name</th>
+      <th>Youngest Last Name</th>
+      <th>Youngest Birthdate</th>
+      <th>Oldest ID</th>
+      <th>Oldest First Name</th>
+      <th>Oldest Last Name</th>
+      <th>Oldest Birthdate</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <%- while line = @results.fetch() -%>
+      <tr>
+        <td><%= line[0] %></td>
+        <td><%= line[1] %></td>
+        <td><%= line[2] %></td>
+        <td><%= line[3] %></td>
+        <td><%= line[4] %></td>
+        <td><%= line[5] %></td>
+        <td><%= line[6] %></td>
+        <td><%= line[7] %></td>
+        <td><%= line[8] %></td>
+      </tr>
+    <%- end -%>
+  </tbody>
+
+</table>
+
+

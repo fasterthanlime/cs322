@@ -40,7 +40,7 @@ SELECT * FROM oldest_players
 WHERE ROWID IN (SELECT MAX(ROWID) FROM oldest_players GROUP BY year);
 
 CREATE OR REPLACE VIEW query_f AS
-SELECT yp.year, yp.youngest_id, yp.youngest_firstname, yp.youngest_lastname, yp.youngest_birthdate, op.youngest_id, op.youngest_firstname, yp.youngest_lastname
+SELECT yp.year, yp.youngest_id, yp.youngest_firstname, yp.youngest_lastname, yp.youngest_birthdate, op.oldest_id, op.oldest_firstname, op.oldest_lastname, op.oldest_birthdate
 FROM youngest_players yp
   JOIN oldest_players op ON op.year = yp.year
 ORDER BY year ASC;
