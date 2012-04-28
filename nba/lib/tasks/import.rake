@@ -7,8 +7,7 @@ database. But we don't care… young people have time to wait. Right?
 For better and quicker tool: use `sqlldr`
 
 TODO:
- - unify similar import tasks
- - follow the stinky donkey
+ - unify similar import tasks (if it ain't broke, don't fix)
 
 =end
 require 'csv'
@@ -23,19 +22,31 @@ namespace :import do
     # NYJ from drafts
     # TOT, PHW, SL1 from player regular season
     # SAN from player playoff
+    nba = League.find_by_name("NBA")
+    if nba.nil? then
+      raise "NBA not found!"
+    end
     %w(NOR NYJ TOT PHW SL1 SAN NEW).each do |trigram|
       Team.create(
         :trigram => trigram,
-        :location => 'unknown',
-        :name => 'unknown'
+        :location => '*unknown*',
+        :name => '*unknown*',
+        :league => nba
       )
     end
 
     csv.each do |row|
       # because it starts with sharp
       row["team"] = row[0]
+
+      l = League.find_by_name("#{row["leag"]}BA")
+      if l.nil? then
+        raise "League not found #{row["leag"]}BA"
+      end
+
       puts "Adding #{row["team"]}: " + Team.create(
         :trigram => row["team"],
+        :league => l,
         :location => row["location"],
         :name => row["name"],
       ).to_s
@@ -50,11 +61,9 @@ namespace :import do
     csv.each do |row|
       row["team"] = row[0]
       team = Team.find_by_trigram(row["team"])
-      league = League.find_by_name("#{row["leag"]}BA")
       ts = TeamSeason.create(
          :team => team,
          :year => row["year"],
-         :league => league,
          :won => row["won"],
          :pace => row["pace"],
          :lost => row["lost"]
@@ -394,15 +403,20 @@ namespace :import do
       end
 
       t = Team.find_by_trigram(row["team"])
-
       if t.nil? then
         raise "Team not found! #{row["team"]}"
+      end
+
+      l = League.find_by_name("#{row["leag"]}BA")
+      if l.nil? then
+        raise "League not found! #{row["leag"]}BA"
       end
 
       d = Draft.create(
         :player => pl,
         :team => t,
         :location => c,
+        :league => l,
         :year => row["draft_year"],
         :selection => row["selection"],
         :round => row["draft_round"]

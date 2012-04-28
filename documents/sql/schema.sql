@@ -88,10 +88,14 @@ CREATE SEQUENCE conferences_seq
 
 CREATE TABLE teams (
     id INT,
+    league_id INT NOT NULL,
     trigram CHAR(3) NOT NULL,
     name VARCHAR(255),
     location VARCHAR(255),
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    CONSTRAINT team_unique UNIQUE (league_id, trigram),
+    FOREIGN KEY (league_id)
+        REFERENCES leagues (id) ON DELETE CASCADE
 );
 
 CREATE SEQUENCE teams_seq
@@ -147,6 +151,7 @@ CREATE TABLE drafts (
     round INT NOT NULL,
     selection INT NOT NULL,
     team_id INT NOT NULL,
+    league_id INT NOT NULL,
     location_id INT NULL,
     PRIMARY KEY (id),
     CONSTRAINT draft_unique UNIQUE (player_id, team_id, location_id, year),
@@ -154,6 +159,8 @@ CREATE TABLE drafts (
         REFERENCES players (id) ON DELETE CASCADE,
     FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE,
+    FOREIGN KEY (league_id)
+        REFERENCES leagues (id) ON DELETE CASCADE,
     FOREIGN KEY (location_id)
         REFERENCES locations (id) ON DELETE CASCADE
 );
@@ -203,16 +210,13 @@ CREATE TABLE team_seasons (
     id INT,
     team_id INT NOT NULL,
     year INT NOT NULL,
-    league_id INT NOT NULL,
     won INT,
     pace INT,
     lost INT,
     PRIMARY KEY (id),
     CONSTRAINT team_season_unique UNIQUE (team_id, year),
     FOREIGN KEY (team_id)
-        REFERENCES teams (id) ON DELETE CASCADE,
-    FOREIGN KEY (league_id)
-        REFERENCES leagues (id) ON DELETE CASCADE
+        REFERENCES teams (id) ON DELETE CASCADE
 );
 
 CREATE SEQUENCE team_seasons_seq

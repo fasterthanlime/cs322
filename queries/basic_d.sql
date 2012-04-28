@@ -2,21 +2,23 @@
 
 CREATE OR REPLACE VIEW nba_coaches AS
 SELECT DISTINCT p.id, p.lastname, p.firstname
-FROM team_seasons ts
-JOIN coaches_teams ct ON ct.team_id = ts.team_id
+FROM teams t
+JOIN leagues l ON l.id = t.league_id
+JOIN coaches_teams ct ON ct.team_id = t.id
   JOIN coaches c ON c.id = ct.coach_id
     JOIN people p ON p.id = c.person_id
-      JOIN leagues l ON l.id = ts.league_id
-WHERE l.name = 'NBA';
+WHERE l.name = 'NBA'
+ORDER BY p.lastname, p.firstname;
 
 CREATE OR REPLACE VIEW aba_coaches AS
 SELECT DISTINCT p.id, p.lastname, p.firstname
-FROM team_seasons ts
-JOIN coaches_teams ct ON ct.team_id = ts.team_id
+FROM teams t
+JOIN leagues l ON l.id = t.league_id
+JOIN coaches_teams ct ON ct.team_id = t.id
   JOIN coaches c ON c.id = ct.coach_id
     JOIN people p ON p.id = c.person_id
-      JOIN leagues l ON l.id = ts.league_id
-WHERE l.name = 'ABA';
+WHERE l.name = 'ABA'
+ORDER BY p.lastname, p.firstname;
 
 CREATE OR REPLACE VIEW query_d AS
 SELECT * FROM nba_coaches

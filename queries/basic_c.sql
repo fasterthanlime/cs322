@@ -2,17 +2,16 @@
 -- NBA
 
 CREATE OR REPLACE VIEW query_c AS
-SELECT name
+SELECT id, name, counter
 FROM ( 
-    SELECT name, counter, RANK() OVER (ORDER BY counter DESC) r
+    SELECT id, name, counter, RANK() OVER (ORDER BY counter DESC) r
     FROM (
-        SELECT il.name, COUNT(il.id) counter
+        SELECT il.id, il.name, COUNT(il.id) counter
         FROM locations il
         JOIN drafts d ON d.location_id = il.id
-         JOIN team_seasons ts ON ts.team_id = d.team_id AND ts.year = d.year
-          JOIN leagues l ON l.id = ts.league_id
+          JOIN leagues l ON l.id = d.league_id
         WHERE l.name = 'NBA'
-        GROUP BY il.name
+        GROUP BY il.id, il.name
     )
 )
 WHERE r = 1;

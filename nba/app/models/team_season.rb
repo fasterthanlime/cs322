@@ -1,6 +1,5 @@
 class TeamSeason < ActiveRecord::Base
   belongs_to :team
-  belongs_to :league
   has_one :offensive_team_stat, :class_name => "TeamStat",
                                 :conditions => {
                                   :team_stat_tactique_id => TeamStatTactique::OFFENSIVE
