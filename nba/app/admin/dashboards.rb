@@ -41,4 +41,9 @@ ActiveAdmin::Dashboards.build do
   # section "Membership Summary", :if => :memberships_enabled?
   # section "Membership Summary", :if => Proc.new { current_admin_user.account.memberships.any? }
 
+  section "How to get started" do
+    div do
+      render 'welcome'
+    end
+  end
 end

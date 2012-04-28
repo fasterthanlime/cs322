@@ -11,7 +11,11 @@ class TeamSeason < ActiveRecord::Base
 
   attr_accessible :year, :team, :league, :won, :pace, :lost
 
+  def name
+    return "#{team.trigram} #{team.name} #{year}"
+  end
+
   def to_s
-    return "<TeamSeason (#{id.to_i}, #{team.trigram} #{year.to_i})>"
+    return "<TeamSeason (#{id}, #{team.trigram} #{year})>"
   end
 end
