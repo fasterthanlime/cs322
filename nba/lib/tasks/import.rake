@@ -18,38 +18,41 @@ namespace :import do
     text = File.read('../dataset/teams.csv')
     csv = CSV.parse(text, :headers => true)
 
-    # TOT from coaches
-    # NYJ from drafts
-    # TOT, PHW, SL1 from player regular season
-    # SAN from player playoff
-    nba = League.find_by_name("NBA")
-    if nba.nil? then
-      raise "NBA not found!"
-    end
-    %w(NOR NYJ TOT PHW SL1 SAN NEW).each do |trigram|
-      Team.create(
-        :trigram => trigram,
-        :location => '*unknown*',
-        :name => '*unknown*',
-        :league => nba
-      )
+    missing_teams = {
+      "ABA" => %w(NYJ),
+      "NBA" => %w(NEW NOR PHW SAN SL1 TAT TOT)
+    }
+    missing_teams.each do |league, teams|
+      league = League.find_by_name(league)
+      teams.each do |trigram|
+        puts Team.create(
+          :trigram => trigram,
+          :league => league
+        )
+      end
     end
 
     csv.each do |row|
       # because it starts with sharp
       row["team"] = row[0]
 
+      # https://en.wikipedia.org/wiki/Miami_Floridians
+      if row["location"] == "Floridians" then
+        row["name"] = row["location"]
+        row["location"] = nil
+      end
+
       l = League.find_by_name("#{row["leag"]}BA")
       if l.nil? then
         raise "League not found #{row["leag"]}BA"
       end
 
-      puts "Adding #{row["team"]}: " + Team.create(
+      puts Team.create(
         :trigram => row["team"],
         :league => l,
         :location => row["location"],
         :name => row["name"],
-      ).to_s
+      )
     end
   end
 
