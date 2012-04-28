@@ -1,0 +1,23 @@
+
+Result of query <%= params[:action] %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Last Name</th>
+      <th>First Name</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <%- while line = @results.fetch() -%>
+      <tr>
+        <td><%= line[1] %></td>
+        <td><%= line[2] %></td>
+      </tr>
+    <%- end -%>
+  </tbody>
+
+</table>
+
+
