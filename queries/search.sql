@@ -1,3 +1,4 @@
+-- The searich
 (
     SELECT
         'teams' tname, id, concat(concat(trigram, ' '), name) str
@@ -29,4 +30,4 @@
     SELECT 'conferences' tname, id, name str
     FROM conferences
     WHERE name LIKE ?
-);
+)
