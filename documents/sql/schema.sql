@@ -8,7 +8,7 @@
 -- A person can be a player and/or a coach at different time of
 -- her life.
 --
--- ilkit can be NULL for drafted only players
+-- ilkid can be NULL for drafted only players
 --
 
 CREATE TABLE people (
