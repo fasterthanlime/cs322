@@ -1,0 +1,67 @@
+<%-
+coach = @person.coach
+-%>
+<%= render :partial => 'header' %>
+<div class=row-fluid>
+  <div class=span6>
+    <h3>Stats</h3>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope=col>Type</th>
+          <th scope=col>Win</th>
+          <th scope=col>Loss</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope=row>Overall</th>
+          <td><%= coach.season_win -%></td>
+          <td><%= coach.season_loss -%></td>
+        </tr>
+        <tr>
+          <th scope=row>Playoff</th>
+          <td><%= coach.playoff_win -%></td>
+          <td><%= coach.playoff_loss -%></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class=span6>
+    <h3>Career</h3>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope=colgroup colspan=2></th>
+          <th scope=colgroup colspan=2>Regular</th>
+          <th scope=colgroup colspan=2>Playoff</th>
+        </tr>
+        <tr>
+          <th scope=col>Year</th>
+          <th scope=col>Team</th>
+          <th scope=col>Win</th>
+          <th scope=col>Loss</th>
+          <th scope=col>Win</th>
+          <th scope=col>Loss</th>
+        </tr>
+      </thead>
+      <tbody>
+<%- coach.coach_seasons.each do |season| -%>
+        <tr>
+            <th scope=row><%= season.year -%></th>
+            <td><%= link_to(
+              season.team.name,
+              :controller => 'team',
+              :action => 'view',
+              :id => season.team_id
+            ) -%></td>
+            <td><%= season.season_win -%></td>
+            <td><%= season.season_loss -%></td>
+            <td><%= season.playoff_win -%></td>
+            <td><%= season.playoff_loss -%></td>
+        </tr>
+<%- end -%>
+      </tbody>
+    </table>
+  </div>
+</div>

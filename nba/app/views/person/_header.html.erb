@@ -1,0 +1,18 @@
+<div class=row-fluid>
+<div class=span12>
+  <h2>
+    <%= @person.fullname %>
+    <%- if @person.ilkid then -%>
+      (<%= @person.ilkid %>)
+    <%- end -%>
+  </h2>
+  <ul>
+<%- if @person.coach -%>
+    <li><%= link_to 'Coach profile', :action => 'coach', :id => @person.id %></li>  
+<%- end -%>
+<%- if @person.player -%>
+    <li><%= link_to 'Player profile', :action => 'player', :id => @person.id %></li>  
+<%- end -%>
+  </ul>
+</div>
+</div>

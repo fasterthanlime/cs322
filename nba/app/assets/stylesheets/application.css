@@ -2,3 +2,6 @@
  *= require bootstrap_and_overrides
  *= require prettify.css
  */
+
+.fixed500 {height:500px;margin:0 0 1em 0;padding:0;overflow-y:auto}
+.fixed500 li {list-style:none}
