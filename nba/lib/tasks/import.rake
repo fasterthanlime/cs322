@@ -402,21 +402,21 @@ namespace :import do
         puts " " + c.to_s
       end
 
-      t = Team.find_by_trigram(row["team"])
-      if t.nil? then
-        raise "Team not found! #{row["team"]}"
-      end
-
       l = League.find_by_name("#{row["leag"]}BA")
       if l.nil? then
         raise "League not found! #{row["leag"]}BA"
       end
 
+      t = Team.find_by_trigram_and_league_id(row["team"], l.id)
+      if t.nil? then
+        raise "Team not found! #{row["team"]}"
+      end
+
+
       d = Draft.create(
         :player => pl,
         :team => t,
         :location => c,
-        :league => l,
         :year => row["draft_year"],
         :selection => row["selection"],
         :round => row["draft_round"]

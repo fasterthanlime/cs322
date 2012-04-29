@@ -151,7 +151,6 @@ CREATE TABLE drafts (
     round INT NOT NULL,
     selection INT NOT NULL,
     team_id INT NOT NULL,
-    league_id INT NOT NULL,
     location_id INT NULL,
     PRIMARY KEY (id),
     CONSTRAINT draft_unique UNIQUE (player_id, team_id, location_id, year),
@@ -159,8 +158,6 @@ CREATE TABLE drafts (
         REFERENCES players (id) ON DELETE CASCADE,
     FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE,
-    FOREIGN KEY (league_id)
-        REFERENCES leagues (id) ON DELETE CASCADE,
     FOREIGN KEY (location_id)
         REFERENCES locations (id) ON DELETE CASCADE
 );

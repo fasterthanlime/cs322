@@ -15,10 +15,6 @@ ActiveAdmin.register Draft do
     end
     column :round
     column :selection
-    column :league do |draft|
-      league = draft.league
-      link_to "#{league.name}", admin_league_path(league)
-    end
     default_actions
   end
 end

@@ -14,7 +14,8 @@ FROM (
         FROM
             locations il
             JOIN drafts d  ON d.location_id = il.id
-            JOIN leagues l ON l.id = d.league_id
+            JOIN teams t  ON t.id = d.team_id
+            JOIN leagues l ON l.id = t.league_id
         WHERE
             l.name = 'NBA'
         GROUP BY
