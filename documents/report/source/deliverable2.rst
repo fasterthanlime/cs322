@@ -8,7 +8,7 @@ Deliverable 2
 Post-mortem deliverable 1
 =========================
 
-Some of the feedback we had.
+Some of the feedbacks we had.
 
     *In general, normalizing data is a good thing, but keep in mind that rebuilding some of the information that you discarded might be expensive. Do not hesitate to work with denormalized data if that will make your life easier. That will also help you to have a smaller ER model.*
 
@@ -32,7 +32,7 @@ Changes in the schema
 
 We made a lot of changes!
 
-`NUMBER` aren't `INT`
+`NUMBER` is not `INT`
 '''''''''''''''''''''
 
 The `NUMBER` datatype stores floating numbers. All the `NUMBER` got changed to promper `INT` except for the ones storing real numbers (i.e. `pace`).
@@ -128,7 +128,7 @@ The application dependencies are listed in the `Gemfile` and you should use `bun
 Importing the data
 ------------------
 
-The next commands are creating some extra tables (required by the admin interface) and starts parsing the CSV files (from the `dataset` directory). We didn't touch the initial file and applied all the workarounds into the import script directly. ::
+The next commands are creating some extra tables (required by the admin interface) and starts parsing the CSV files (from the `dataset` directory).::
 
     $ cd nba
     $ # locally
@@ -139,6 +139,56 @@ The next commands are creating some extra tables (required by the admin interfac
     $ RAILS_ENV=production rake import:all
 
 **NB:** A faster way of loading data would be to transform the CSV into ready-to-be-inserted CSV and bulk loading them. As we don't trust that much the input data, we went for the much more sluggish approach that performs individual inserts. In the end, it's way easier to debug and it teaches Zen.
+
+Workarounds made to the dataset
+-------------------------------
+
+We didn't touch the initial file and applied all the workarounds into the import script directly.
+
+Missing teams
+'''''''''''''
+
+Some teams are missing from the CSV, so we are creating them before starting importing everything.
+
+.. literalinclude:: ../../../nba/lib/tasks/import.rake
+   :language: ruby
+   :lines: 21-33
+
+The Floridians
+''''''''''''''
+
+That team doesn't have any location for historic reasons.
+
+.. literalinclude:: ../../../nba/lib/tasks/import.rake
+   :language: ruby
+   :lines: 39-43
+
+Non-breaking space
+''''''''''''''''''
+
+There are some silly characters into the CSV.
+
+.. literalinclude:: ../../../nba/lib/tasks/import.rake
+   :language: ruby
+   :lines: 123-124
+
+Magic Johnson and Marques Johnson
+'''''''''''''''''''''''''''''''''
+
+Two players are sharing the same `ilkid` and it's a mistake in the data.
+
+.. literalinclude:: ../../../nba/lib/tasks/import.rake
+   :language: ruby
+   :lines: 313-316
+
+One entry is a buggy duplicate
+''''''''''''''''''''''''''''''
+
+In the all star file, there is a duplicate entry that we decided to simply ignore.
+
+.. literalinclude:: ../../../nba/lib/tasks/import.rake
+   :language: ruby
+   :lines: 317-320
 
 
 Accommodate the import of new data in the database they created in the 1st deliverable
