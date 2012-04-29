@@ -1,18 +1,28 @@
-<div class=row-fluid>
-<div class=span12>
+<div class="row-fluid well">
+<div class=span2>
+  <div class=btn-group>
+<%- if @person.coach -%>
+    <%= link_to(
+      'Coach',
+      {:action => 'coach', :id => @person.id},
+      :class => 'btn'
+    ) %>
+<%- end -%>
+<%- if @person.player -%>
+    <%= link_to(
+      'Player',
+      {:action => 'player', :id => @person.id},
+      :class => 'btn'
+    ) %>
+<%- end -%>
+  </div>
+</div>
+<div class=span10>
   <h2>
     <%= @person.fullname %>
     <%- if @person.ilkid then -%>
-      (<%= @person.ilkid %>)
+      <small><%= @person.ilkid %></small>
     <%- end -%>
   </h2>
-  <ul>
-<%- if @person.coach -%>
-    <li><%= link_to 'Coach profile', :action => 'coach', :id => @person.id %></li>  
-<%- end -%>
-<%- if @person.player -%>
-    <li><%= link_to 'Player profile', :action => 'player', :id => @person.id %></li>  
-<%- end -%>
-  </ul>
 </div>
 </div>
