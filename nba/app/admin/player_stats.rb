@@ -4,10 +4,10 @@ ActiveAdmin.register PlayerStat do
   index do
     column :player_season do |ps|
       player_season = ps.player_season
-      link_to player_season.name, admin_team_season_path(player_season)
+      link_to player_season.name, admin_player_season_path(player_season)
     end
     column :player_season_type do |ps|
-      ps.player_season_type.name
+      status_tag ps.player_season_type.name, :ok
     end
     column :gp
     column :minutes

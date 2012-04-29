@@ -1,5 +1,5 @@
 ActiveAdmin.register PlayerSeason do
-  menu :parent => 'Seasons'
+  menu :parent => 'Teams'
 
   index do
     column :year

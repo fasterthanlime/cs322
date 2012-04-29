@@ -1,44 +1,51 @@
-<p>
-  <%= link_to '« Home', :controller => 'welcome' %>
-</p>
-<h1><%= @team.name -%> (<%= @team.trigram -%>)</h1>
-<%- if @team.seasons.count then -%>
-<table>
-  <caption>All the seasons for this team</caption>
-  <thead>
-    <tr>
-      <th scope=col>Year</th>
-      <th scope=col>Won</th>
-      <th scope=col>Pace</th>
-      <th scope=col>Lost</th>
-    </tr>
-  </thead>
-  <tfoot>
-    <tr>
-      <th scope=col>Year</th>
-      <th scope=col>Won</th>
-      <th scope=col>Pace</th>
-      <th scope=col>Lost</th>
-    </tr>
-  </tfoot>
-  <tbody>
-<%- @team.seasons.each do |season| -%>
-    <tr>
-      <th scope=row>
-        <%= link_to(
-          season.year.to_i,
-          :action => 'stat',
-          :id => season.year.to_i
-        ) -%>
-      </th>
-      <td><%= season.won.to_i -%></td>
-      <td><%= season.pace -%></td>
-      <td><%= season.lost.to_i -%></td>
-    </tr>
+<div class=row-fluid>
+  <div class=span12>
+    <h2><%= @team.name -%> (<%= @team.trigram -%>)</h2>
+    <h3>League: <%= @team.league.name %></h3>
+  </div>
+</div>
+<div class=row-fluid>
+<div class=span12>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th colspan=2></th>
+        <th scope=colgroup colspan=2>Regular</th>
+        <th scope=colgroup colspan=2>Playoff</th>
+        <th scope=colgroup colspan=2>Stat</th>
+      </tr>
+      <tr>
+        <th scope=col>Year</th>
+        <th scope=col>Coach</th>
+        <th scope=col>Win</th>
+        <th scope=col>Loss</th>
+        <th scope=col>Win</th>
+        <th scope=col>Loss</th>
+        <th scope=col>Offensive</th>
+        <th scope=col>Defensive</th>
+      </tr>
+    </thead>
+    <tbody>
+<%- year = nil -%>
+<%- @team.coach_seasons.each do |season| -%>
+      <tr>
+        <th scope=row><%= season.year if year != season.year %></th>
+        <td><%= link_to(
+          season.coach.person.fullname,
+          :controller => 'person',
+          :action => 'coach',
+          :id => season.coach_id
+        ) %></td>
+        <td><%= season.season_win -%></td>
+        <td><%= season.season_loss -%></td>
+        <td><%= season.playoff_win -%></td>
+        <td><%= season.playoff_loss -%></td>
+        <td><%= link_to('View', :action => 'stat', :id => @team.id, :year => season.year, :type => :offensive) if year != season.year %></td>
+        <td><%= link_to('View', :action => 'stat', :id => @team.id, :year => season.year, :type => :defensive) if year != season.year %></td>
+      </tr>
+    <%- year = season.year -%>
 <%- end -%>
-    <tr>
-  </tbody>
-</table>
-<%- else -%>
-<p>No seasons</p>
-<%- end -%>
+    </tbody>
+  </table>
+</div>
+</div>

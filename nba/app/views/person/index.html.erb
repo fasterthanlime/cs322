@@ -1,15 +1,38 @@
-<h1>People</h1>
-<%- unless @people.nil? then -%>
-<ul>
-<%- @people.each do |person| -%>
-<li><%= link_to(
-  "#{person.fullname} (#{person.ilkid})",
-  :controller => 'person',
-  :action => 'view',
-  :id => person.id.to_i
-) -%></li>
-<%- end -%>
-</ul>
-<%- else -%>
-<p>nobody</p>
-<%- end -%>
+<%-
+letter = 'A'
+i = 0
+-%>
+<div class=row-fluid>
+<div class=span2>
+  <h2><%= letter %></h2>
+  <%- unless @people.nil? then -%>
+  <ul class=fixed500>
+  <%- @people.each do |person| -%>
+  <%- if letter != person.lastname[0].upcase then -%>
+  <%-
+    letter = person.lastname[0].upcase
+    i += 1
+  -%>
+  </ul>
+</div>
+  <%- if i % 6 == 0 -%>
+</div>
+<div class=row-fluid>
+  <%- end -%>
+<div class=span2>
+  <h2><%= letter %></h2>
+  <ul class=fixed500>
+  <%- end -%>
+  <li><%= link_to(
+    person.fullname,
+    :controller => 'person',
+    :action => 'view',
+    :id => person.id
+  ) -%></li>
+  <%- end -%>
+  </ul>
+  <%- else -%>
+  <p>nobody</p>
+  <%- end -%>
+</div>
+</div>

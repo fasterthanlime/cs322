@@ -1,0 +1,118 @@
+<%-
+player = @person.player
+-%>
+<%= render :partial => 'header' %>
+<div class=row-fluid>
+  <div class="span4">
+    <h3>Details</h3>
+    <dl class=well>
+    <%- if player.position != '0' -%>
+      <dt>Position</dt>
+      <dd><%= player.position -%></dd>
+    <%- end -%>
+    <%- if player.height -%>
+      <dt>Height</dt>
+      <dd><%= player.height_in_ft -%></dd>
+    <%- end -%>
+    <%- if player.weight -%>
+      <dt>Weight</dt>
+      <dd><%= player.weight -%></dd>
+    <%- end -%>
+    <%- if player.birthdate -%>
+      <dt>Birthdate</dt>
+      <dd><%= player.birthdate.strftime('%Y-%m-%d') -%></dd>
+    <%- end -%>
+    <%- if player.drafts.count > 0 then -%>
+      <dt>College</dt>
+      <dd><%= player.drafts[0].location.name -%></dd>
+    <%- end -%>
+    </dl>
+  <%- if player.drafts.count > 0 then-%>
+    <h4>Draft history</h4>
+    <ul>
+    <%- player.drafts.each do |draft| -%>
+      <li><%= link_to(
+        "#{draft.year} #{draft.league.name}, round #{draft.round}, #{draft.team.name}",
+        :controller => 'team',
+        :action => 'view',
+        :id => draft.team_id
+      ) -%></li>
+    <%- end -%>
+    </ul>
+  <%- end -%>
+  </div>
+  <%- if player.player_seasons.count > 0 then -%>
+  <div class=span4>
+    <h3>Seasons in a team</h3>
+    <table class="table table-stripped">
+      <thead>
+        <tr>
+          <th scope=col>Year</th>
+          <th scope=col>Team</th>
+          <th scope=col>Season</th>
+          <th scope=col>Playoff</th>
+        </tr>
+      </thead>
+      <tbody>
+    <%- player.player_seasons.each do |season| -%>
+        <tr>
+          <th scope=row><%= season.year -%></th>
+          <td><%= link_to(
+            season.team.name,
+            :controller => 'team',
+            :acton => 'view',
+            :id => season.team_id
+          ) -%></td>
+          <td><%= link_to(
+            'View stats',
+            :controller => 'player',
+            :action => 'stat',
+            :year => season.year,
+            :type => 'season',
+            :id => @person.id
+          ) if season.regular_season %></td>
+          <td><%= link_to(
+            'View stats',
+            :controller => 'player',
+            :action => 'stat',
+            :year => season.year,
+            :type => 'playoff',
+            :id => @person.id
+          ) if season.playoff_season %></td>
+        </tr>
+    <%- end -%>
+      </tbody>
+    </table>
+  </div>
+  <%- end -%>
+  <%- if player.player_allstars.count > 0 then -%>
+  <div class=span4>
+    <h3>Allstar seasons</h3>
+    <table class="table table-stripped">
+      <thead>
+        <tr>
+          <th scope=col>Year</th>
+          <th scope=col>Conference</th>
+          <th scope=col>Stat</th>
+        </tr>
+      </thead>
+      <tbody>
+    <%- player.player_allstars.each do |allstar| -%>
+        <tr>
+          <th scope=row><%= allstar.year -%></th>
+          <td><%= allstar.conference.name -%></td>
+          <td><%= link_to(
+            'View stats',
+            :controller => 'player',
+            :action => 'stat',
+            :year => allstar.year,
+            :type => 'allstar',
+            :id => @person.id
+          ) %></td>
+        </tr>
+    <%- end -%>
+      </tbody>
+    </table>
+  </div>
+  <%- end -%>
+</div>
