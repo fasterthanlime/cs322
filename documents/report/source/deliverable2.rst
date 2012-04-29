@@ -149,7 +149,13 @@ Query D
 
     *Print the names of coaches who participated in both leagues (NBA and ABA).*
 
-**TODO: explain how it works**
+What we are llooking for is simply the intersection of coaches who participated in NBA with
+coaches who participated in the ABA. In order to facilitate things, we create two views:
+`nba_coaches` and `aba_coaches`, and use the Oracle/SQL INTERSECTION operator between those
+views.
+
+The `xxx_coaches` views are just simple JOINs with a condition on the league name. Note that
+with a different JOIN order, we used to have 0 results. With this order, we have 45 results.
 
 .. literalinclude:: ../../../queries/basic_d.sql
    :language: sql
