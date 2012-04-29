@@ -166,7 +166,20 @@ Query E
 
     *Compute the highest scoring and lowest scoring player for each season.*
 
-**TODO: explain how it works**
+By ranking over the number of points a player has gotten, we can easily compute the highest
+scoring player of all times, by simply ordering by descending rank and querying the one with the rank 1.
+
+Since we want the best and worst player for *each* season, we have to use `PARTITION BY year`, which
+allows us to rank players for each year. Thus, we create two views, one with the best players by year,
+and one with the worst players. Those views are named `best_players` and `worst_players` respectively.
+
+The next problem is that, for some seasons, there are ex aequos: there might be two or three players that
+are the best of a season. Similary for worst players, which happens even more often since scoring 0 points
+is apparently a common occurence. To cunter that, we create views based on `best_players` and `worst_players`
+but with unique years, taking only the last row for every given year.
+
+With all that done, we're just left with combining the `best_players_unique` and `worst_players_unique`
+views, simply joining them on year.
 
 .. literalinclude:: ../../../queries/basic_e.sql
    :language: sql
