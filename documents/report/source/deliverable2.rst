@@ -190,7 +190,11 @@ Query F
 
     *Print the names of oldest and youngest player that have participated in the playoffs for each season.*
 
-**TODO: explain how it works**
+This query works exactly like query E, except that instead of `best_players` and `worst_players` we have
+`youngest_players` and `oldest_players`. The ranking works exactly the same, only ordered by birthdate instead
+of season points. We also need to weed out duplicates, and to add a test on season types to only get players
+who participated in the playoffs. Similarly, `youngest_players_unique` and `oldest_players_unique` are JOINed
+on year.
 
 .. literalinclude:: ../../../queries/basic_f.sql
    :language: sql
