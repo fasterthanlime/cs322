@@ -1,5 +1,6 @@
-<div class="row-fluid well">
-<div class=span2>
+<div class=row-fluid>
+<div class=well style="overflow:hidden">
+<div class=span3>
   <div class=btn-group>
 <%- if @person.coach -%>
     <%= link_to(
@@ -17,12 +18,13 @@
 <%- end -%>
   </div>
 </div>
-<div class=span10>
+<div class=span6>
   <h2>
     <%= @person.fullname %>
     <%- if @person.ilkid then -%>
       <small><%= @person.ilkid %></small>
     <%- end -%>
   </h2>
+</div>
 </div>
 </div>

@@ -76,15 +76,13 @@ Screenshots
 
 Find below some screenshot of the search in action. The webpage shows the SQL command ran as well.
 
-.. figure:: _static/2/search_york.png
-
-   Searching for *York* among multiple different tables.
+.. image:: _static/2/search_york.png
+   :scale: 75%
 
 Below an example of searching a value made from multiple fields. It's very basic but doing better really requires a better strategy than `LIKE`. They are tons of brilliant softwares that does that very well (Lucene, Solr, Sphinx, Xapian, …).
 
-.. figure:: _static/2/search_jordan.png
-
-   Searching for *Michael Jordan* with show how combined words can be search. It would not work for *Jordan Micheal* though.
+.. image:: _static/2/search_jordan.png
+   :scale: 75%
 
 
 Implement the follow-up search queries of the result of the initial search
@@ -108,6 +106,9 @@ Implement using SQL the following queries
 =========================================
 
 A view as been built for each query, which makes them easier to be ran from the web application.
+
+.. image:: _static/2/query_all.png
+   :scale: 75%
 
 Query A
 -------
@@ -138,7 +139,7 @@ Query C
 
 In order to get the school (or country for foreign players) information, we have to compute among all the drafts which `location` comes first. For people unfamiliar with *Oracle* (like us), you cannot do a simple `GROUP BY locations LIMIT 1` as `LIMIT` doesn't exist in this RDBMS. The alternative is to compute the `RANK()`. The great advantage of RANK_ is that it may return more than one results in case of equality.
 
-.. _RANK: http://www.adp-gmbh.ch/ora/sql/analytical/rank.html
+.. _`RANK`: http://www.adp-gmbh.ch/ora/sql/analytical/rank.html
 
 .. literalinclude:: ../../../queries/basic_c.sql
    :language: sql
@@ -149,13 +150,11 @@ Query D
 
     *Print the names of coaches who participated in both leagues (NBA and ABA).*
 
-What we are llooking for is simply the intersection of coaches who participated in NBA with
-coaches who participated in the ABA. In order to facilitate things, we create two views:
-`nba_coaches` and `aba_coaches`, and use the Oracle/SQL INTERSECTION operator between those
-views.
+What we are looking for is simply the intersection of coaches who participated in *NBA* with coaches who participated in the *ABA*. In order to facilitate things, we create two views: `nba_coaches` and `aba_coaches`, and use the INTERSECT_ operator between those views.
 
-The `xxx_coaches` views are just simple JOINs with a condition on the league name. Note that
-with a different JOIN order, we used to have 0 results. With this order, we have 45 results.
+.. _`INTERSECT`: https://en.wikipedia.org/wiki/Union_%28SQL%29#INTERSECT_operator
+
+The `[an]ba_coaches` views are just simple `JOIN` with a condition on the league name. **NB:** with a different `JOIN` order, it gives no results. With the same order, we have 45 results.
 
 .. literalinclude:: ../../../queries/basic_d.sql
    :language: sql
@@ -166,35 +165,32 @@ Query E
 
     *Compute the highest scoring and lowest scoring player for each season.*
 
-By ranking over the number of points a player has gotten, we can easily compute the highest
-scoring player of all times, by simply ordering by descending rank and querying the one with the rank 1.
+By ranking over the number of points a player has gotten, we can easily compute the highest scoring player of all times, by simply ordering by descending rank and querying the one with the first rank.
 
-Since we want the best and worst player for *each* season, we have to use `PARTITION BY year`, which
-allows us to rank players for each year. Thus, we create two views, one with the best players by year,
-and one with the worst players. Those views are named `best_players` and `worst_players` respectively.
+Since we want the best and worst player for *each* season, we have to use `PARTITION BY year`, which allows us to rank players for each year. Thus, we create two views, one with the best players by year, and one with the worst players. Those views are named `best_players` and `worst_players` respectively.
 
-The next problem is that, for some seasons, there are ex aequos: there might be two or three players that
-are the best of a season. Similary for worst players, which happens even more often since scoring 0 points
-is apparently a common occurence. To cunter that, we create views based on `best_players` and `worst_players`
-but with unique years, taking only the last row for every given year.
+The next problem is that, for some seasons, there are ex aequos: there might be two or three players that are the best of a season. Similary for worst players, which happens even more often since scoring 0 points is apparently a common occurence. To counter that, we create views based on `best_players` and `worst_players` but with unique years, taking only the last row for every given year.
 
-With all that done, we're just left with combining the `best_players_unique` and `worst_players_unique`
-views, simply joining them on year.
+With all that done, we're just left with combining the `best_players_unique` and `worst_players_unique` views, simply joining them on the year.
 
 .. literalinclude:: ../../../queries/basic_e.sql
    :language: sql
    :lines: 3-
+
+Screenshot
+''''''''''
+
+Sample output of how it's displayed in the interface.
+
+.. image:: _static/2/query_e.png
+   :scale: 75%
 
 Query F
 -------
 
     *Print the names of oldest and youngest player that have participated in the playoffs for each season.*
 
-This query works exactly like query E, except that instead of `best_players` and `worst_players` we have
-`youngest_players` and `oldest_players`. The ranking works exactly the same, only ordered by birthdate instead
-of season points. We also need to weed out duplicates, and to add a test on season types to only get players
-who participated in the playoffs. Similarly, `youngest_players_unique` and `oldest_players_unique` are JOINed
-on year.
+This query works exactly like *Query E*, except that instead of `best_players` and `worst_players` we have `youngest_players` and `oldest_players`. The ranking works exactly the same, only ordered by birthdate instead of season points. We also need to weed out duplicates, and to add a test on season types to only get players who participated in the playoffs. Similarly, `youngest_players_unique` and `oldest_players_unique` are joined on year.
 
 .. literalinclude:: ../../../queries/basic_f.sql
    :language: sql
@@ -211,7 +207,39 @@ Run the next command to start the webserver. ::
     $ # the remote database at the EPFL
     $ rails server -e production
 
-**TODO: fill the following bullet points with amazing screenshots**
+Screenshots
+-----------
 
- * View of a team
- * View of a person (coach, player)
+Find below some screenshots of the view that exists outside the admin interface. **NB:** they may not reflect the final code.
+
+People
+''''''
+
+.. figure:: _static/2/person_index.png
+   :scale: 75%
+   
+   All the people
+
+.. figure:: _static/2/person_player.png
+   :scale: 75%
+   
+   Data of a player
+
+
+.. figure:: _static/2/person_coach.png
+   :scale: 75%
+   
+   Data of a coach
+
+Teams
+'''''
+
+.. figure:: _static/2/team_index.png
+   :scale: 75%
+   
+   All the team for both leagues
+
+.. figure:: _static/2/team_view.png
+   :scale: 75%
+   
+   Details of a team
