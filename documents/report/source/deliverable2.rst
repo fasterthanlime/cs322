@@ -4,15 +4,104 @@ Deliverable 2
 
     *The students should accommodate the situation where new data is inserted in any table. Moreover, a simple query which can search for a keyword in any table should be implemented. The user should be able to see more details of the result of the query (e.g., if someone searches for Michael Jordan's regular season statistics and the result has multiple seasons, he/she should be able to see statistics for individual seasons - for example, through a hyperlink).*
 
-Post deliverable 1
-==================
 
-**TODO: write some BS about how we changed stuff regarding the remarks made by the TAs.**
+Post-mortem deliverable 1
+=========================
+
+Some of the feedback we had.
+
+    *In general, normalizing data is a good thing, but keep in mind that rebuilding some of the information that you discarded might be expensive. Do not hesitate to work with denormalized data if that will make your life easier. That will also help you to have a smaller ER model.*
+
+    *On the other hand, working on normalization gave you some great insights on the data. You did a really nice job at studying the domain (i.e., NBA) and exploit such knowledge to fine tune your DB design!*
+
+For the deliverable 2, we didn't had to start denormalizing again but were forced to move data around and denormalizing more in order to gain a better understanding of the dataset. Denormalization adds constraint on data integrity upon changes and we don't what to have to deal with that right now.
+
+But we expect to be forced to start denormalizing fields for the upcoming tasks as things get more complex and intense.
+
+    *[…] you did not explain why certain key constraints led to the translation in tables that you will use*
+
+We read your feedbacks on schemas, *ISA* and key constraints but didn't took the time to go back to the design phase. *Getting real* and *hitting walls* mode.
+
+    *Keep up the good work!*
+
+Maybe the only thing we read after all.
+
 
 Changes in the schema
 ---------------------
 
-**TODO: explain the changes made in the SQL schema relative to design mistakes and ROR requirements**
+We made a lot of changes!
+
+`NUMBER` aren't `INT`
+'''''''''''''''''''''
+
+The `NUMBER` datatype stores floating numbers. All the `NUMBER` got changed to promper `INT` except for the ones storing real numbers (i.e. `pace`).
+
+
+`ID` everywhere
+'''''''''''''''
+
+As mentioned in the conclusion of deliverable 1, we expected some changes regarding limitations imposed by the software we are using, ActiveRecord_. The first change has been to set up `id` everywhere. The *active record pattern* has trouble working with composed primary keys which is common for tables expressing a *many-to-many* relationship.
+
+.. _ActiveRecord: http://ar.rubyonrails.org/
+
+.. literalinclude:: _static/1/schema.sql
+   :language: sql
+   :lines: 214-223
+
+The composite primary key is converted into a unique constraint.
+
+.. literalinclude:: _static/2/schema.sql
+   :language: sql
+   :lines: 218-234
+
+You can notice that other elements of this table changed. They are explained below.
+
+    *Sidenote:* when using *InnoDB* with MySQL, it's recommended to always have an id because the engine will store the entry on the disk based on that. Specifying it ensure that newest entries are all close to each other. See: http://backchannel.org/blog/friendfeed-schemaless-mysql
+
+
+Creating `player_allstars`
+''''''''''''''''''''''''''
+
+We initially thought we could aggregate all the `Stat` of one player into a generic table, for the three season types: *Regular*, *Playoff* and *Allstar*. While doing the import, we realized that the later is too different from the others. *Allstar* is **not** linked wia *Team* and thus cannot be tied to a *Player Season* like the two others.
+
+.. literalinclude:: _static/2/schema.sql
+   :language: sql
+   :lines: 292-309
+
+You can notice the same *pattern* describe above with `id` and the unique constraint.
+
+
+Fixing the `Coaches`
+''''''''''''''''''''
+
+First, we renamed *Coaches Team* to *Coach Season* which makes much more sense.
+
+Secondly, a mistake was made to store. the `season_win`, `season_loss`, … into the *Coach* itself. This data is the denormalized one and must be into the *Coach Season* instead.
+
+That made us realizing that we had some data duplication. *Team Season* were storing `won`, `pace` and `lost`. `win` and `lost` can be computed using the *Coach Season* and thus got removed from *Team Season*.
+
+.. literalinclude:: _static/2/schema.sql
+   :language: sql
+   :lines: 43-49,100-118
+
+Moving the `League` where it belongs and dropping `TeamSeason`
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+We identified *Team* by its *trigram* (those three-letters) after some trouble during the implementation of the import script. The website where our data are coming from (http://http://www.databasebasketball.com/) helped us understanding that it's—in fact—the league identifies the team as well. Knowing that, we moved the *League* from *Team Season* back into *Team* and as the *Team Season* was only containing the information about the *year*, it got moved into the *Team Stat* as well as `pace` which is displayed on the *Offensive* stat on the mother website.
+
+It was also flawed since—to retrieve the league for *Draft*—we had to guess the *Team Season* based on the *Team* and *year* information. And no guarantees are made that that season has (already) been played.
+
+To summarize this change:
+
+* `Team` know which league it belongs to;
+* `TeamStats` are referencing a `Team` and contains the information about `year` and `pace`.
+* `TeamSeason` is no more.
+
+.. literalinclude:: _static/2/schema.sql
+   :language: sql
+   :lines: 85-95,216-233
+
 
 Import the data from the given CSV files into the created database
 ==================================================================
@@ -42,8 +131,15 @@ Importing the data
 The next commands are creating some extra tables (required by the admin interface) and starts parsing the CSV files (from the `dataset` directory). We didn't touch the initial file and applied all the workarounds into the import script directly. ::
 
     $ cd nba
+    $ # locally
     $ rake db:migrate
     $ rake import:all
+    $ # remotely
+    $ RAILS_ENV=production rake db:migrate
+    $ RAILS_ENV=production rake import:all
+
+**NB:** A faster way of loading data would be to transform the CSV into ready-to-be-inserted CSV and bulk loading them. As we don't trust that much the input data, we went for the much more sluggish approach that performs individual inserts. In the end, it's way easier to debug and it teaches Zen.
+
 
 Accommodate the import of new data in the database they created in the 1st deliverable
 ======================================================================================
@@ -71,7 +167,7 @@ Find below some screenshots of the basic CRUD it enables.
    Creating a new draft for Magic Johnson.
 
 
-Implement the simple search queries 
+Implement the simple search queries
 ===================================
 
 The SQL command is right below. Without any external fulltext search engine, we have to perform a `LIKE '%term%'` on any candidates fields of each tables we would like to be searchable. As it's basically *n* queries, we join them together with the table name to be able to figure out where does it come from.
@@ -224,31 +320,30 @@ Find below some screenshots of the view that exists outside the admin interface.
 People
 ''''''
 
-.. figure:: _static/2/person_index.png
+.. image:: _static/2/person_index.png
    :scale: 75%
-   
-   All the people
 
-.. figure:: _static/2/person_player.png
+.. image:: _static/2/person_player.png
    :scale: 75%
-   
-   Data of a player
 
-
-.. figure:: _static/2/person_coach.png
+.. image:: _static/2/person_coach.png
    :scale: 75%
-   
-   Data of a coach
 
 Teams
 '''''
 
-.. figure:: _static/2/team_index.png
+.. image:: _static/2/team_index.png
    :scale: 75%
-   
-   All the team for both leagues
 
-.. figure:: _static/2/team_view.png
+.. image:: _static/2/team_view.png
    :scale: 75%
-   
-   Details of a team
+
+
+Conclusion
+==========
+
+We hit the wall pretty hard by getting to know a little better the data while importing it. Guessing out the data really is by reading some CSV is very poor. We guess it's what people call the *implementation gap*. It was way bigger than we usually thought. Knowing that, we can predict that more changes will occur has we progress further.
+
+Working with *Ruby on Rails* and *Oracle XE* is a pretty hard setup to get. But once it works, it's a real bliss (if you have tons of spare RAM). *ActiveAdmin* offers very quickly a way to browse the imported data, spotting mistakes and *ActiveRecord* makes any relationships querying easy.
+
+*Oracle* is still pretty new to us and the proposed solution are obtained more using the trial and error method than a one shot query that works directly. Stuff like `RANK`, `PARTITION` are uncommon when you have some insight of alternative RDBMS like MySQL, PostgreSQL or SQLite.
