@@ -60,7 +60,16 @@ Screenshots
 
 Find below some screenshots of the basic CRUD it enables.
 
-**TODO: screenshots**
+.. figure:: _static/2/admin_drafts.png
+   :scale: 75%
+
+   Listing all the drafts to NBA made by UCLA.
+
+.. figure:: _static/2/admin_new_draft.png
+   :scale: 75%
+
+   Creating a new draft for Magic Johnson.
+
 
 Implement the simple search queries 
 ===================================
