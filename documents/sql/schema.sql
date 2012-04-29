@@ -43,10 +43,6 @@ CREATE SEQUENCE players_seq
 CREATE TABLE coaches (
     id INT,
     person_id INT NOT NULL,
-    season_win INT,
-    season_loss INT,
-    playoff_win INT,
-    playoff_loss INT,
     PRIMARY KEY (id),
     FOREIGN KEY (person_id)
         REFERENCES people (id) ON DELETE CASCADE
@@ -109,6 +105,10 @@ CREATE TABLE coach_seasons (
     team_id INT NOT NULL,
     year INT NOT NULL,
     year_order INT,
+    season_win INT,
+    season_loss INT,
+    playoff_win INT,
+    playoff_loss INT,
     PRIMARY KEY (id),
     CONSTRAINT coach_seasons_unique UNIQUE (coach_id, team_id, year),
     FOREIGN KEY (coach_id)

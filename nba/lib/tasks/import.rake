@@ -144,11 +144,7 @@ namespace :import do
 
       if c.nil? then
         c = Coach.create(
-          :person => p,
-          :season_win => row["season_win"],
-          :season_loss => row["season_loss"],
-          :playoff_win => row["playoff_win"],
-          :playoff_loss => row["playoff_loss"],
+          :person => p
         )
         puts " " + c.to_s
       end
@@ -159,7 +155,11 @@ namespace :import do
           :coach => c,
           :team => t,
           :year => row["year"],
-          :year_order => row["year_order"]
+          :year_order => row["year_order"],
+          :season_win => row["season_win"],
+          :season_loss => row["season_loss"],
+          :playoff_win => row["playoff_win"],
+          :playoff_loss => row["playoff_loss"],
         )
         puts "  " + cs.to_s
       else
