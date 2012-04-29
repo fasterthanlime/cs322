@@ -64,13 +64,6 @@ namespace :import do
     csv.each do |row|
       row["team"] = row[0]
       team = Team.find_by_trigram(row["team"])
-      ts = TeamSeason.create(
-         :team => team,
-         :year => row["year"],
-         :won => row["won"],
-         :pace => row["pace"],
-         :lost => row["lost"]
-      )
       os = Stat.create(
         :pts => row["o_pts"],
         :oreb => row["o_oreb"],
@@ -106,14 +99,18 @@ namespace :import do
       ots = TeamStat.create(
         :team_stat_tactique => TeamStatTactique.find_by_name("Offensive"),
         :stat => os,
-        :team_season => ts
+        :team => team,
+        :year => row["year"],
+        :pace => row["pace"]
       )
       dts = TeamStat.create(
         :team_stat_tactique => TeamStatTactique.find_by_name("Defensive"),
         :stat => ds,
-        :team_season => ts
+        :team => team,
+        :year => row["year"]
       )
-      puts ts
+      puts ots
+      puts dts
     end
   end
 
@@ -158,13 +155,13 @@ namespace :import do
 
       t = Team.find_by_trigram(row["team"])
       unless t.nil? then
-        ct = CoachesTeam.create(
+        cs = CoachSeason.create(
           :coach => c,
           :team => t,
           :year => row["year"],
           :year_order => row["year_order"]
         )
-        puts "  " + ct.to_s
+        puts "  " + cs.to_s
       else
         raise "Team not found! #{row["team"]}"
       end
@@ -368,7 +365,7 @@ namespace :import do
     csv.each do |row|
       row["draft_year"] = row[0]
 
-      if row["ilkid"] == "NULL" then
+      if row["ilkid"].nil? or row["ilkid"].strip.empty? or row["ilkid"] == "NULL" then
         p = Person.create(
           :firstname => row["firstname"],
           :lastname => row["lastname"]

@@ -103,21 +103,21 @@ CREATE SEQUENCE teams_seq
     INCREMENT BY 1;
 
 -- @weak
-CREATE TABLE coaches_teams (
+CREATE TABLE coach_seasons (
     id INT,
     coach_id INT NOT NULL,
     team_id INT NOT NULL,
-    year INT,
+    year INT NOT NULL,
     year_order INT,
     PRIMARY KEY (id),
-    CONSTRAINT coaches_team_unique UNIQUE (coach_id, team_id, year),
+    CONSTRAINT coach_seasons_unique UNIQUE (coach_id, team_id, year),
     FOREIGN KEY (coach_id)
         REFERENCES coaches (id) ON DELETE CASCADE,
     FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE
 );
 
-CREATE SEQUENCE coaches_teams_seq
+CREATE SEQUENCE coach_seasons_seq
     START WITH 1
     INCREMENT BY 1;
 
@@ -205,23 +205,6 @@ CREATE SEQUENCE stats_seq
 -- Teams stats
 -- ===========
 
--- @weak
-CREATE TABLE team_seasons (
-    id INT,
-    team_id INT NOT NULL,
-    year INT NOT NULL,
-    won INT,
-    pace INT,
-    lost INT,
-    PRIMARY KEY (id),
-    CONSTRAINT team_season_unique UNIQUE (team_id, year),
-    FOREIGN KEY (team_id)
-        REFERENCES teams (id) ON DELETE CASCADE
-);
-
-CREATE SEQUENCE team_seasons_seq
-    START WITH 1
-    INCREMENT BY 1;
 
 CREATE TABLE team_stat_tactiques (
     id INT NOT NULL,
@@ -237,13 +220,17 @@ CREATE SEQUENCE team_stat_tactiques_seq
 -- @weak
 CREATE TABLE team_stats (
     id INT,
-    team_season_id INT NOT NULL,
-    stat_id INT NOT NULL,
+    team_id INT NOT NULL,
+    year INT NOT NULL,
     team_stat_tactique_id INT NOT NULL,
+    stat_id INT NOT NULL,
+    pace NUMBER NULL,
     PRIMARY KEY (id),
-    CONSTRAINT team_stat_unique UNIQUE (team_season_id, stat_id, team_stat_tactique_id),
-    FOREIGN KEY (team_season_id)
-        REFERENCES team_seasons (id) ON DELETE CASCADE,
+    CONSTRAINT team_stat_unique UNIQUE (team_id, year, team_stat_tactique_id),
+    FOREIGN KEY (team_id)
+        REFERENCES teams (id) ON DELETE CASCADE,
+    FOREIGN KEY (team_stat_tactique_id)
+        REFERENCES team_stat_tactiques (id) ON DELETE CASCADE,
     FOREIGN KEY (stat_id)
         REFERENCES stats (id) ON DELETE CASCADE
 );

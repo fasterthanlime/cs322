@@ -1,4 +1,4 @@
-ActiveAdmin.register CoachesTeam do
+ActiveAdmin.register CoachSeason do
   menu :parent => 'Teams'
   
   index do

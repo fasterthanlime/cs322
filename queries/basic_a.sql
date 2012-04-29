@@ -12,8 +12,8 @@ FROM
     JOIN teams t           ON t.id = ps.team_id
     JOIN leagues l         ON l.id = t.league_id
     JOIN coaches c         ON c.person_id = p.id
-    JOIN coaches_teams ct  ON ct.coach_id = c.id
-    JOIN teams t2          ON t2.id = ct.team_id
+    JOIN coach_seasons cs  ON cs.coach_id = c.id
+    JOIN teams t2          ON t2.id = cs.team_id
 WHERE
     l.name = 'NBA' AND t2.league_id = l.id
 ORDER BY
