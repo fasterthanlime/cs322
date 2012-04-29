@@ -184,7 +184,7 @@ Find below some screenshot of the search in action. The webpage shows the SQL co
 .. image:: _static/2/search_york.png
    :scale: 75%
 
-Below an example of searching a value made from multiple fields. It's very basic but doing better really requires a better strategy than `LIKE`. They are tons of brilliant softwares that does that very well (Lucene, Solr, Sphinx, Xapian, …).
+Below an example of searching a value made from multiple fields. It's very basic but doing better really requires a better strategy than `LIKE`. There is tons of brilliant softwares that does that very well (Lucene, Solr, Sphinx, Xapian, …).
 
 .. image:: _static/2/search_jordan.png
    :scale: 75%
