@@ -92,7 +92,7 @@ The following SQL schema is really a first shot, with very few constraints on nu
 Not being familiar with the way Oracle works, we'll just explain some basic stuff.
 
 Oracle specificities
-''''''''''''''''''''
+--------------------
 
 Oracle being a very complex RDBMS (*Relational Database Management System*) that we are still learning, this section will simply clarify what we've discovered and wich might explain the following.
 
@@ -105,7 +105,7 @@ It cannot *auto increment* like MySQL or SQLite, so one must use a `sequence` an
 It knows how to delete relations in cascade. It can remove an entire structure from one simple `DELETE`. If *PostgreSQL* can do that has well, the more common *MySQL* or *SQLite* cannot. In the following schema, we activated that cascaded deletion without thinking deeply about it. This schema will be refined in the future when used with the data.
 
 SQL code
-''''''''
+--------
 
 .. literalinclude:: _static/1/schema.sql
    :language: sql

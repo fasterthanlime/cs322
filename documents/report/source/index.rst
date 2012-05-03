@@ -7,10 +7,11 @@ Welcome to Database project's documentation!
 ============================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    deliverable1
    deliverable2
+   deliverable3
 
 .. Indices and tables
    ==================
