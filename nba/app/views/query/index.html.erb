@@ -1,6 +1,16 @@
 <div class=row-fluid>
-  <div class=span3>
-    <h2>Query A</h2>
+  <div class=span12>
+    <div class=well>
+      <h2>Basic queries</h2>
+      <p>
+        For deliverable 2.
+      </p>
+    </div>
+  </div>
+</div>
+<div class=row-fluid>
+  <div class=span4>
+    <h3>Query A</h3>
     <p>
      Print the last and first name of players/coaches who participated in NBA both as a player and as a coach.
     </p>
@@ -8,8 +18,8 @@
       <%= link_to "Run it", :action => "a" -%>
     </p>
   </div>
-  <div class=span3>
-    <h2>Query B</h2>
+  <div class=span4>
+    <h3>Query B</h3>
     <p>
       Print the last and first name of those who participated in NBA as both a player and a coach in the same season.
     </p>
@@ -17,8 +27,8 @@
       <%= link_to "Run it", :action => "b" -%>
     </p>
   </div>
-  <div class=span3>
-    <h2>Query C</h2>
+  <div class=span4>
+    <h3>Query C</h3>
     <p>
       Print the name of the school with the highest number of players sent to the NBA.
     </p>
@@ -28,8 +38,8 @@
   </div>
 </div>
 <div class=row-fluid>
-  <div class=span3>
-    <h2>Query D</h2>
+  <div class=span4>
+    <h3>Query D</h3>
     <p>
       Print the names of coaches who participated in both leagues (NBA and ABA).
     </p>
@@ -37,21 +47,167 @@
       <%= link_to "Run it", :action => "d" -%>
     </p>
   </div>
-  <div class=span3>
-  <h2>Query E</h2>
+  <div class=span4>
+  <h3>Query E</h3>
     <p>
       Compute the highest scoring and lowest scoring player for each season.
     <p>
       <%= link_to "Run it", :action => "e" -%>
     </p>
   </div>
-  <div class=span3>
-    <h2>Query F</h2>
+  <div class=span4>
+    <h3>Query F</h3>
     <p>
       Print the names of oldest and youngest player that have participated in the playoffs for each season.
     </p>
     <p>
       <%= link_to "Run it", :action => "f" -%>
+    </p>
+  </div>
+</div>
+<div class=row-fluid>
+  <div class=span12>
+    <div class=well>
+      <h2>More queries</h2>
+      <p>
+        A series of more interesting queries should be implemented with SQL and/or using the preferred application programming language.
+      </p>
+    </div>
+  </div>
+</div>
+<div class=row-fluid>
+  <div class=span4>
+    <h3>Query G</h3>
+    <p>
+      List the name of the schools according to the number of players they sent to the NBA. Sort them in descending order by number of drafted players.
+    </p>
+    <p>
+      <%= link_to "Run it", :action => "G" -%>
+    </p>
+  </div>
+  <div class=span4>
+  <h3>Query H</h3>
+    <p>
+      List the name of the schools according to the number of players they sent to the ABA. Sort them in descending order by number of drafted players.
+    </p>
+    <p>
+      <%= link_to "Run it", :action => "h" -%>
+    </p>
+  </div>
+  <div class=span4>
+    <h3>Query I</h3>
+    <p>
+      List the average weight, average height and average age, of teams of coaches with more than <var>XXX</var> season career wins and more than <var>YYY</var> win percentage, in each season they coached. (<var>XXX</var> and <var>YYY</var> are parameters. Try with combinations: <code>{<var>XXX</var>,<var>YYY</var>}={&lt;1000,70%&gt;,&lt;1000,60%&gt;,&lt;1000,50%&gt;,&lt;700,55%&gt;,&lt;700,45%&gt;}</code>. Sort the result by year in ascending order.
+    </p>
+    <p>
+      <%= link_to "Run it", :action => "i" -%>
+    </p>
+  </div>
+</div>
+<div class=row-fluid>
+  <div class=span4>
+    <h3>Query J</h3>
+    <p>
+      List the last and first name of the players which are shorter than the average height of players who have at least 10,000 rebounds and have more than 12,000 rebounds (if any).
+    </p>
+    <p>
+      <%= link_to "Run it", :action => "j" -%>
+    </p>
+  </div>
+  <div class=span4>
+  <h3>Query K</h3>
+    <p>
+      List the last and first name of the players who played for a Chicago team and Houston team.
+    </p>
+    <p>
+      <%= link_to "Run it", :action => "k" -%>
+    </p>
+  </div>
+  <div class=span4>
+    <h3>Query L</h3>
+    <p>
+      List the top 20 career scorers of NBA.
+    </p>
+    <p>
+      <%= link_to "Run it", :action => "l" -%>
+    </p>
+  </div>
+</div>
+<div class=row-fluid>
+  <div class=span4>
+    <h3>Query M</h3>
+    <p>
+      For coaches who coached at most 7 seasons but more than 1 season, who are the three more successful? (Success rate is season win percentage: <code>season_win / (season_win + season_loss))</code>. Be sure to count all seasons when computing the percentage.
+    </p>
+    <p>
+      <%= link_to "Run it", :action => "m" -%>
+    </p>
+  </div>
+  <div class=span4>
+  <h3>Query N</h3>
+    <p>
+      List the last and first names of the top 30 <var>TENDEX</var> players, ordered by descending <var>TENDEX</var> value (Use season stats). (<code><var>TENDEX</var>=(points+reb+ass+st+blk‐missedFT‐missedFG‐TO)/minutes</code>) 
+    </p>
+    <p>
+      <%= link_to "Run it", :action => "n" -%>
+    </p>
+  </div>
+  <div class=span4>
+    <h3>Query O</h3>
+    <p>
+      List the last and first names of the top 10 <var>TENDEX</var> players, ordered by descending <var>TENDEX</var> value (Use playoff stats). (<code><var>TENDEX</var>=(points+reb+ass+st+blk-missedFT‐missedFG-TO)/minutes</code>)
+    </p>
+    <p>
+      <%= link_to "Run it", :action => "o" -%>
+    </p>
+  </div>
+</div>
+<div class=row-fluid>
+  <div class=span4>
+    <h3>Query P</h3>
+    <p>
+      Compute the least successful draft year – the year when the largest percentage of drafted players never played in any of the leagues.
+    </p>
+    <p>
+      <%= link_to "Run it", :action => "p" -%>
+    </p>
+  </div>
+  <div class=span4>
+  <h3>Query Q</h3>
+    <p>
+      Compute the best teams according to statistics: for each season and for each team compute <var>TENDEX</var> values for its best 5 players. Sum these values for each team to compute <var>TEAM TENDEX</var> value. For each season list the team with the best win/loss percentage and the team with the highest <var>TEAM TENDEX</var> value.
+    </p>
+    <p>
+      <%= link_to "Run it", :action => "q" -%>
+    </p>
+  </div>
+  <div class=span4>
+    <h3>Query R</h3>
+    <p>
+      List the best 10 schools for each of the following categories: scorers, rebounders, blockers. Each school’s category ranking is computed as the average of the statistical value for 5 best players that went to that school. Use player’s career average for inputs.
+    </p>
+    <p>
+      <%= link_to "Run it", :action => "r" -%>
+    </p>
+  </div>
+</div>
+<div class=row-fluid>
+  <div class=span4>
+    <h3>Query S</h3>
+    <p>
+      Compute which was the team with most wins in regular season during which it changed 2, 3 and 4 coaches.
+    </p>
+    <p>
+      <%= link_to "Run it", :action => "s" -%>
+    </p>
+  </div>
+  <div class=span4>
+  <h3>Query T</h3>
+    <p>
+      List all players which never played for the team that drafted them.
+    </p>
+    <p>
+      <%= link_to "Run it", :action => "t" -%>
     </p>
   </div>
 </div>

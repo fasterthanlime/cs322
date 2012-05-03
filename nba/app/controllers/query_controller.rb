@@ -28,8 +28,21 @@ class QueryController < ApplicationController
     fetch_results
   end
 
+  def g; end
+  def i; end
+  def j; end
+  def k; end
+  def l; end
+  def m; end
+  def o; end
+  def p; end
+  def q; end
+  def r; end
+  def s; end
+  def t; end
+
   private
-  
+
   def fetch_results
     query_name = params[:action]
     rc = ActiveRecord::Base.connection.raw_connection
