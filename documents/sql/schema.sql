@@ -183,8 +183,7 @@ CREATE TABLE stats (
     asts INT,
     steals INT,
     blocks INT,
-    turnovers INT,
-    tpf INT,
+    pf INT,
     fga INT,
     fgm INT,
     fta INT,
@@ -227,9 +226,9 @@ CREATE TABLE team_stats (
     FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE,
     FOREIGN KEY (team_stat_tactique_id)
-        REFERENCES team_stat_tactiques (id) ON DELETE CASCADE,
-    FOREIGN KEY (stat_id)
-        REFERENCES stats (id) ON DELETE CASCADE
+        REFERENCES team_stat_tactiques (id) ON DELETE CASCADE--,
+--    FOREIGN KEY (stat_id)
+--        REFERENCES stats (id) ON DELETE CASCADE
 );
 
 CREATE SEQUENCE team_stats_seq
@@ -274,6 +273,7 @@ CREATE TABLE player_stats (
     player_season_id INT NOT NULL,
     stat_id INT NOT NULL,
     player_season_type_id INT NOT NULL,
+    turnovers INT,
     gp INT,
     minutes INT,
     PRIMARY KEY (id),
@@ -296,6 +296,7 @@ CREATE TABLE player_allstars (
     stat_id INT NOT NULL,
     conference_id INT NOT NULL,
     year INT NOT NULL,
+    turnovers INT,
     gp INT,
     minutes INT,
     PRIMARY KEY(id),

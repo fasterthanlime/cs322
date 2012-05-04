@@ -3,5 +3,5 @@ class PlayerStat < ActiveRecord::Base
   belongs_to :player_season
   belongs_to :player_season_type
 
-  attr_accessible :stat, :player_season, :player_season_type, :gp, :minutes
+  attr_accessible :stat, :player_season, :player_season_type, :turnovers, :gp, :minutes
 end

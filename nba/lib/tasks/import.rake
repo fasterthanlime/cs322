@@ -13,11 +13,50 @@ TODO:
 require 'csv'
 
 namespace :import do
+  def sqlldr (csv, table, fields, bad=nil, skip=1)
+    control = '.control.txt'
+    config = Rails.configuration.database_configuration[Rails.env]
+    connstring = "#{config["username"]}/#{config["password"]}@//#{config["host"]}:#{config["port"]}/#{config["database"]}"
+
+    c = File.open(control, 'w+')
+    c.write "
+LOAD DATA INFILE '#{csv}'
+TRUNCATE
+INTO TABLE #{table}
+FIELDS TERMINATED BY ','
+(#{fields.join(', ')})
+"
+
+    c.close
+
+    cmd = "sqlldr userid=#{connstring} control=#{control}"
+    cmd += " bad=#{bad}" unless bad.nil?
+    cmd += " skip=#{skip}" unless skip.nil?
+    puts cmd
+    system cmd
+    File.delete(control)
+  end
+
   desc "Import teams data from the CSV"
   task :teams => :environment do
-    text = File.read('../dataset/teams.csv')
-    csv = CSV.parse(text, :headers => true)
+    conn = ActiveRecord::Base.connection.raw_connection
+    csv = '../dataset/teams.csv'
+    tmp = 'temp_teams'
+    fields = %w(team location name leag)
 
+    conn.exec "CREATE TABLE #{tmp} (#{fields.join(' VARCHAR2(31), ')} VARCHAR2(31))"
+
+    sqlldr(csv, tmp, fields)
+    total = conn.exec "
+INSERT INTO teams (id, trigram, location, name, league_id)
+  SELECT teams_seq.NEXTVAL, tt.team trigram, location, tt.name, l.id league_id
+  FROM #{tmp} tt, leagues l
+  WHERE SUBSTR(tt.leag, 0, 1) = SUBSTR(l.name, 0, 1)
+"
+    conn.exec "DROP TABLE #{tmp} PURGE"
+    puts "#{total} teams inserted"
+
+    # Fixing the data
     missing_teams = {
       "ABA" => %w(NYJ),
       "NBA" => %w(NEW NOR PHW SAN SL1 TAT TOT)
@@ -31,87 +70,44 @@ namespace :import do
         )
       end
     end
-
-    csv.each do |row|
-      # because it starts with sharp
-      row["team"] = row[0]
-
-      # https://en.wikipedia.org/wiki/Miami_Floridians
-      if row["location"] == "Floridians" then
-        row["name"] = row["location"]
-        row["location"] = nil
-      end
-
-      l = League.find_by_name("#{row["leag"]}BA")
-      if l.nil? then
-        raise "League not found #{row["leag"]}BA"
-      end
-
-      puts Team.create(
-        :trigram => row["team"],
-        :league => l,
-        :location => row["location"],
-        :name => row["name"],
-      )
-    end
   end
 
   desc "Import team stats from the CSV"
   task :team_stats => :environment do
-    text = File.read('../dataset/team_season.csv')
-    csv = CSV.parse(text, :headers => true)
+    conn = ActiveRecord::Base.connection.raw_connection
+    csv = '../dataset/team_season.csv'
+    tmp = 'temp_seasons'
+    fields = %w(team year leag o_fgm o_fga o_ftm o_fta o_oreb o_dreb o_reb
+                o_asts o_pf o_stl o_to o_blk o_3pm o_3pa o_pts d_fgm d_fga
+                d_ftm d_fta d_oreb d_dreb d_reb d_asts d_pf d_stl d_to d_blk
+                d_3pm d_3pa d_pts pace won lost)
 
-    csv.each do |row|
-      row["team"] = row[0]
-      team = Team.find_by_trigram(row["team"])
-      os = Stat.create(
-        :pts => row["o_pts"],
-        :oreb => row["o_oreb"],
-        :dreb => row["o_dreb"],
-        :reb => row["o_reb"],
-        :asts => row["o_asts"],
-        :steals => row["o_steals"],
-        :blocks => row["o_blocks"],
-        :turnovers => row["o_turnovers"],
-        :tpf => row["o_tpf"],
-        :fga => row["o_fga"],
-        :fgm => row["o_fgm"],
-        :ftm => row["o_ftm"],
-        :tpa => row["o_tpa"],
-        :tpm => row["o_tpm"]
-      )
-      ds = Stat.create(
-        :pts => row["d_pts"],
-        :oreb => row["d_oreb"],
-        :dreb => row["d_dreb"],
-        :reb => row["d_reb"],
-        :asts => row["d_asts"],
-        :steals => row["d_steals"],
-        :blocks => row["d_blocks"],
-        :turnovers => row["d_turnovers"],
-        :tpf => row["d_tpf"],
-        :fga => row["d_fga"],
-        :fgm => row["d_fgm"],
-        :ftm => row["d_ftm"],
-        :tpa => row["d_tpa"],
-        :tpm => row["d_tpm"]
-      )
-      ots = TeamStat.create(
-        :team_stat_tactique => TeamStatTactique.find_by_name("Offensive"),
-        :stat => os,
-        :team => team,
-        :year => row["year"],
-        :pace => row["pace"]
-      )
-      dts = TeamStat.create(
-        :team_stat_tactique => TeamStatTactique.find_by_name("Defensive"),
-        :stat => ds,
-        :team => team,
-        :year => row["year"]
-      )
-      puts ots
-      puts dts
-    end
+    conn.exec "
+CREATE TABLE #{tmp} (#{fields.join(' VARCHAR2(31), ')} VARCHAR2(31))
+"
+
+    sqlldr(csv, tmp, fields)
+    total = conn.exec "
+INSERT ALL
+  INTO stats (id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, ftm, fta, tpa, tpm)
+  VALUES (2 * stats_seq.NEXTVAL - 1, o_pts, o_oreb, o_dreb, o_reb, o_asts, o_stl, o_blk, o_pf, o_fga, o_fgm, o_ftm, o_fta, o_3pa, o_3pm)
+  INTO stats (id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, ftm, fta, tpa, tpm)
+  VALUES (2 * stats_seq.CURRVAL, d_pts, d_oreb, d_dreb, d_reb, d_asts, d_stl, d_blk, d_pf, d_fga, d_fgm, d_ftm, d_fta, d_3pa, d_3pm)
+  INTO team_stats (id, stat_id, team_id, year, team_stat_tactique_id, pace)
+  VALUES (2 * team_stats_seq.NEXTVAL - 1, 2 * team_stats_seq.CURRVAL - 1, id, year, #{TeamStatTactique::OFFENSIVE}, pace)
+  INTO team_stats (id, stat_id, team_id, year, team_stat_tactique_id)
+  VALUES (2 * team_stats_seq.CURRVAL, 2 * team_stats_seq.CURRVAL, id, year, #{TeamStatTactique::DEFENSIVE})
+  SELECT *
+  FROM #{tmp} t
+  JOIN teams ON teams.trigram = SUBSTR(t.team, 0, 3)
+"
+
+    # fix the sequences (since we multiplied by 2 right above)
+    conn.exec "SELECT stats_seq.NEXTVAL FROM #{tmp}"
+    conn.exec "SELECT team_stats_seq.NEXTVAL FROM #{tmp}"
+    puts "#{total/2} team_stats inserted"
+
+    conn.exec "DROP TABLE #{tmp} PURGE"
   end
 
   desc "Import coaches data from the CSV"
@@ -228,7 +224,6 @@ namespace :import do
         :asts => row["asts"],
         :steals => row["stl"],
         :blocks => row["blk"],
-        :turnovers => row["turnover"],
         :tpf => row["pf"],
         :fga => row["fga"],
         :fgm => row["fgm"],
@@ -240,6 +235,7 @@ namespace :import do
         :stat => s,
         :player_season => ps,
         :player_season_type => regular,
+        :turnovers => row["turnover"],
         :gp => row["gp"],
         :minutes => row["minutes"]
       )
@@ -283,7 +279,6 @@ namespace :import do
         :asts => row["asts"],
         :steals => row["stl"],
         :blocks => row["blk"],
-        :turnovers => row["turnover"],
         :tpf => row["pf"],
         :fga => row["fga"],
         :fgm => row["fgm"],
@@ -295,6 +290,7 @@ namespace :import do
         :stat => s,
         :player_season => ps,
         :player_season_type => playoff,
+        :turnovers => row["turnover"],
         :gp => row["gp"],
         :minutes => row["minutes"]
       )
