@@ -226,9 +226,9 @@ CREATE TABLE team_stats (
     FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE,
     FOREIGN KEY (team_stat_tactique_id)
-        REFERENCES team_stat_tactiques (id) ON DELETE CASCADE--,
---    FOREIGN KEY (stat_id)
---        REFERENCES stats (id) ON DELETE CASCADE
+        REFERENCES team_stat_tactiques (id) ON DELETE CASCADE,
+    FOREIGN KEY (stat_id)
+        REFERENCES stats (id) ON DELETE CASCADE
 );
 
 CREATE SEQUENCE team_stats_seq

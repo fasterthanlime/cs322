@@ -13,11 +13,13 @@ TODO:
 require 'csv'
 
 namespace :import do
+  def connection_string
+    c = Rails.configuration.database_configuration[Rails.env]
+    "#{c["username"]}/#{c["password"]}@//#{c["host"]}:#{c["port"]}/#{c["database"]}"
+  end
+
   def sqlldr (csv, table, fields, bad=nil, skip=1)
     control = '.control.txt'
-    config = Rails.configuration.database_configuration[Rails.env]
-    connstring = "#{config["username"]}/#{config["password"]}@//#{config["host"]}:#{config["port"]}/#{config["database"]}"
-
     c = File.open(control, 'w+')
     c.write "
 LOAD DATA INFILE '#{csv}'
@@ -29,12 +31,20 @@ FIELDS TERMINATED BY ','
 
     c.close
 
-    cmd = "sqlldr userid=#{connstring} control=#{control}"
+    cmd = "sqlldr userid=#{connection_string} control=#{control}"
     cmd += " bad=#{bad}" unless bad.nil?
     cmd += " skip=#{skip}" unless skip.nil?
-    puts cmd
     system cmd
     File.delete(control)
+  end
+
+  desc ""
+  task :schema => :environment do
+    conn = connection_string
+    ["drop", "schema", "data"].each do |file|
+      puts "Loading: #{file}.sql"
+      system "sqlplus #{conn} < ../documents/sql/#{file}.sql"
+    end
   end
 
   desc "Import teams data from the CSV"
@@ -86,26 +96,65 @@ INSERT INTO teams (id, trigram, location, name, league_id)
 CREATE TABLE #{tmp} (#{fields.join(' VARCHAR2(31), ')} VARCHAR2(31))
 "
 
+    # The sequences may already be containing data (initial value being 1)
+    stats_offset = -1
+    team_stats_offset = -1
+    conn.exec("SELECT last_number FROM user_sequences WHERE sequence_name = 'STATS_SEQ'") do |l|
+      stats_offset += l[0].to_i
+    end
+    conn.exec("SELECT last_number FROM user_sequences WHERE sequence_name = 'TEAM_STATS_SEQ'") do |l|
+      team_stats_offset += l[0].to_i
+    end
+    offset = stats_offset - team_stats_offset;
+
     sqlldr(csv, tmp, fields)
     total = conn.exec "
 INSERT ALL
-  INTO stats (id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, ftm, fta, tpa, tpm)
-  VALUES (2 * stats_seq.NEXTVAL - 1, o_pts, o_oreb, o_dreb, o_reb, o_asts, o_stl, o_blk, o_pf, o_fga, o_fgm, o_ftm, o_fta, o_3pa, o_3pm)
-  INTO stats (id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, ftm, fta, tpa, tpm)
-  VALUES (2 * stats_seq.CURRVAL, d_pts, d_oreb, d_dreb, d_reb, d_asts, d_stl, d_blk, d_pf, d_fga, d_fgm, d_ftm, d_fta, d_3pa, d_3pm)
-  INTO team_stats (id, stat_id, team_id, year, team_stat_tactique_id, pace)
-  VALUES (2 * team_stats_seq.NEXTVAL - 1, 2 * team_stats_seq.CURRVAL - 1, id, year, #{TeamStatTactique::OFFENSIVE}, pace)
-  INTO team_stats (id, stat_id, team_id, year, team_stat_tactique_id)
-  VALUES (2 * team_stats_seq.CURRVAL, 2 * team_stats_seq.CURRVAL, id, year, #{TeamStatTactique::DEFENSIVE})
+  INTO stats (
+    id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, ftm, fta,
+    tpa, tpm
+  ) VALUES (
+    2 * stats_seq.NEXTVAL - 1, o_pts, o_oreb, o_dreb, o_reb, o_asts, o_stl,
+    o_blk, o_pf, o_fga, o_fgm, o_ftm, o_fta, o_3pa, o_3pm
+  )
+  INTO stats (
+    id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, ftm, fta,
+    tpa, tpm
+  ) VALUES (
+    2 * stats_seq.CURRVAL, d_pts, d_oreb, d_dreb, d_reb, d_asts, d_stl, d_blk,
+    d_pf, d_fga, d_fgm, d_ftm, d_fta, d_3pa, d_3pm
+  )
   SELECT *
-  FROM #{tmp} t
-  JOIN teams ON teams.trigram = SUBSTR(t.team, 0, 3)
+  FROM #{tmp}
 "
+    puts "#{total} stats inserted"
 
-    # fix the sequences (since we multiplied by 2 right above)
-    conn.exec "SELECT stats_seq.NEXTVAL FROM #{tmp}"
-    conn.exec "SELECT team_stats_seq.NEXTVAL FROM #{tmp}"
-    puts "#{total/2} team_stats inserted"
+    total2 = conn.exec "
+INSERT ALL
+  INTO team_stats (
+    id, stat_id, team_id, year, team_stat_tactique_id, pace
+  ) VALUES (
+    2 * team_stats_seq.NEXTVAL - 1, #{offset} + 2 * team_stats_seq.CURRVAL - 1,
+    team_id, year, #{TeamStatTactique::OFFENSIVE}, pace
+  )
+  INTO team_stats (
+    id, stat_id, team_id, year, team_stat_tactique_id
+  ) VALUES (
+    2 * team_stats_seq.CURRVAL, #{offset} + 2 * team_stats_seq.CURRVAL, team_id,
+    year, #{TeamStatTactique::DEFENSIVE}
+  )
+  SELECT tmp.*, t.id team_id
+  FROM #{tmp} tmp
+  JOIN teams t ON t.trigram = SUBSTR(tmp.team, 0, 3)
+  JOIN leagues l ON l.id = t.league_id
+  WHERE tmp.leag = SUBSTR(l.name, 0, 1)
+"
+    puts "#{total2} team_stats inserted"
+
+    # HACK! fix the sequences (since we multiplied by 2 right above)
+    conn.exec "
+UPDATE #{tmp} SET team = stats_seq.NEXTVAL, year = team_stats_seq.NEXTVAL
+"
 
     conn.exec "DROP TABLE #{tmp} PURGE"
   end
@@ -224,7 +273,7 @@ INSERT ALL
         :asts => row["asts"],
         :steals => row["stl"],
         :blocks => row["blk"],
-        :tpf => row["pf"],
+        :pf => row["pf"],
         :fga => row["fga"],
         :fgm => row["fgm"],
         :ftm => row["ftm"],
@@ -279,7 +328,7 @@ INSERT ALL
         :asts => row["asts"],
         :steals => row["stl"],
         :blocks => row["blk"],
-        :tpf => row["pf"],
+        :pf => row["pf"],
         :fga => row["fga"],
         :fgm => row["fgm"],
         :ftm => row["ftm"],
@@ -328,8 +377,7 @@ INSERT ALL
         :asts => row["asts"],
         :steals => row["stl"],
         :blocks => row["blk"],
-        :turnovers => row["turnover"],
-        :tpf => row["pf"],
+        :pf => row["pf"],
         :fga => row["fga"],
         :fgm => row["fgm"],
         :ftm => row["ftm"],
@@ -345,6 +393,7 @@ INSERT ALL
         :player => pl,
         :conference => c,
         :year => row["year"],
+        :turnovers => row["turnover"],
         :gp => row["gp"],
         :minutes => row["minutes"]
       )
@@ -424,7 +473,7 @@ INSERT ALL
   desc "All, remove everything and starts over"
   task :all => :environment do
     %w(
-      teams team_stats coaches players drafts regular_seasons playoffs allstars
+      schema teams team_stats coaches players drafts regular_seasons playoffs allstars
     ).each do |t|
       puts
       puts "rake import:#{t}"

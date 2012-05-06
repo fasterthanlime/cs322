@@ -4,6 +4,9 @@
 # VIM FTW!
 .*.sw[op]
 
+# sqlldr log
+.control.log
+
 # Sphinx
 documents/report/build
 
