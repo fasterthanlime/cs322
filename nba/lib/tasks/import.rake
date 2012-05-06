@@ -161,6 +161,35 @@ UPDATE #{tmp} SET team = stats_seq.NEXTVAL, year = team_stats_seq.NEXTVAL
 
   desc "Import coaches data from the CSV"
   task :coaches => :environment do
+    conn = ActiveRecord::Base.connection.raw_connection
+    csv = '../dataset/coaches_career.csv'
+    tmp = 'temp_coaches'
+    fields = %w(coachid firstname lastname season_win season_loss playoff_win playoff_loss)
+
+    conn.exec "CREATE TABLE #{tmp} (#{fields.join(' VARCHAR2(31), ')} VARCHAR2(31))"
+
+    sqlldr(csv, tmp, fields)
+    total = conn.exec "
+INSERT ALL
+  INTO people (
+    id, ilkid, firstname, lastname
+  ) VALUES (
+    people_seq.NEXTVAL, SUBSTR(coachid, 0, 9), firstname, lastname
+  )
+  INTO coaches (
+    id, person_id
+  ) VALUES (
+    coaches_seq.NEXTVAL, people_seq.CURRVAL
+  )
+  SELECT *
+  FROM #{tmp}
+"
+    conn.exec "DROP TABLE #{tmp} PURGE"
+    puts "#{total/2} coaches inserted"
+  end
+
+  desc "Import coach seasons from the CSV"
+  task :coach_seasons => :environment do
     text = File.read('../dataset/coaches_data.csv')
     csv = CSV.parse(text, :headers => true)
 
@@ -473,7 +502,7 @@ UPDATE #{tmp} SET team = stats_seq.NEXTVAL, year = team_stats_seq.NEXTVAL
   desc "All, remove everything and starts over"
   task :all => :environment do
     %w(
-      schema teams team_stats coaches players drafts regular_seasons playoffs allstars
+      schema teams coaches coach_seasons players drafts regular_seasons playoffs allstars
     ).each do |t|
       puts
       puts "rake import:#{t}"
