@@ -13,9 +13,17 @@ TODO:
 require 'csv'
 
 namespace :import do
+  def connection
+    ActiveRecord::Base.connection.raw_connection
+  end
+
   def connection_string
     c = Rails.configuration.database_configuration[Rails.env]
     "#{c["username"]}/#{c["password"]}@//#{c["host"]}:#{c["port"]}/#{c["database"]}"
+  end
+
+  def cleanup (table)
+    connection().exec "DROP TABLE #{table} PURGE"
   end
 
   def sqlldr (csv, table, fields, bad=nil, skip=1)
@@ -31,6 +39,9 @@ FIELDS TERMINATED BY ','
 
     c.close
 
+    connection().exec "
+      CREATE TABLE #{table} (#{fields.join(' VARCHAR2(31), ')} VARCHAR2(31))
+    "
     cmd = "sqlldr userid=#{connection_string} control=#{control}"
     cmd += " bad=#{bad}" unless bad.nil?
     cmd += " skip=#{skip}" unless skip.nil?
@@ -49,12 +60,10 @@ FIELDS TERMINATED BY ','
 
   desc "Import teams data from the CSV"
   task :teams => :environment do
-    conn = ActiveRecord::Base.connection.raw_connection
+    conn = connection
     csv = '../dataset/teams.csv'
     tmp = 'temp_teams'
     fields = %w(team location name leag)
-
-    conn.exec "CREATE TABLE #{tmp} (#{fields.join(' VARCHAR2(31), ')} VARCHAR2(31))"
 
     sqlldr(csv, tmp, fields)
     total = conn.exec "
@@ -63,8 +72,8 @@ INSERT INTO teams (id, trigram, location, name, league_id)
   FROM #{tmp} tt, leagues l
   WHERE SUBSTR(tt.leag, 0, 1) = SUBSTR(l.name, 0, 1)
 "
-    conn.exec "DROP TABLE #{tmp} PURGE"
     puts "#{total} teams inserted"
+    cleanup(tmp)
 
     # Fixing the data
     missing_teams = {
@@ -84,17 +93,13 @@ INSERT INTO teams (id, trigram, location, name, league_id)
 
   desc "Import team stats from the CSV"
   task :team_stats => :environment do
-    conn = ActiveRecord::Base.connection.raw_connection
+    conn = connection
     csv = '../dataset/team_season.csv'
     tmp = 'temp_seasons'
     fields = %w(team year leag o_fgm o_fga o_ftm o_fta o_oreb o_dreb o_reb
                 o_asts o_pf o_stl o_to o_blk o_3pm o_3pa o_pts d_fgm d_fga
                 d_ftm d_fta d_oreb d_dreb d_reb d_asts d_pf d_stl d_to d_blk
                 d_3pm d_3pa d_pts pace won lost)
-
-    conn.exec "
-CREATE TABLE #{tmp} (#{fields.join(' VARCHAR2(31), ')} VARCHAR2(31))
-"
 
     # The sequences may already be containing data (initial value being 1)
     stats_offset = -1
@@ -156,17 +161,15 @@ INSERT ALL
 UPDATE #{tmp} SET team = stats_seq.NEXTVAL, year = team_stats_seq.NEXTVAL
 "
 
-    conn.exec "DROP TABLE #{tmp} PURGE"
+    cleanup(tmp)
   end
 
   desc "Import coaches data from the CSV"
   task :coaches => :environment do
-    conn = ActiveRecord::Base.connection.raw_connection
+    conn = connection
     csv = '../dataset/coaches_career.csv'
     tmp = 'temp_coaches'
     fields = %w(coachid firstname lastname season_win season_loss playoff_win playoff_loss)
-
-    conn.exec "CREATE TABLE #{tmp} (#{fields.join(' VARCHAR2(31), ')} VARCHAR2(31))"
 
     sqlldr(csv, tmp, fields)
     total = conn.exec "
@@ -184,62 +187,34 @@ INSERT ALL
   SELECT *
   FROM #{tmp}
 "
-    conn.exec "DROP TABLE #{tmp} PURGE"
     puts "#{total/2} coaches inserted"
+    cleanup(tmp)
   end
 
   desc "Import coach seasons from the CSV"
   task :coach_seasons => :environment do
-    text = File.read('../dataset/coaches_data.csv')
-    csv = CSV.parse(text, :headers => true)
+    conn = connection
+    csv = '../dataset/coaches_data.csv'
+    tmp = 'temp_coaches'
+    fields = %w(coachid year yr_order firstname lastname season_win season_loss playoff_win playoff_loss team)
 
-    csv.each do |row|
-      # One of the coach contains a non-breaking space (nbsp).
-      row["coachid"] = row[0].tr(" ", " ").strip
-      row["firstname"].strip!
-      row["lastname"].strip!
-      p = Person.where(
-        :ilkid => row["coachid"],
-        :firstname => row["firstname"],
-        :lastname => row["lastname"]
-      )
-      if p.empty? then
-        p = Person.create(
-          :ilkid => row["coachid"],
-          :firstname => row["firstname"],
-          :lastname => row["lastname"]
-        )
-        puts p
-      else
-        p = p[0]
-      end
+    sqlldr(csv, tmp, fields)
+    total = conn.exec "
+INSERT INTO coach_seasons (
+    id, team_id, coach_id, year, year_order, season_win, season_loss,
+    playoff_win, playoff_loss
+  )
+  SELECT
+    coach_seasons_seq.NEXTVAL, t.id, c.id, year, yr_order, season_win,
+    season_loss, playoff_win, playoff_loss
+  FROM #{tmp} tmp
+  JOIN people p ON p.ilkid = SUBSTR(tmp.coachid, 0, 9)
+  JOIN coaches c ON c.person_id = p.id
+  JOIN teams t ON t.trigram = SUBSTR(tmp.team, 0, 3)
+"
 
-      c = Coach.find_by_person_id(p.id.to_i)
-
-      if c.nil? then
-        c = Coach.create(
-          :person => p
-        )
-        puts " " + c.to_s
-      end
-
-      t = Team.find_by_trigram(row["team"])
-      unless t.nil? then
-        cs = CoachSeason.create(
-          :coach => c,
-          :team => t,
-          :year => row["year"],
-          :year_order => row["year_order"],
-          :season_win => row["season_win"],
-          :season_loss => row["season_loss"],
-          :playoff_win => row["playoff_win"],
-          :playoff_loss => row["playoff_loss"],
-        )
-        puts "  " + cs.to_s
-      else
-        raise "Team not found! #{row["team"]}"
-      end
-    end
+    cleanup(tmp)
+    puts "#{total} coach seasons inserted"
   end
 
   desc "Import players data from the CSV"
@@ -485,7 +460,6 @@ INSERT ALL
       if t.nil? then
         raise "Team not found! #{row["team"]}"
       end
-
 
       d = Draft.create(
         :player => pl,
