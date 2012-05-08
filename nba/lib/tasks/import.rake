@@ -508,7 +508,7 @@ INSERT INTO player_stats (
   desc "All, remove everything and starts over"
   task :all => :environment do
     %w(
-      schema teams coaches coach_seasons players drafts regular_seasons playoffs allstars
+      schema teams team_stats coaches coach_seasons players drafts regular_seasons playoffs allstars
     ).each do |t|
       puts
       puts "rake import:#{t}"
