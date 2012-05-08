@@ -29,18 +29,26 @@ namespace :import do
   def sqlldr (csv, table, fields, bad=nil, skip=1)
     control = '.control.txt'
     c = File.open(control, 'w+')
+
+    # Replacing "NULL" with proper NULL hopefully nobody's called that way
+    # but... http://stackoverflow.com/q/4456438/122978
+    sqlfields = fields.map do |field|
+      "#{field} \"DECODE(:#{field}, 'NULL', NULL, :#{field})\""
+    end
     c.write "
 LOAD DATA INFILE '#{csv}'
 TRUNCATE
 INTO TABLE #{table}
 FIELDS TERMINATED BY ','
-(#{fields.join(', ')})
+TRAILING NULLCOLS
+(#{sqlfields.join(', ')})
 "
 
     c.close
 
+    type = "VARCHAR2(255)"
     connection().exec "
-      CREATE TABLE #{table} (#{fields.join(' VARCHAR2(31), ')} VARCHAR2(31))
+      CREATE TABLE #{table} (#{fields.join(" #{type}, ")} #{type})
     "
     cmd = "sqlldr userid=#{connection_string} control=#{control}"
     cmd += " bad=#{bad}" unless bad.nil?
@@ -70,7 +78,7 @@ FIELDS TERMINATED BY ','
 INSERT INTO teams (id, trigram, location, name, league_id)
   SELECT teams_seq.NEXTVAL, tt.team trigram, location, tt.name, l.id league_id
   FROM #{tmp} tt, leagues l
-  WHERE SUBSTR(tt.leag, 0, 1) = SUBSTR(l.name, 0, 1)
+  WHERE tt.leag = SUBSTR(l.name, 0, 1)
 "
     puts "#{total} teams inserted"
     cleanup(tmp)
@@ -150,7 +158,7 @@ INSERT ALL
   )
   SELECT tmp.*, t.id team_id
   FROM #{tmp} tmp
-  JOIN teams t ON t.trigram = SUBSTR(tmp.team, 0, 3)
+  JOIN teams t ON t.trigram = tmp.team
   JOIN leagues l ON l.id = t.league_id
   WHERE tmp.leag = SUBSTR(l.name, 0, 1)
 "
@@ -196,7 +204,8 @@ INSERT ALL
     conn = connection
     csv = '../dataset/coaches_data.csv'
     tmp = 'temp_coaches'
-    fields = %w(coachid year yr_order firstname lastname season_win season_loss playoff_win playoff_loss team)
+    fields = %w(coachid year yr_order firstname lastname season_win season_loss
+                playoff_win playoff_loss team)
 
     sqlldr(csv, tmp, fields)
     total = conn.exec "
@@ -210,7 +219,7 @@ INSERT INTO coach_seasons (
   FROM #{tmp} tmp
   JOIN people p ON p.ilkid = SUBSTR(tmp.coachid, 0, 9)
   JOIN coaches c ON c.person_id = p.id
-  JOIN teams t ON t.trigram = SUBSTR(tmp.team, 0, 3)
+  JOIN teams t ON t.trigram = tmp.team
 "
 
     cleanup(tmp)
@@ -219,34 +228,37 @@ INSERT INTO coach_seasons (
 
   desc "Import players data from the CSV"
   task :players => :environment do
-    text = File.read('../dataset/players.csv')
-    csv = CSV.parse(text, :headers => true)
+    conn = connection
+    csv = '../dataset/players.csv'
+    tmp = 'temp_players'
+    fields = %w(ilkid firstname lastname position firstseason lastseason h_feet
+                h_inches weight college birthdate)
 
-    csv.each do |row|
-      row["ilkid"] = row[0]
+    sqlldr(csv, tmp, fields)
 
-      p = Person.find_by_ilkid(row["ilkid"])
-      if p.nil? then
-        p = Person.create(
-          :ilkid => row["ilkid"],
-          :firstname => row["firstname"],
-          :lastname => row["lastname"]
-        )
-        puts p
-      end
+    total = conn.exec "
+INSERT INTO people (id, ilkid, firstname, lastname)
+  SELECT people_seq.NEXTVAL, ilkid, firstname, lastname
+  FROM #{tmp} tmp
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM people p
+    WHERE tmp.ilkid = p.ilkid
+  )
+"
+    puts "#{total} more people inserted"
 
-      # One foot is 12 inches
-      height = row["h_feet"].to_i * 12 + row["h_inches"].to_i
+    total = conn.exec "
+INSERT INTO players (id, person_id, position, height, weight, birthdate)
+  SELECT
+    players_seq.NEXTVAL, p.id, position, (h_feet * 12) + h_inches, weight,
+    birthdate
+  FROM #{tmp} tmp, people p
+  WHERE tmp.ilkid = p.ilkid
+"
 
-      pl = Player.create(
-        :person => p,
-        :position => row["position"],
-        :height => height,
-        :weight => row["weight"],
-        :birthdate => row["birthdate"]
-      )
-      puts " " + pl.to_s
-    end
+    puts "#{total} players inserted"
+    cleanup(tmp)
   end
 
   desc "Import regular season stats from the CSV"
@@ -433,10 +445,8 @@ INSERT INTO coach_seasons (
       end
 
       if p.player.nil? then
-        # FIXME: because the position is mandatory, I put '0'
         pl = Player.create(
-          :person => p,
-          :position => '0'
+          :person => p
         )
         puts " " + pl.to_s
       else

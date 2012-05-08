@@ -27,7 +27,7 @@ CREATE SEQUENCE people_seq
 CREATE TABLE players (
     id INT,
     person_id INT NOT NULL,
-    position CHAR(1) NOT NULL,
+    position CHAR(1),
     height INT, -- in inches
     weight INT,
     birthdate DATE,
