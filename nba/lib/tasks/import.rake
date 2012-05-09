@@ -359,8 +359,8 @@ INSERT INTO player_seasons (
       FROM player_seasons ps
       WHERE
         tmp.year = ps.year AND
-	pl.id = ps.player_id AND
-	t.id = ps.team_id
+        pl.id = ps.player_id AND
+        t.id = ps.team_id
     )
 "
     puts "#{total} more player seasons inserted"
@@ -411,58 +411,64 @@ INSERT INTO player_stats (
 
   desc "Import all stars season stats from the CSV"
   task :allstars => :environment do
-    text = File.read('../dataset/player_allstar.csv')
-    csv = CSV.parse(text, :headers => true)
+    conn = connection
+    csv = '../dataset/player_allstar.csv'
+    tmp = 'temp_seasons'
+    fields = %w(ilkid year firstname lastname conference leag gp minutes pts dreb oreb
+                reb asts stl blk turnover pf fga fgm fta ftm tpa tpm)
 
-    csv.each do |row|
-      row["ilkid"] = row[0]
+    sqlldr(csv, tmp, fields)
+    total = conn.exec "
+INSERT INTO stats (
+    id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm,
+    tpa, tpm
+  )
+  SELECT
+    stats_seq.NEXTVAL, pts, oreb, dreb, reb, asts, stl, blk, pf, fga, fgm, fta, ftm,
+    tpa, tpm
+  FROM
+    #{tmp}
+  WHERE
+    ilkid <> 'THOMPDA01' OR year <> '1982' OR tpm IS NOT NULL -- row to ignore
+"
+    puts "#{total} more stats inserted"
 
-      # Fix a buggy ilkid
-      if (row["ilkid"] == "JOHNSMA01" and row["firstname"] == "Marques") then
-        row["ilkid"] = "JOHNSMA02"
-      end
-      # Ignore this particular entry
-      if (row["ilkid"] == "THOMPDA01" and row["year"] == "1982" and row["tpm"] == "NULL") then
-        next
-      end
-      p = Person.find_by_ilkid(row["ilkid"])
-      pl = p.player
-
-      if pl.nil? then
-        raise "#{row["ilkid"]} our model suck donkey balls"
-      end
-      s = Stat.create(
-        :pts => row["pts"],
-        :oreb => row["oreb"],
-        :dreb => row["dreb"],
-        :reb => row["reb"],
-        :asts => row["asts"],
-        :steals => row["stl"],
-        :blocks => row["blk"],
-        :pf => row["pf"],
-        :fga => row["fga"],
-        :fgm => row["fgm"],
-        :ftm => row["ftm"],
-        :tpa => row["tpa"],
-        :tpm => row["tpm"]
-      )
-      c = Conference.find_by_name(row["conference"] == "west" ?
-        "Western" :
-        "Eastern"
-      )
-      pa = PlayerAllstar.create(
-        :stat => s,
-        :player => pl,
-        :conference => c,
-        :year => row["year"],
-        :turnovers => row["turnover"],
-        :gp => row["gp"],
-        :minutes => row["minutes"]
-      )
-      puts pa
+    # The sequences may already be containing data (initial value being 1)
+    offset = 0
+    conn.exec("SELECT max(id) from stats") do |l|
+      offset = l[0].to_i
     end
-  end
+    offset -= total
 
+    total = conn.exec "
+INSERT INTO player_allstars (
+    id, stat_id, player_id, conference_id, year, turnovers, gp, minutes
+  )
+  SELECT
+    player_allstars_seq.NEXTVAL, #{offset} + player_allstars_seq.CURRVAL, pl.id,
+    c.id, year, turnover, gp, minutes
+  FROM
+    #{tmp} tmp, people p, players pl, conferences c
+  WHERE
+    (tmp.ilkid <> 'THOMPDA01' OR tmp.year <> '1982' OR tmp.tpm IS NOT NULL) AND
+    (
+      p.ilkid = CASE WHEN (tmp.ilkid = 'JOHNSMA01' AND tmp.firstname = 'Marques')
+        THEN 'JOHNSMA02'
+        ELSE tmp.ilkid
+      END
+    ) AND
+    pl.person_id = p.id AND
+    (
+      substr(c.name, 0, 4) = tmp.conference OR
+      lower(substr(c.name, 0, 4)) = tmp.conference OR
+      c.name = 'Western' AND (tmp.conference = 'weset' OR tmp.conference = 'Denver' or tmp.conference = 'AllStars')
+      -- AllStars is 1975: https://en.wikipedia.org/wiki/American_Basketball_Association#List_of_ABA_championships
+    )
+"
+
+    puts "#{total} player allstars seasons inserted"
+    cleanup(tmp)
+  end
 
   desc "Import drafts data from the CSV"
   task :drafts => :environment do
@@ -532,7 +538,8 @@ INSERT INTO player_stats (
   desc "All, remove everything and starts over"
   task :all => :environment do
     %w(
-      schema teams team_stats coaches coach_seasons players drafts regular_seasons playoffs allstars
+      schema teams team_stats coaches coach_seasons players regular_seasons
+      playoffs allstars drafts
     ).each do |t|
       puts
       puts "rake import:#{t}"
