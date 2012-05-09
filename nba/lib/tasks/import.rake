@@ -472,67 +472,67 @@ INSERT INTO player_allstars (
 
   desc "Import drafts data from the CSV"
   task :drafts => :environment do
-    text = File.read('../dataset/draft.csv')
-    csv = CSV.parse(text, :headers => true)
+    conn = connection
+    csv = '../dataset/draft.csv'
+    tmp = 'temp_drafts'
+    fields = %w(draft_year draft_round selection team firstname lastname ilkid
+                draft_from leag)
 
-    csv.each do |row|
-      row["draft_year"] = row[0]
+    sqlldr(csv, tmp, fields)
 
-      if row["ilkid"].nil? or row["ilkid"].strip.empty? or row["ilkid"] == "NULL" then
-        p = Person.create(
-          :firstname => row["firstname"],
-          :lastname => row["lastname"]
-        )
-        puts p
-      else
-        p = Person.find_by_ilkid(row["ilkid"])
-        if p.nil? then
-          p = Person.create(
-            :ilkid => row["ilkid"],
-            :firstname => row["firstname"],
-            :lastname => row["lastname"]
-          )
-          puts p
-        end
-      end
-
-      if p.player.nil? then
-        pl = Player.create(
-          :person => p
-        )
-        puts " " + pl.to_s
-      else
-        pl = p.player
-      end
-
-      c = Location.find_by_name(row["draft_from"])
-      if c.nil? then
-        c = Location.create(
-          :name => row["draft_from"]
-        )
-        puts " " + c.to_s
-      end
-
-      l = League.find_by_name("#{row["leag"]}BA")
-      if l.nil? then
-        raise "League not found! #{row["leag"]}BA"
-      end
-
-      t = Team.find_by_trigram_and_league_id(row["team"], l.id)
-      if t.nil? then
-        raise "Team not found! #{row["team"]}"
-      end
-
-      d = Draft.create(
-        :player => pl,
-        :team => t,
-        :location => c,
-        :year => row["draft_year"],
-        :selection => row["selection"],
-        :round => row["draft_round"]
+    total = conn.exec "
+INSERT INTO people (id, ilkid, firstname, lastname)
+  SELECT people_seq.NEXTVAL, ilkid, firstname, lastname
+  FROM (
+    SELECT DISTINCT ilkid, firstname, lastname
+    FROM #{tmp} tmp
+    WHERE
+      NOT EXISTS (
+        SELECT 1
+        FROM people p
+        WHERE
+          p.ilkid = tmp.ilkid AND
+          p.firstname = tmp.firstname AND
+          p.lastname = tmp.lastname
       )
-      puts "  " + d.to_s
-    end
+  )
+"
+    puts "#{total} more people inserted"
+
+    total = conn.exec "
+INSERT INTO locations (id, name)
+  SELECT locations_seq.NEXTVAL, draft_from
+  FROM (
+    SELECT DISTINCT draft_from
+    FROM #{tmp}
+  )
+"
+    puts "#{total} locations inserted"
+
+    total = conn.exec "
+INSERT INTO drafts (
+    id, person_id, team_id, location_id, year, selection, round
+  )
+  SELECT
+    drafts_seq.NEXTVAL, p.id, t.id, loc.id, tmp.draft_year, tmp.selection,
+    tmp.draft_round
+  FROM #{tmp} tmp
+  JOIN people p ON
+    (
+      tmp.ilkid = p.ilkid OR
+      tmp.ilkid IS NULL AND
+      p.ilkid IS NULL
+    ) AND
+    tmp.firstname = p.firstname AND
+    tmp.lastname = p.lastname
+  JOIN teams t ON tmp.team = t.trigram
+  JOIN leagues l ON
+    t.league_id = l.id AND
+    tmp.leag = SUBSTR(l.name, 0, 1)
+  LEFT JOIN locations loc ON tmp.draft_from = loc.name
+"
+    puts "#{total} drafts inserted"
+    cleanup(tmp)
   end
 
   desc "All, remove everything and starts over"

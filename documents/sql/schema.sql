@@ -17,7 +17,7 @@ CREATE TABLE people (
     firstname VARCHAR(255) NOT NULL,
     lastname VARCHAR(255) NOT NULL,
     PRIMARY KEY (id),
-    UNIQUE (ilkid)
+    CONSTRAINT person_unique UNIQUE (ilkid, firstname, lastname)
 );
 
 CREATE SEQUENCE people_seq
@@ -146,16 +146,16 @@ CREATE SEQUENCE locations_seq
 -- @weak
 CREATE TABLE drafts (
     id INT,
-    player_id INT NOT NULL,
+    person_id INT NOT NULL,
     year INT NOT NULL,
     round INT NOT NULL,
     selection INT NOT NULL,
     team_id INT NOT NULL,
     location_id INT NULL,
     PRIMARY KEY (id),
-    CONSTRAINT draft_unique UNIQUE (player_id, team_id, location_id, year),
-    FOREIGN KEY (player_id)
-        REFERENCES players (id) ON DELETE CASCADE,
+    CONSTRAINT draft_unique UNIQUE (person_id, team_id, location_id, year, round),
+    FOREIGN KEY (person_id)
+        REFERENCES people (id) ON DELETE CASCADE,
     FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE,
     FOREIGN KEY (location_id)
