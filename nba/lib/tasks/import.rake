@@ -289,14 +289,15 @@ INSERT ALL
   FROM
     #{tmp} tmp, people p, leagues l, players pl, teams t
   WHERE
-    p.ilkid = tmp.ilkid and
-    pl.person_id = p.id and
-    t.trigram = tmp.team and
-    t.league_id = l.id and (
-      substr(l.name, 0, 1) = tmp.leag or
-      l.name = 'NBA' and tmp.team = 'TOT' -- TOT never played in ABA
+    p.ilkid = tmp.ilkid AND
+    pl.person_id = p.id AND
+    t.trigram = tmp.team AND
+    t.league_id = l.id AND (
+      substr(l.name, 0, 1) = tmp.leag OR
+      l.name = 'NBA' AND tmp.team = 'TOT' -- TOT never played in ABA
     )
 "
+
     puts "#{total/2} more stats inserted"
 
     # The sequences may already be containing data (initial value being 1)
@@ -316,14 +317,14 @@ INSERT INTO player_stats (
   FROM
     #{tmp} tmp, people p, leagues l, players pl, teams t, player_seasons ps
   WHERE
-    p.ilkid = tmp.ilkid and
-    pl.person_id = p.id and
-    t.trigram = tmp.team and
-    t.league_id = l.id and (
-      substr(l.name, 0, 1) = tmp.leag or
-      l.name = 'NBA' and tmp.team = 'TOT' -- TOT never played in ABA
-    ) and
-    ps.year = tmp.year and ps.player_id = pl.id and ps.team_id = t.id
+    p.ilkid = tmp.ilkid AND
+    pl.person_id = p.id AND
+    t.trigram = tmp.team AND
+    t.league_id = l.id AND (
+      substr(l.name, 0, 1) = tmp.leag OR
+      l.name = 'NBA' AND tmp.team = 'TOT' -- TOT never played in ABA
+    ) AND
+    ps.year = tmp.year AND ps.player_id = pl.id AND ps.team_id = t.id
 "
     puts "#{total} player regular seasons inserted"
     cleanup(tmp)
@@ -331,57 +332,81 @@ INSERT INTO player_stats (
 
   desc "Import playoff season stats from the CSV"
   task :playoffs => :environment do
-    text = File.read('../dataset/player_playoffs.csv')
-    csv = CSV.parse(text, :headers => true)
+    conn = connection
+    csv = '../dataset/player_playoffs.csv'
+    tmp = 'temp_seasons'
+    fields = %w(ilkid year firstname lastname team leag gp minutes pts oreb dreb
+                reb asts stl blk turnover pf fga fgm fta ftm tpa tpm)
 
-    playoff = PlayerSeasonType.find_by_name("Playoff")
+    sqlldr(csv, tmp, fields)
 
-    csv.each do |row|
-      row["ilkid"] = row[0]
-      row["team"] = row["team"].upcase
+    total = conn.exec "
+INSERT INTO player_seasons (
+    id, player_id, team_id, year
+  )
+  SELECT
+    player_seasons_seq.NEXTVAL, pl.id, t.id, year
+  FROM
+    #{tmp} tmp, people p, leagues l, players pl, teams t
+  WHERE
+    p.ilkid = tmp.ilkid AND
+    pl.person_id = p.id AND
+    t.trigram = tmp.team AND
+    t.league_id = l.id AND
+    substr(l.name, 0, 1) = tmp.leag AND
+    NOT EXISTS (
+      SELECT 1
+      FROM player_seasons ps
+      WHERE
+        tmp.year = ps.year AND
+	pl.id = ps.player_id AND
+	t.id = ps.team_id
+    )
+"
+    puts "#{total} more player seasons inserted"
 
-      p = Person.find_by_ilkid(row["ilkid"])
-      t = Team.find_by_trigram(row["team"])
-      if t.nil? then
-        raise "Team not found! #{row["team"]}"
-      end
-      ps = PlayerSeason.find(:first, :conditions => "
-        player_id = #{p.player.id.to_i} AND
-        team_id = #{t.id.to_i} AND
-        year = #{row["year"]}
-      ")
-      if ps.nil? then
-        ps = PlayerSeason.create(
-          :player => p.player,
-          :team => t,
-          :year => row["year"]
-        )
-      end
-      s = Stat.create(
-        :pts => row["pts"],
-        :oreb => row["oreb"],
-        :dreb => row["dreb"],
-        :reb => row["reb"],
-        :asts => row["asts"],
-        :steals => row["stl"],
-        :blocks => row["blk"],
-        :pf => row["pf"],
-        :fga => row["fga"],
-        :fgm => row["fgm"],
-        :ftm => row["ftm"],
-        :tpa => row["tpa"],
-        :tpm => row["tpm"]
-      )
-      stat = PlayerStat.create(
-        :stat => s,
-        :player_season => ps,
-        :player_season_type => playoff,
-        :turnovers => row["turnover"],
-        :gp => row["gp"],
-        :minutes => row["minutes"]
-      )
-      puts ps
+    total = conn.exec "
+INSERT INTO stats (
+    id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm,
+    tpa, tpm
+  )
+  SELECT
+    stats_seq.NEXTVAL, pts, oreb, dreb, reb, asts, stl, blk, pf, fga, fgm, fta, ftm,
+    tpa, tpm
+  FROM
+    #{tmp}
+"
+    puts "#{total} more stats inserted"
+
+    # The sequences may already be containing data (initial value being 1)
+    offset = 0
+    conn.exec("SELECT max(id) from stats") do |l|
+      offset = l[0].to_i
     end
+    conn.exec("SELECT max(stat_id) from player_stats") do |l|
+      offset -= l[0].to_i
+    end
+    offset -= total
+
+    total = conn.exec "
+INSERT INTO player_stats (
+    id, stat_id, player_season_id, player_season_type_id, turnovers, gp, minutes
+  )
+  SELECT
+    player_stats_seq.NEXTVAL, #{offset} + player_stats_seq.CURRVAL, ps.id,
+    #{PlayerSeasonType::PLAYOFF}, turnover, gp, minutes
+  FROM
+    #{tmp} tmp, people p, leagues l, players pl, teams t, player_seasons ps
+  WHERE
+    p.ilkid = tmp.ilkid AND
+    pl.person_id = p.id AND
+    t.trigram = tmp.team AND
+    t.league_id = l.id AND
+    substr(l.name, 0, 1) = tmp.leag AND
+    ps.year = tmp.year AND ps.player_id = pl.id AND ps.team_id = t.id
+"
+    puts "#{total} player playoff seasons inserted"
+    cleanup(tmp)
   end
 
   desc "Import all stars season stats from the CSV"
