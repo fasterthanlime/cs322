@@ -269,22 +269,6 @@ INSERT INTO players (id, person_id, position, height, weight, birthdate)
     fields = %w(ilkid year firstname lastname team leag gp minutes pts oreb dreb
                 reb asts stl blk turnover pf fga fgm fta ftm tpa tpm)
 
-    # The sequences may already be containing data (initial value being 1)
-    stats_offset = -1
-    player_seasons_offset = -1
-    player_stats_offset = -1
-    conn.exec("SELECT last_number FROM user_sequences WHERE sequence_name = 'STATS_SEQ'") do |l|
-      stats_offset += l[0].to_i
-    end
-    conn.exec("SELECT last_number FROM user_sequences WHERE sequence_name = 'PLAYER_SEASONS_SEQ'") do |l|
-      player_seasons_offset += l[0].to_i
-    end
-    conn.exec("SELECT last_number FROM user_sequences WHERE sequence_name = 'PLAYER_STATS_SEQ'") do |l|
-      player_stats_offset += l[0].to_i
-    end
-    offset1 = stats_offset - player_seasons_offset;
-    offset2 = stats_offset - player_stats_offset;
-
     sqlldr(csv, tmp, fields)
 
     total = conn.exec "
@@ -315,17 +299,32 @@ INSERT ALL
 "
     puts "#{total/2} more stats inserted"
 
+    # The sequences may already be containing data (initial value being 1)
+    offset = 0
+    conn.exec("SELECT max(id) from stats") do |l|
+      offset = l[0].to_i
+    end
+    offset -= total / 2
+
     total = conn.exec "
 INSERT INTO player_stats (
     id, stat_id, player_season_id, player_season_type_id, turnovers, gp, minutes
   )
   SELECT
-    player_stats_seq.NEXTVAL, #{offset1} + player_stats_seq.CURRVAL,
-    #{offset2} + player_stats_seq.CURRVAL, #{PlayerSeasonType::REGULAR},
-    turnover, gp, minutes
-  FROM #{tmp}
+    player_stats_seq.NEXTVAL, #{offset} + player_stats_seq.CURRVAL, ps.id,
+    #{PlayerSeasonType::REGULAR}, turnover, gp, minutes
+  FROM
+    #{tmp} tmp, people p, leagues l, players pl, teams t, player_seasons ps
+  WHERE
+    p.ilkid = tmp.ilkid and
+    pl.person_id = p.id and
+    t.trigram = tmp.team and
+    t.league_id = l.id and (
+      substr(l.name, 0, 1) = tmp.leag or
+      l.name = 'NBA' and tmp.team = 'TOT' -- TOT never played in ABA
+    ) and
+    ps.year = tmp.year and ps.player_id = pl.id and ps.team_id = t.id
 "
-
     puts "#{total} player regular seasons inserted"
     cleanup(tmp)
   end
