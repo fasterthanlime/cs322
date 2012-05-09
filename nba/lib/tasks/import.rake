@@ -1,63 +1,25 @@
 # -*- coding: utf-8 -*-
 =begin
 
-This is maybe the most resource consuming tool to import CSV files into a
-database. But we don't care… young people have time to wait. Right?
+Simply do:
 
-For better and quicker tool: use `sqlldr`
+$ rake import:all
 
-TODO:
- - unify similar import tasks (if it ain't broke, don't fix)
+It'll loading the sql files:
+
+$ rake import:schema
+
+And run the migration for everything (in the correct order which cannot be
+arbitrary).
+
+For more help on the commands provided by this.
+
+$ rake -T import
 
 =end
-require 'csv'
 
 namespace :import do
-  def connection
-    ActiveRecord::Base.connection.raw_connection
-  end
-
-  def connection_string
-    c = Rails.configuration.database_configuration[Rails.env]
-    "#{c["username"]}/#{c["password"]}@//#{c["host"]}:#{c["port"]}/#{c["database"]}"
-  end
-
-  def cleanup (table)
-    connection().exec "DROP TABLE #{table} PURGE"
-  end
-
-  def sqlldr (csv, table, fields, bad=nil, skip=1)
-    control = '.control.txt'
-    c = File.open(control, 'w+')
-
-    # Replacing "NULL" with proper NULL hopefully nobody's called that way
-    # but... http://stackoverflow.com/q/4456438/122978
-    sqlfields = fields.map do |field|
-      "#{field} \"DECODE(:#{field}, 'NULL', NULL, :#{field})\""
-    end
-    c.write "
-LOAD DATA INFILE '#{csv}'
-TRUNCATE
-INTO TABLE #{table}
-FIELDS TERMINATED BY ','
-TRAILING NULLCOLS
-(#{sqlfields.join(', ')})
-"
-
-    c.close
-
-    type = "VARCHAR2(255)"
-    connection().exec "
-      CREATE TABLE #{table} (#{fields.join(" #{type}, ")} #{type})
-    "
-    cmd = "sqlldr userid=#{connection_string} control=#{control}"
-    cmd += " bad=#{bad}" unless bad.nil?
-    cmd += " skip=#{skip}" unless skip.nil?
-    system cmd
-    File.delete(control)
-  end
-
-  desc ""
+  desc "Reloading the schema and initial data"
   task :schema => :environment do
     conn = connection_string
     ["drop", "schema", "data"].each do |file|
@@ -547,4 +509,52 @@ INSERT INTO drafts (
       Rake::Task["import:#{t}"].invoke
     end
   end
+
+private
+
+  def connection
+    ActiveRecord::Base.connection.raw_connection
+  end
+
+  def connection_string
+    c = Rails.configuration.database_configuration[Rails.env]
+    "#{c["username"]}/#{c["password"]}@//#{c["host"]}:#{c["port"]}/#{c["database"]}"
+  end
+
+  def cleanup (table)
+    connection().exec "DROP TABLE #{table} PURGE"
+  end
+
+  def sqlldr (csv, table, fields, bad=nil, skip=1)
+    control = '.control.txt'
+    c = File.open(control, 'w+')
+
+    # Replacing "NULL" with proper NULL hopefully nobody's called that way
+    # but... http://stackoverflow.com/q/4456438/122978
+    sqlfields = fields.map do |field|
+      "#{field} \"DECODE(:#{field}, 'NULL', NULL, :#{field})\""
+    end
+    c.write "
+LOAD DATA INFILE '#{csv}'
+TRUNCATE
+INTO TABLE #{table}
+FIELDS TERMINATED BY ','
+TRAILING NULLCOLS
+(#{sqlfields.join(', ')})
+"
+
+    c.close
+
+    type = "VARCHAR2(255)"
+    connection().exec "
+      CREATE TABLE #{table} (#{fields.join(" #{type}, ")} #{type})
+    "
+    cmd = "sqlldr userid=#{connection_string} control=#{control}"
+    cmd += " bad=#{bad}" unless bad.nil?
+    cmd += " skip=#{skip}" unless skip.nil?
+    system cmd
+    File.delete(control)
+  end
+
+
 end
