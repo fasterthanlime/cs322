@@ -11,6 +11,7 @@ ActiveAdmin.register PlayerStat do
     end
     column :gp
     column :minutes
+    column :turnovers
     column :stat do |ps|
       stat = ps.stat
       link_to "#" + stat.id.to_s, admin_stat_path(stat)
