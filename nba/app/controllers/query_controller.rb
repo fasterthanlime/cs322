@@ -49,10 +49,8 @@ class QueryController < ApplicationController
 
     @sql = File.read("../queries/basic_#{query_name}.sql")
     @sql.split(";").slice(0..-2).each { |query|
-      rc.exec(query)
+      @results = rc.exec(query)
     }
-
-    @results = rc.exec("SELECT * FROM query_#{query_name}")
   end
 
 end

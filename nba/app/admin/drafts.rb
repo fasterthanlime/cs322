@@ -7,11 +7,10 @@ ActiveAdmin.register Draft do
       link_to "#{team.trigram} #{team.name}", admin_team_path(team)
     end
     column :year
-    column :player do |draft|
-      player = draft.player
-      person = player.person
+    column :person do |draft|
+      person = draft.person
       ilkid = "(#{person.ilkid})" if person.ilkid
-      link_to "#{person.fullname} #{ilkid}", admin_player_path(player)
+      link_to "#{person.fullname} #{ilkid}", admin_person_path(person)
     end
     column :round
     column :selection

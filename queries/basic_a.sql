@@ -1,8 +1,6 @@
 -- Print the last and first name of players/coaches who participated in NBA
 -- both as a player and as a coach.
 
-CREATE OR REPLACE VIEW query_a AS
-
 SELECT DISTINCT
     p.id, p.firstname, p.lastname
 FROM

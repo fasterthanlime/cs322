@@ -1,23 +1,51 @@
 # -*- coding: utf-8 -*-
 =begin
 
-This is maybe the most resource consuming tool to import CSV files into a
-database. But we don't care… young people have time to wait. Right?
+Simply do:
 
-For better and quicker tool: use `sqlldr`
+$ rake import:all
 
-TODO:
- - unify similar import tasks (if it ain't broke, don't fix)
+It'll loading the sql files:
+
+$ rake import:schema
+
+And run the migration for everything (in the correct order which cannot be
+arbitrary).
+
+For more help on the commands provided by this.
+
+$ rake -T import
 
 =end
-require 'csv'
 
 namespace :import do
+  desc "Reloading the schema and initial data"
+  task :schema => :environment do
+    conn = connection_string
+    ["drop", "schema", "data"].each do |file|
+      puts "Loading: #{file}.sql"
+      system "sqlplus #{conn} < ../documents/sql/#{file}.sql"
+    end
+  end
+
   desc "Import teams data from the CSV"
   task :teams => :environment do
-    text = File.read('../dataset/teams.csv')
-    csv = CSV.parse(text, :headers => true)
+    conn = connection
+    csv = '../dataset/teams.csv'
+    tmp = 'temp_teams'
+    fields = %w(team location name leag)
 
+    sqlldr(csv, tmp, fields)
+    total = conn.exec "
+INSERT INTO teams (id, trigram, location, name, league_id)
+  SELECT teams_seq.NEXTVAL, tt.team trigram, location, tt.name, l.id league_id
+  FROM #{tmp} tt, leagues l
+  WHERE tt.leag = SUBSTR(l.name, 0, 1)
+"
+    puts "#{total} teams inserted"
+    cleanup(tmp)
+
+    # Fixing the data
     missing_teams = {
       "ABA" => %w(NYJ),
       "NBA" => %w(NEW NOR PHW SAN SL1 TAT TOT)
@@ -31,404 +59,449 @@ namespace :import do
         )
       end
     end
-
-    csv.each do |row|
-      # because it starts with sharp
-      row["team"] = row[0]
-
-      # https://en.wikipedia.org/wiki/Miami_Floridians
-      if row["location"] == "Floridians" then
-        row["name"] = row["location"]
-        row["location"] = nil
-      end
-
-      l = League.find_by_name("#{row["leag"]}BA")
-      if l.nil? then
-        raise "League not found #{row["leag"]}BA"
-      end
-
-      puts Team.create(
-        :trigram => row["team"],
-        :league => l,
-        :location => row["location"],
-        :name => row["name"],
-      )
-    end
   end
 
   desc "Import team stats from the CSV"
   task :team_stats => :environment do
-    text = File.read('../dataset/team_season.csv')
-    csv = CSV.parse(text, :headers => true)
+    conn = connection
+    csv = '../dataset/team_season.csv'
+    tmp = 'temp_seasons'
+    fields = %w(team year leag o_fgm o_fga o_ftm o_fta o_oreb o_dreb o_reb
+                o_asts o_pf o_stl o_to o_blk o_3pm o_3pa o_pts d_fgm d_fga
+                d_ftm d_fta d_oreb d_dreb d_reb d_asts d_pf d_stl d_to d_blk
+                d_3pm d_3pa d_pts pace won lost)
 
-    csv.each do |row|
-      row["team"] = row[0]
-      team = Team.find_by_trigram(row["team"])
-      os = Stat.create(
-        :pts => row["o_pts"],
-        :oreb => row["o_oreb"],
-        :dreb => row["o_dreb"],
-        :reb => row["o_reb"],
-        :asts => row["o_asts"],
-        :steals => row["o_steals"],
-        :blocks => row["o_blocks"],
-        :turnovers => row["o_turnovers"],
-        :tpf => row["o_tpf"],
-        :fga => row["o_fga"],
-        :fgm => row["o_fgm"],
-        :ftm => row["o_ftm"],
-        :tpa => row["o_tpa"],
-        :tpm => row["o_tpm"]
-      )
-      ds = Stat.create(
-        :pts => row["d_pts"],
-        :oreb => row["d_oreb"],
-        :dreb => row["d_dreb"],
-        :reb => row["d_reb"],
-        :asts => row["d_asts"],
-        :steals => row["d_steals"],
-        :blocks => row["d_blocks"],
-        :turnovers => row["d_turnovers"],
-        :tpf => row["d_tpf"],
-        :fga => row["d_fga"],
-        :fgm => row["d_fgm"],
-        :ftm => row["d_ftm"],
-        :tpa => row["d_tpa"],
-        :tpm => row["d_tpm"]
-      )
-      ots = TeamStat.create(
-        :team_stat_tactique => TeamStatTactique.find_by_name("Offensive"),
-        :stat => os,
-        :team => team,
-        :year => row["year"],
-        :pace => row["pace"]
-      )
-      dts = TeamStat.create(
-        :team_stat_tactique => TeamStatTactique.find_by_name("Defensive"),
-        :stat => ds,
-        :team => team,
-        :year => row["year"]
-      )
-      puts ots
-      puts dts
+    # The sequences may already be containing data (initial value being 1)
+    stats_offset = -1
+    team_stats_offset = -1
+    conn.exec("SELECT last_number FROM user_sequences WHERE sequence_name = 'STATS_SEQ'") do |l|
+      stats_offset += l[0].to_i
     end
+    conn.exec("SELECT last_number FROM user_sequences WHERE sequence_name = 'TEAM_STATS_SEQ'") do |l|
+      team_stats_offset += l[0].to_i
+    end
+    offset = stats_offset - team_stats_offset;
+
+    sqlldr(csv, tmp, fields)
+    total = conn.exec "
+INSERT ALL
+  INTO stats (
+    id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm,
+    tpa, tpm
+  ) VALUES (
+    2 * stats_seq.NEXTVAL - 1, o_pts, o_oreb, o_dreb, o_reb, o_asts, o_stl,
+    o_blk, o_pf, o_fga, o_fgm, o_fta, o_ftm, o_3pa, o_3pm
+  )
+  INTO stats (
+    id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm,
+    tpa, tpm
+  ) VALUES (
+    2 * stats_seq.CURRVAL, d_pts, d_oreb, d_dreb, d_reb, d_asts, d_stl, d_blk,
+    d_pf, d_fga, d_fgm, d_fta, d_ftm, d_3pa, d_3pm
+  )
+  SELECT *
+  FROM #{tmp}
+"
+    puts "#{total} stats inserted"
+
+    total2 = conn.exec "
+INSERT ALL
+  INTO team_stats (
+    id, stat_id, team_id, year, team_stat_tactique_id, pace
+  ) VALUES (
+    2 * team_stats_seq.NEXTVAL - 1, #{offset} + 2 * team_stats_seq.CURRVAL - 1,
+    team_id, year, #{TeamStatTactique::OFFENSIVE}, pace
+  )
+  INTO team_stats (
+    id, stat_id, team_id, year, team_stat_tactique_id
+  ) VALUES (
+    2 * team_stats_seq.CURRVAL, #{offset} + 2 * team_stats_seq.CURRVAL, team_id,
+    year, #{TeamStatTactique::DEFENSIVE}
+  )
+  SELECT tmp.*, t.id team_id
+  FROM #{tmp} tmp
+  JOIN teams t ON t.trigram = tmp.team
+  JOIN leagues l ON l.id = t.league_id
+  WHERE tmp.leag = SUBSTR(l.name, 0, 1)
+"
+    puts "#{total2} team_stats inserted"
+
+    # HACK! fix the sequences (since we multiplied by 2 right above)
+    conn.exec "
+UPDATE #{tmp} SET team = stats_seq.NEXTVAL, year = team_stats_seq.NEXTVAL
+"
+
+    cleanup(tmp)
   end
 
   desc "Import coaches data from the CSV"
   task :coaches => :environment do
-    text = File.read('../dataset/coaches_data.csv')
-    csv = CSV.parse(text, :headers => true)
+    conn = connection
+    csv = '../dataset/coaches_career.csv'
+    tmp = 'temp_coaches'
+    fields = %w(coachid firstname lastname season_win season_loss playoff_win playoff_loss)
 
-    csv.each do |row|
-      # One of the coach contains a non-breaking space (nbsp).
-      row["coachid"] = row[0].tr(" ", " ").strip
-      row["firstname"].strip!
-      row["lastname"].strip!
-      p = Person.where(
-        :ilkid => row["coachid"],
-        :firstname => row["firstname"],
-        :lastname => row["lastname"]
-      )
-      if p.empty? then
-        p = Person.create(
-          :ilkid => row["coachid"],
-          :firstname => row["firstname"],
-          :lastname => row["lastname"]
-        )
-        puts p
-      else
-        p = p[0]
-      end
+    sqlldr(csv, tmp, fields)
+    total = conn.exec "
+INSERT ALL
+  INTO people (
+    id, ilkid, firstname, lastname
+  ) VALUES (
+    people_seq.NEXTVAL, SUBSTR(coachid, 0, 9), firstname, lastname
+  )
+  INTO coaches (
+    id, person_id
+  ) VALUES (
+    coaches_seq.NEXTVAL, people_seq.CURRVAL
+  )
+  SELECT *
+  FROM #{tmp}
+"
+    puts "#{total/2} coaches inserted"
+    cleanup(tmp)
+  end
 
-      c = Coach.find_by_person_id(p.id.to_i)
+  desc "Import coach seasons from the CSV"
+  task :coach_seasons => :environment do
+    conn = connection
+    csv = '../dataset/coaches_data.csv'
+    tmp = 'temp_coaches'
+    fields = %w(coachid year yr_order firstname lastname season_win season_loss
+                playoff_win playoff_loss team)
 
-      if c.nil? then
-        c = Coach.create(
-          :person => p
-        )
-        puts " " + c.to_s
-      end
+    sqlldr(csv, tmp, fields)
+    total = conn.exec "
+INSERT INTO coach_seasons (
+    id, team_id, coach_id, year, year_order, season_win, season_loss,
+    playoff_win, playoff_loss
+  )
+  SELECT
+    coach_seasons_seq.NEXTVAL, t.id, c.id, year, yr_order, season_win,
+    season_loss, playoff_win, playoff_loss
+  FROM #{tmp} tmp
+  JOIN people p ON p.ilkid = SUBSTR(tmp.coachid, 0, 9)
+  JOIN coaches c ON c.person_id = p.id
+  JOIN teams t ON t.trigram = tmp.team
+"
 
-      t = Team.find_by_trigram(row["team"])
-      unless t.nil? then
-        cs = CoachSeason.create(
-          :coach => c,
-          :team => t,
-          :year => row["year"],
-          :year_order => row["year_order"],
-          :season_win => row["season_win"],
-          :season_loss => row["season_loss"],
-          :playoff_win => row["playoff_win"],
-          :playoff_loss => row["playoff_loss"],
-        )
-        puts "  " + cs.to_s
-      else
-        raise "Team not found! #{row["team"]}"
-      end
-    end
+    cleanup(tmp)
+    puts "#{total} coach seasons inserted"
   end
 
   desc "Import players data from the CSV"
   task :players => :environment do
-    text = File.read('../dataset/players.csv')
-    csv = CSV.parse(text, :headers => true)
+    conn = connection
+    csv = '../dataset/players.csv'
+    tmp = 'temp_players'
+    fields = %w(ilkid firstname lastname position firstseason lastseason h_feet
+                h_inches weight college birthdate)
 
-    csv.each do |row|
-      row["ilkid"] = row[0]
+    sqlldr(csv, tmp, fields)
 
-      p = Person.find_by_ilkid(row["ilkid"])
-      if p.nil? then
-        p = Person.create(
-          :ilkid => row["ilkid"],
-          :firstname => row["firstname"],
-          :lastname => row["lastname"]
-        )
-        puts p
-      end
+    total = conn.exec "
+INSERT INTO people (id, ilkid, firstname, lastname)
+  SELECT people_seq.NEXTVAL, ilkid, firstname, lastname
+  FROM #{tmp} tmp
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM people p
+    WHERE tmp.ilkid = p.ilkid
+  )
+"
+    puts "#{total} more people inserted"
 
-      # One foot is 12 inches
-      height = row["h_feet"].to_i * 12 + row["h_inches"].to_i
+    total = conn.exec "
+INSERT INTO players (id, person_id, position, height, weight, birthdate)
+  SELECT
+    players_seq.NEXTVAL, p.id, position, (h_feet * 12) + h_inches, weight,
+    birthdate
+  FROM #{tmp} tmp, people p
+  WHERE tmp.ilkid = p.ilkid
+"
 
-      pl = Player.create(
-        :person => p,
-        :position => row["position"],
-        :height => height,
-        :weight => row["weight"],
-        :birthdate => row["birthdate"]
-      )
-      puts " " + pl.to_s
-    end
+    puts "#{total} players inserted"
+    cleanup(tmp)
   end
 
   desc "Import regular season stats from the CSV"
   task :regular_seasons => :environment do
-    text = File.read('../dataset/player_regular_season.csv')
-    csv = CSV.parse(text, :headers => true)
+    conn = connection
+    csv = '../dataset/player_regular_season.csv'
+    tmp = 'temp_seasons'
+    fields = %w(ilkid year firstname lastname team leag gp minutes pts oreb dreb
+                reb asts stl blk turnover pf fga fgm fta ftm tpa tpm)
 
-    regular = PlayerSeasonType.find_by_name("Regular")
+    sqlldr(csv, tmp, fields)
 
-    csv.each do |row|
-      row["ilkid"] = row[0]
+    total = conn.exec "
+INSERT ALL
+  INTO player_seasons (
+    id, player_id, team_id, year
+  ) VALUES (
+    player_seasons_seq.NEXTVAL, player_id, team_id, year
+  )
+  INTO stats (
+    id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm,
+    tpa, tpm
+  ) VALUES (
+    stats_seq.NEXTVAL, pts, oreb, dreb, reb, asts, stl, blk, pf, fga, fgm, fta, ftm,
+    tpa, tpm
+  )
+  SELECT tmp.*, pl.id player_id, t.id team_id
+  FROM
+    #{tmp} tmp, people p, leagues l, players pl, teams t
+  WHERE
+    p.ilkid = tmp.ilkid AND
+    pl.person_id = p.id AND
+    t.trigram = tmp.team AND
+    t.league_id = l.id AND (
+      substr(l.name, 0, 1) = tmp.leag OR
+      l.name = 'NBA' AND tmp.team = 'TOT' -- TOT never played in ABA
+    )
+"
 
-      p = Person.find_by_ilkid(row["ilkid"])
-      t = Team.find_by_trigram(row["team"])
-      if t.nil? then
-        raise "Team not found! #{row["team"]}"
-      end
-      ps = PlayerSeason.create(
-        :player => p.player,
-        :team => t,
-        :year => row["year"]
-      )
-      s = Stat.create(
-        :pts => row["pts"],
-        :oreb => row["oreb"],
-        :dreb => row["dreb"],
-        :reb => row["reb"],
-        :asts => row["asts"],
-        :steals => row["stl"],
-        :blocks => row["blk"],
-        :turnovers => row["turnover"],
-        :tpf => row["pf"],
-        :fga => row["fga"],
-        :fgm => row["fgm"],
-        :ftm => row["ftm"],
-        :tpa => row["tpa"],
-        :tpm => row["tpm"]
-      )
-      stat = PlayerStat.create(
-        :stat => s,
-        :player_season => ps,
-        :player_season_type => regular,
-        :gp => row["gp"],
-        :minutes => row["minutes"]
-      )
-      puts ps
+    puts "#{total/2} more stats inserted"
+
+    # The sequences may already be containing data (initial value being 1)
+    offset = 0
+    conn.exec("SELECT max(id) from stats") do |l|
+      offset = l[0].to_i
     end
+    offset -= total / 2
+
+    total = conn.exec "
+INSERT INTO player_stats (
+    id, stat_id, player_season_id, player_season_type_id, turnovers, gp, minutes
+  )
+  SELECT
+    player_stats_seq.NEXTVAL, #{offset} + player_stats_seq.CURRVAL, ps.id,
+    #{PlayerSeasonType::REGULAR}, turnover, gp, minutes
+  FROM
+    #{tmp} tmp, people p, leagues l, players pl, teams t, player_seasons ps
+  WHERE
+    p.ilkid = tmp.ilkid AND
+    pl.person_id = p.id AND
+    t.trigram = tmp.team AND
+    t.league_id = l.id AND (
+      substr(l.name, 0, 1) = tmp.leag OR
+      l.name = 'NBA' AND tmp.team = 'TOT' -- TOT never played in ABA
+    ) AND
+    ps.year = tmp.year AND ps.player_id = pl.id AND ps.team_id = t.id
+"
+    puts "#{total} player regular seasons inserted"
+    cleanup(tmp)
   end
 
   desc "Import playoff season stats from the CSV"
   task :playoffs => :environment do
-    text = File.read('../dataset/player_playoffs.csv')
-    csv = CSV.parse(text, :headers => true)
+    conn = connection
+    csv = '../dataset/player_playoffs.csv'
+    tmp = 'temp_seasons'
+    fields = %w(ilkid year firstname lastname team leag gp minutes pts oreb dreb
+                reb asts stl blk turnover pf fga fgm fta ftm tpa tpm)
 
-    playoff = PlayerSeasonType.find_by_name("Playoff")
+    sqlldr(csv, tmp, fields)
 
-    csv.each do |row|
-      row["ilkid"] = row[0]
-      row["team"] = row["team"].upcase
+    total = conn.exec "
+INSERT INTO player_seasons (
+    id, player_id, team_id, year
+  )
+  SELECT
+    player_seasons_seq.NEXTVAL, pl.id, t.id, year
+  FROM
+    #{tmp} tmp, people p, leagues l, players pl, teams t
+  WHERE
+    p.ilkid = tmp.ilkid AND
+    pl.person_id = p.id AND
+    t.trigram = tmp.team AND
+    t.league_id = l.id AND
+    substr(l.name, 0, 1) = tmp.leag AND
+    NOT EXISTS (
+      SELECT 1
+      FROM player_seasons ps
+      WHERE
+        tmp.year = ps.year AND
+        pl.id = ps.player_id AND
+        t.id = ps.team_id
+    )
+"
+    puts "#{total} more player seasons inserted"
 
-      p = Person.find_by_ilkid(row["ilkid"])
-      t = Team.find_by_trigram(row["team"])
-      if t.nil? then
-        raise "Team not found! #{row["team"]}"
-      end
-      ps = PlayerSeason.find(:first, :conditions => "
-        player_id = #{p.player.id.to_i} AND
-        team_id = #{t.id.to_i} AND
-        year = #{row["year"]}
-      ")
-      if ps.nil? then
-        ps = PlayerSeason.create(
-          :player => p.player,
-          :team => t,
-          :year => row["year"]
-        )
-      end
-      s = Stat.create(
-        :pts => row["pts"],
-        :oreb => row["oreb"],
-        :dreb => row["dreb"],
-        :reb => row["reb"],
-        :asts => row["asts"],
-        :steals => row["stl"],
-        :blocks => row["blk"],
-        :turnovers => row["turnover"],
-        :tpf => row["pf"],
-        :fga => row["fga"],
-        :fgm => row["fgm"],
-        :ftm => row["ftm"],
-        :tpa => row["tpa"],
-        :tpm => row["tpm"]
-      )
-      stat = PlayerStat.create(
-        :stat => s,
-        :player_season => ps,
-        :player_season_type => playoff,
-        :gp => row["gp"],
-        :minutes => row["minutes"]
-      )
-      puts ps
+    total = conn.exec "
+INSERT INTO stats (
+    id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm,
+    tpa, tpm
+  )
+  SELECT
+    stats_seq.NEXTVAL, pts, oreb, dreb, reb, asts, stl, blk, pf, fga, fgm, fta, ftm,
+    tpa, tpm
+  FROM
+    #{tmp}
+"
+    puts "#{total} more stats inserted"
+
+    # The sequences may already be containing data (initial value being 1)
+    offset = 0
+    conn.exec("SELECT max(id) from stats") do |l|
+      offset = l[0].to_i
     end
+    conn.exec("SELECT max(stat_id) from player_stats") do |l|
+      offset -= l[0].to_i
+    end
+    offset -= total
+
+    total = conn.exec "
+INSERT INTO player_stats (
+    id, stat_id, player_season_id, player_season_type_id, turnovers, gp, minutes
+  )
+  SELECT
+    player_stats_seq.NEXTVAL, #{offset} + player_stats_seq.CURRVAL, ps.id,
+    #{PlayerSeasonType::PLAYOFF}, turnover, gp, minutes
+  FROM
+    #{tmp} tmp, people p, leagues l, players pl, teams t, player_seasons ps
+  WHERE
+    p.ilkid = tmp.ilkid AND
+    pl.person_id = p.id AND
+    t.trigram = tmp.team AND
+    t.league_id = l.id AND
+    substr(l.name, 0, 1) = tmp.leag AND
+    ps.year = tmp.year AND ps.player_id = pl.id AND ps.team_id = t.id
+"
+    puts "#{total} player playoff seasons inserted"
+    cleanup(tmp)
   end
 
   desc "Import all stars season stats from the CSV"
   task :allstars => :environment do
-    text = File.read('../dataset/player_allstar.csv')
-    csv = CSV.parse(text, :headers => true)
+    conn = connection
+    csv = '../dataset/player_allstar.csv'
+    tmp = 'temp_seasons'
+    fields = %w(ilkid year firstname lastname conference leag gp minutes pts dreb oreb
+                reb asts stl blk turnover pf fga fgm fta ftm tpa tpm)
 
-    csv.each do |row|
-      row["ilkid"] = row[0]
+    sqlldr(csv, tmp, fields)
+    total = conn.exec "
+INSERT INTO stats (
+    id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm,
+    tpa, tpm
+  )
+  SELECT
+    stats_seq.NEXTVAL, pts, oreb, dreb, reb, asts, stl, blk, pf, fga, fgm, fta, ftm,
+    tpa, tpm
+  FROM
+    #{tmp}
+  WHERE
+    ilkid <> 'THOMPDA01' OR year <> '1982' OR tpm IS NOT NULL -- row to ignore
+"
+    puts "#{total} more stats inserted"
 
-      # Fix a buggy ilkid
-      if (row["ilkid"] == "JOHNSMA01" and row["firstname"] == "Marques") then
-        row["ilkid"] = "JOHNSMA02"
-      end
-      # Ignore this particular entry
-      if (row["ilkid"] == "THOMPDA01" and row["year"] == "1982" and row["tpm"] == "NULL") then
-        next
-      end
-      p = Person.find_by_ilkid(row["ilkid"])
-      pl = p.player
-
-      if pl.nil? then
-        raise "#{row["ilkid"]} our model suck donkey balls"
-      end
-      s = Stat.create(
-        :pts => row["pts"],
-        :oreb => row["oreb"],
-        :dreb => row["dreb"],
-        :reb => row["reb"],
-        :asts => row["asts"],
-        :steals => row["stl"],
-        :blocks => row["blk"],
-        :turnovers => row["turnover"],
-        :tpf => row["pf"],
-        :fga => row["fga"],
-        :fgm => row["fgm"],
-        :ftm => row["ftm"],
-        :tpa => row["tpa"],
-        :tpm => row["tpm"]
-      )
-      c = Conference.find_by_name(row["conference"] == "west" ?
-        "Western" :
-        "Eastern"
-      )
-      pa = PlayerAllstar.create(
-        :stat => s,
-        :player => pl,
-        :conference => c,
-        :year => row["year"],
-        :gp => row["gp"],
-        :minutes => row["minutes"]
-      )
-      puts pa
+    # The sequences may already be containing data (initial value being 1)
+    offset = 0
+    conn.exec("SELECT max(id) from stats") do |l|
+      offset = l[0].to_i
     end
-  end
+    offset -= total
 
+    total = conn.exec "
+INSERT INTO player_allstars (
+    id, stat_id, player_id, conference_id, year, turnovers, gp, minutes
+  )
+  SELECT
+    player_allstars_seq.NEXTVAL, #{offset} + player_allstars_seq.CURRVAL, pl.id,
+    c.id, year, turnover, gp, minutes
+  FROM
+    #{tmp} tmp, people p, players pl, conferences c
+  WHERE
+    (tmp.ilkid <> 'THOMPDA01' OR tmp.year <> '1982' OR tmp.tpm IS NOT NULL) AND
+    (
+      p.ilkid = CASE WHEN (tmp.ilkid = 'JOHNSMA01' AND tmp.firstname = 'Marques')
+        THEN 'JOHNSMA02'
+        ELSE tmp.ilkid
+      END
+    ) AND
+    pl.person_id = p.id AND
+    (
+      substr(c.name, 0, 4) = tmp.conference OR
+      lower(substr(c.name, 0, 4)) = tmp.conference OR
+      c.name = 'Western' AND (tmp.conference = 'weset' OR tmp.conference = 'Denver' or tmp.conference = 'AllStars')
+      -- AllStars is 1975: https://en.wikipedia.org/wiki/American_Basketball_Association#List_of_ABA_championships
+    )
+"
+
+    puts "#{total} player allstars seasons inserted"
+    cleanup(tmp)
+  end
 
   desc "Import drafts data from the CSV"
   task :drafts => :environment do
-    text = File.read('../dataset/draft.csv')
-    csv = CSV.parse(text, :headers => true)
+    conn = connection
+    csv = '../dataset/draft.csv'
+    tmp = 'temp_drafts'
+    fields = %w(draft_year draft_round selection team firstname lastname ilkid
+                draft_from leag)
 
-    csv.each do |row|
-      row["draft_year"] = row[0]
+    sqlldr(csv, tmp, fields)
 
-      if row["ilkid"].nil? or row["ilkid"].strip.empty? or row["ilkid"] == "NULL" then
-        p = Person.create(
-          :firstname => row["firstname"],
-          :lastname => row["lastname"]
-        )
-        puts p
-      else
-        p = Person.find_by_ilkid(row["ilkid"])
-        if p.nil? then
-          p = Person.create(
-            :ilkid => row["ilkid"],
-            :firstname => row["firstname"],
-            :lastname => row["lastname"]
-          )
-          puts p
-        end
-      end
-
-      if p.player.nil? then
-        # FIXME: because the position is mandatory, I put '0'
-        pl = Player.create(
-          :person => p,
-          :position => '0'
-        )
-        puts " " + pl.to_s
-      else
-        pl = p.player
-      end
-
-      c = Location.find_by_name(row["draft_from"])
-      if c.nil? then
-        c = Location.create(
-          :name => row["draft_from"]
-        )
-        puts " " + c.to_s
-      end
-
-      l = League.find_by_name("#{row["leag"]}BA")
-      if l.nil? then
-        raise "League not found! #{row["leag"]}BA"
-      end
-
-      t = Team.find_by_trigram_and_league_id(row["team"], l.id)
-      if t.nil? then
-        raise "Team not found! #{row["team"]}"
-      end
-
-
-      d = Draft.create(
-        :player => pl,
-        :team => t,
-        :location => c,
-        :year => row["draft_year"],
-        :selection => row["selection"],
-        :round => row["draft_round"]
+    total = conn.exec "
+INSERT INTO people (id, ilkid, firstname, lastname)
+  SELECT people_seq.NEXTVAL, ilkid, firstname, lastname
+  FROM (
+    SELECT DISTINCT ilkid, firstname, lastname
+    FROM #{tmp} tmp
+    WHERE
+      NOT EXISTS (
+        SELECT 1
+        FROM people p
+        WHERE
+          p.ilkid = tmp.ilkid AND
+          p.firstname = tmp.firstname AND
+          p.lastname = tmp.lastname
       )
-      puts "  " + d.to_s
-    end
+  )
+"
+    puts "#{total} more people inserted"
+
+    total = conn.exec "
+INSERT INTO locations (id, name)
+  SELECT locations_seq.NEXTVAL, draft_from
+  FROM (
+    SELECT DISTINCT draft_from
+    FROM #{tmp}
+  )
+"
+    puts "#{total} locations inserted"
+
+    total = conn.exec "
+INSERT INTO drafts (
+    id, person_id, team_id, location_id, year, selection, round
+  )
+  SELECT
+    drafts_seq.NEXTVAL, p.id, t.id, loc.id, tmp.draft_year, tmp.selection,
+    tmp.draft_round
+  FROM #{tmp} tmp
+  JOIN people p ON
+    (
+      tmp.ilkid = p.ilkid OR
+      tmp.ilkid IS NULL AND
+      p.ilkid IS NULL
+    ) AND
+    tmp.firstname = p.firstname AND
+    tmp.lastname = p.lastname
+  JOIN teams t ON tmp.team = t.trigram
+  JOIN leagues l ON
+    t.league_id = l.id AND
+    tmp.leag = SUBSTR(l.name, 0, 1)
+  LEFT JOIN locations loc ON tmp.draft_from = loc.name
+"
+    puts "#{total} drafts inserted"
+    cleanup(tmp)
   end
 
   desc "All, remove everything and starts over"
   task :all => :environment do
     %w(
-      teams team_stats coaches players drafts regular_seasons playoffs allstars
+      schema teams team_stats coaches coach_seasons players regular_seasons
+      playoffs allstars drafts
     ).each do |t|
       puts
       puts "rake import:#{t}"
@@ -436,4 +509,52 @@ namespace :import do
       Rake::Task["import:#{t}"].invoke
     end
   end
+
+private
+
+  def connection
+    ActiveRecord::Base.connection.raw_connection
+  end
+
+  def connection_string
+    c = Rails.configuration.database_configuration[Rails.env]
+    "#{c["username"]}/#{c["password"]}@//#{c["host"]}:#{c["port"]}/#{c["database"]}"
+  end
+
+  def cleanup (table)
+    connection().exec "DROP TABLE #{table} PURGE"
+  end
+
+  def sqlldr (csv, table, fields, bad=nil, skip=1)
+    control = '.control.txt'
+    c = File.open(control, 'w+')
+
+    # Replacing "NULL" with proper NULL hopefully nobody's called that way
+    # but... http://stackoverflow.com/q/4456438/122978
+    sqlfields = fields.map do |field|
+      "#{field} \"DECODE(:#{field}, 'NULL', NULL, :#{field})\""
+    end
+    c.write "
+LOAD DATA INFILE '#{csv}'
+TRUNCATE
+INTO TABLE #{table}
+FIELDS TERMINATED BY ','
+TRAILING NULLCOLS
+(#{sqlfields.join(', ')})
+"
+
+    c.close
+
+    type = "VARCHAR2(255)"
+    connection().exec "
+      CREATE TABLE #{table} (#{fields.join(" #{type}, ")} #{type})
+    "
+    cmd = "sqlldr userid=#{connection_string} control=#{control}"
+    cmd += " bad=#{bad}" unless bad.nil?
+    cmd += " skip=#{skip}" unless skip.nil?
+    system cmd
+    File.delete(control)
+  end
+
+
 end

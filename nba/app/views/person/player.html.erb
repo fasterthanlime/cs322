@@ -22,17 +22,17 @@ player = @person.player
       <dt>Birthdate</dt>
       <dd><%= player.birthdate.strftime('%Y-%m-%d') -%></dd>
     <%- end -%>
-    <%- if player.drafts.count > 0 then -%>
+    <%- if @person.drafts.count > 0 then -%>
       <dt>College</dt>
-      <dd><%= player.drafts[0].location.name -%></dd>
+      <dd><%= @person.drafts[0].location.name -%></dd>
     <%- end -%>
     </dl>
-  <%- if player.drafts.count > 0 then-%>
+  <%- if @person.drafts.count > 0 then-%>
     <h4>Draft history</h4>
     <ul>
-    <%- player.drafts.each do |draft| -%>
+    <%- @person.drafts.each do |draft| -%>
       <li><%= link_to(
-        "#{draft.year} #{draft.league.name}, round #{draft.round}, #{draft.team.name}",
+        "#{draft.year} #{draft.team.league.name}, round #{draft.round}, #{draft.team.name}",
         :controller => 'team',
         :action => 'view',
         :id => draft.team_id

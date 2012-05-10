@@ -1,6 +1,7 @@
 class Person < ActiveRecord::Base
   has_one :coach
   has_one :player
+  has_many :drafts
   attr_accessible :ilkid, :firstname, :lastname
 
   def fullname

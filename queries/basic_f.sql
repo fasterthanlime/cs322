@@ -73,8 +73,6 @@ WHERE ROWID IN (
 );
 
 
-CREATE OR REPLACE VIEW query_f AS
-
 SELECT
     yp.year,
     yp.youngest_id, yp.youngest_firstname, yp.youngest_lastname,

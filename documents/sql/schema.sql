@@ -17,7 +17,7 @@ CREATE TABLE people (
     firstname VARCHAR(255) NOT NULL,
     lastname VARCHAR(255) NOT NULL,
     PRIMARY KEY (id),
-    UNIQUE (ilkid)
+    CONSTRAINT person_unique UNIQUE (ilkid, firstname, lastname)
 );
 
 CREATE SEQUENCE people_seq
@@ -27,7 +27,7 @@ CREATE SEQUENCE people_seq
 CREATE TABLE players (
     id INT,
     person_id INT NOT NULL,
-    position CHAR(1) NOT NULL,
+    position CHAR(1),
     height INT, -- in inches
     weight INT,
     birthdate DATE,
@@ -146,16 +146,16 @@ CREATE SEQUENCE locations_seq
 -- @weak
 CREATE TABLE drafts (
     id INT,
-    player_id INT NOT NULL,
+    person_id INT NOT NULL,
     year INT NOT NULL,
     round INT NOT NULL,
     selection INT NOT NULL,
     team_id INT NOT NULL,
     location_id INT NULL,
     PRIMARY KEY (id),
-    CONSTRAINT draft_unique UNIQUE (player_id, team_id, location_id, year),
-    FOREIGN KEY (player_id)
-        REFERENCES players (id) ON DELETE CASCADE,
+    CONSTRAINT draft_unique UNIQUE (person_id, team_id, location_id, year, round),
+    FOREIGN KEY (person_id)
+        REFERENCES people (id) ON DELETE CASCADE,
     FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE,
     FOREIGN KEY (location_id)
@@ -183,8 +183,7 @@ CREATE TABLE stats (
     asts INT,
     steals INT,
     blocks INT,
-    turnovers INT,
-    tpf INT,
+    pf INT,
     fga INT,
     fgm INT,
     fta INT,
@@ -274,6 +273,7 @@ CREATE TABLE player_stats (
     player_season_id INT NOT NULL,
     stat_id INT NOT NULL,
     player_season_type_id INT NOT NULL,
+    turnovers INT,
     gp INT,
     minutes INT,
     PRIMARY KEY (id),
@@ -296,6 +296,7 @@ CREATE TABLE player_allstars (
     stat_id INT NOT NULL,
     conference_id INT NOT NULL,
     year INT NOT NULL,
+    turnovers INT,
     gp INT,
     minutes INT,
     PRIMARY KEY(id),
