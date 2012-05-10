@@ -10,5 +10,3 @@ GROUP BY
     l.name
 ORDER BY
     counter DESC;
-
--- STUB
