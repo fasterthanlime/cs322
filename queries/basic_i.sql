@@ -1,0 +1,16 @@
+-- List the average weight, average height and average age, of teams of coaches
+-- with more than 'XXX' season career wins and more than 'YYY' win percentage,
+-- in each season they coached.
+--
+-- ('XXX' and 'YYY' are parameters. Try with combinations:
+-- XXX   YYY
+-- 1000  70%
+-- 1000  60%
+-- 1000  50%
+-- 1000  55%
+-- 700   55%
+-- 700   45%
+--
+-- Sort the result by year in ascending order
+
+-- STUB

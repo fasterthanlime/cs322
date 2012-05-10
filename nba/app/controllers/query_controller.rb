@@ -28,18 +28,61 @@ class QueryController < ApplicationController
     fetch_results
   end
 
-  def g; end
-  def i; end
-  def j; end
-  def k; end
-  def l; end
-  def m; end
-  def o; end
-  def p; end
-  def q; end
-  def r; end
-  def s; end
-  def t; end
+  def g
+    fetch_results
+  end
+
+  def h
+    fetch_results
+  end
+
+  def i
+    fetch_results
+  end
+
+  def j
+    fetch_results
+  end
+
+  def k
+    fetch_results
+  end
+
+  def l
+    fetch_results
+  end
+
+  def m
+    fetch_results
+  end
+
+  def n
+    fetch_results
+  end
+
+  def o
+    fetch_results
+  end
+
+  def p
+    fetch_results
+  end
+
+  def q
+    fetch_results
+  end
+
+  def r
+    fetch_results
+  end
+
+  def s
+    fetch_results
+  end
+
+  def t
+    fetch_results
+  end
 
   private
 
