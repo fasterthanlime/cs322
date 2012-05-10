@@ -67,7 +67,6 @@ WHERE ROWID IN (
 );
 
 
-CREATE OR REPLACE VIEW query_e AS
 SELECT
     bp.year,
     bp.best_player_id, bp.best_player_firstname, bp.best_player_lastname,
