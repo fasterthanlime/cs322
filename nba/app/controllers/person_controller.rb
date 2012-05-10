@@ -8,14 +8,14 @@ class PersonController < ApplicationController
   end
 
   def view
-    @person = Person.find(params[:id].to_i)
+    @person = Person.find(params[:id])
   end
 
   def player
-    @person = Person.find(params[:id].to_i)
+    @person = Person.find(params[:id])
   end
 
   def coach
-    @person = Person.find(params[:id].to_i)
+    @person = Person.find(params[:id])
   end
 end

@@ -167,37 +167,6 @@ CREATE SEQUENCE drafts_seq
     INCREMENT BY 1;
 
 
---
--- Stats
--- =====
---
--- All the kind of statistical data
---
-
-CREATE TABLE stats (
-    id INT,
-    pts INT,
-    oreb INT,
-    dreb INT,
-    reb INT,
-    asts INT,
-    steals INT,
-    blocks INT,
-    pf INT,
-    fga INT,
-    fgm INT,
-    fta INT,
-    ftm INT,
-    tpa INT, -- 3pa
-    tpm INT, -- 3pm
-    PRIMARY KEY (id)
-);
-
-CREATE SEQUENCE stats_seq
-    START WITH 1
-    INCREMENT BY 1;
-
---
 -- Teams stats
 -- ===========
 
@@ -219,16 +188,27 @@ CREATE TABLE team_stats (
     team_id INT NOT NULL,
     year INT NOT NULL,
     team_stat_tactique_id INT NOT NULL,
-    stat_id INT NOT NULL,
+    pts INT,
+    oreb INT,
+    dreb INT,
+    reb INT,
+    asts INT,
+    steals INT,
+    blocks INT,
+    pf INT,
+    fga INT,
+    fgm INT,
+    fta INT,
+    ftm INT,
+    tpa INT, -- 3pa
+    tpm INT, -- 3pm
     pace NUMBER NULL,
     PRIMARY KEY (id),
     CONSTRAINT team_stat_unique UNIQUE (team_id, year, team_stat_tactique_id),
     FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE,
     FOREIGN KEY (team_stat_tactique_id)
-        REFERENCES team_stat_tactiques (id) ON DELETE CASCADE,
-    FOREIGN KEY (stat_id)
-        REFERENCES stats (id) ON DELETE CASCADE
+        REFERENCES team_stat_tactiques (id) ON DELETE CASCADE
 );
 
 CREATE SEQUENCE team_stats_seq
@@ -271,8 +251,21 @@ CREATE SEQUENCE player_season_types_seq
 CREATE TABLE player_stats (
     id INT,
     player_season_id INT NOT NULL,
-    stat_id INT NOT NULL,
     player_season_type_id INT NOT NULL,
+    pts INT,
+    oreb INT,
+    dreb INT,
+    reb INT,
+    asts INT,
+    steals INT,
+    blocks INT,
+    pf INT,
+    fga INT,
+    fgm INT,
+    fta INT,
+    ftm INT,
+    tpa INT, -- 3pa
+    tpm INT, -- 3pm
     turnovers INT,
     gp INT,
     minutes INT,
@@ -280,8 +273,6 @@ CREATE TABLE player_stats (
     CONSTRAINT player_stat_unique UNIQUE (player_season_id, player_season_type_id),
     FOREIGN KEY (player_season_id)
         REFERENCES player_seasons (id) ON DELETE CASCADE,
-    FOREIGN KEY (stat_id)
-        REFERENCES stats (id) ON DELETE CASCADE,
     FOREIGN KEY (player_season_type_id)
         REFERENCES player_season_types (id) ON DELETE CASCADE
 );
@@ -293,9 +284,22 @@ CREATE SEQUENCE player_stats_seq
 CREATE TABLE player_allstars (
     id INT,
     player_id INT NOT NULL,
-    stat_id INT NOT NULL,
     conference_id INT NOT NULL,
     year INT NOT NULL,
+    pts INT,
+    oreb INT,
+    dreb INT,
+    reb INT,
+    asts INT,
+    steals INT,
+    blocks INT,
+    pf INT,
+    fga INT,
+    fgm INT,
+    fta INT,
+    ftm INT,
+    tpa INT, -- 3pa
+    tpm INT, -- 3pm
     turnovers INT,
     gp INT,
     minutes INT,
@@ -303,8 +307,6 @@ CREATE TABLE player_allstars (
     CONSTRAINT player_allstars_unique UNIQUE (player_id, conference_id, year),
     FOREIGN KEY (player_id)
         REFERENCES players (id) ON DELETE CASCADE,
-    FOREIGN KEY (stat_id)
-        REFERENCES stats (id) ON DELETE CASCADE,
     FOREIGN KEY (conference_id)
         REFERENCES conferences (id) ON DELETE CASCADE
 );

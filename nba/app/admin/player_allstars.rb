@@ -15,10 +15,20 @@ ActiveAdmin.register PlayerAllstar do
     column :gp
     column :minutes
     column :turnovers
-    column :stat do |pas|
-      stat = pas.stat
-      link_to "#" + stat.id.to_s, admin_stat_path(stat)
-    end
+    column :pts
+    column :oreb
+    column :dreb
+    column :reb
+    column :asts
+    column :steals
+    column :blocks
+    column :pf
+    column :fga
+    column :fgm
+    column :fta
+    column :ftm
+    column :tpa
+    column :tpm
     default_actions
   end
 end

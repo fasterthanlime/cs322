@@ -85,38 +85,21 @@ INSERT INTO teams (id, trigram, location, name, league_id)
     sqlldr(csv, tmp, fields)
     total = conn.exec "
 INSERT ALL
-  INTO stats (
-    id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm,
-    tpa, tpm
-  ) VALUES (
-    2 * stats_seq.NEXTVAL - 1, o_pts, o_oreb, o_dreb, o_reb, o_asts, o_stl,
-    o_blk, o_pf, o_fga, o_fgm, o_fta, o_ftm, o_3pa, o_3pm
-  )
-  INTO stats (
-    id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm,
-    tpa, tpm
-  ) VALUES (
-    2 * stats_seq.CURRVAL, d_pts, d_oreb, d_dreb, d_reb, d_asts, d_stl, d_blk,
-    d_pf, d_fga, d_fgm, d_fta, d_ftm, d_3pa, d_3pm
-  )
-  SELECT *
-  FROM #{tmp}
-"
-    puts "#{total} stats inserted"
-
-    total2 = conn.exec "
-INSERT ALL
   INTO team_stats (
-    id, stat_id, team_id, year, team_stat_tactique_id, pace
+    id, team_id, year, team_stat_tactique_id, pace, pts, oreb, dreb, reb, asts,
+    steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
   ) VALUES (
-    2 * team_stats_seq.NEXTVAL - 1, #{offset} + 2 * team_stats_seq.CURRVAL - 1,
-    team_id, year, #{TeamStatTactique::OFFENSIVE}, pace
+    2 * team_stats_seq.NEXTVAL - 1, team_id, year,
+    #{TeamStatTactique::OFFENSIVE}, pace, o_pts, o_oreb, o_dreb, o_reb, o_asts,
+    o_stl, o_blk, o_pf, o_fga, o_fgm, o_fta, o_ftm, o_3pa, o_3pm
   )
   INTO team_stats (
-    id, stat_id, team_id, year, team_stat_tactique_id
+    id, team_id, year, team_stat_tactique_id, pts, oreb, dreb, reb, asts,
+    steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
   ) VALUES (
-    2 * team_stats_seq.CURRVAL, #{offset} + 2 * team_stats_seq.CURRVAL, team_id,
-    year, #{TeamStatTactique::DEFENSIVE}
+    2 * team_stats_seq.CURRVAL, team_id, year, #{TeamStatTactique::DEFENSIVE},
+    d_pts, d_oreb, d_dreb, d_reb, d_asts, d_stl, d_blk, d_pf, d_fga, d_fgm,
+    d_fta, d_ftm, d_3pa, d_3pm
   )
   SELECT tmp.*, t.id team_id
   FROM #{tmp} tmp
@@ -124,11 +107,11 @@ INSERT ALL
   JOIN leagues l ON l.id = t.league_id
   WHERE tmp.leag = SUBSTR(l.name, 0, 1)
 "
-    puts "#{total2} team_stats inserted"
+    puts "#{total} team_stats inserted"
 
-    # HACK! fix the sequences (since we multiplied by 2 right above)
+    # HACK! fix the sequence (since we multiplied by 2 right above)
     conn.exec "
-UPDATE #{tmp} SET team = stats_seq.NEXTVAL, year = team_stats_seq.NEXTVAL
+UPDATE #{tmp} SET year = team_stats_seq.NEXTVAL
 "
 
     cleanup(tmp)
@@ -234,20 +217,9 @@ INSERT INTO players (id, person_id, position, height, weight, birthdate)
     sqlldr(csv, tmp, fields)
 
     total = conn.exec "
-INSERT ALL
-  INTO player_seasons (
-    id, player_id, team_id, year
-  ) VALUES (
-    player_seasons_seq.NEXTVAL, player_id, team_id, year
-  )
-  INTO stats (
-    id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm,
-    tpa, tpm
-  ) VALUES (
-    stats_seq.NEXTVAL, pts, oreb, dreb, reb, asts, stl, blk, pf, fga, fgm, fta, ftm,
-    tpa, tpm
-  )
-  SELECT tmp.*, pl.id player_id, t.id team_id
+INSERT INTO player_seasons (id, player_id, team_id, year)
+  SELECT
+    player_seasons_seq.NEXTVAL, pl.id, t.id, tmp.year
   FROM
     #{tmp} tmp, people p, leagues l, players pl, teams t
   WHERE
@@ -259,23 +231,17 @@ INSERT ALL
       l.name = 'NBA' AND tmp.team = 'TOT' -- TOT never played in ABA
     )
 "
-
-    puts "#{total/2} more stats inserted"
-
-    # The sequences may already be containing data (initial value being 1)
-    offset = 0
-    conn.exec("SELECT max(id) from stats") do |l|
-      offset = l[0].to_i
-    end
-    offset -= total / 2
+    puts "#{total} player seasons inserted"
 
     total = conn.exec "
 INSERT INTO player_stats (
-    id, stat_id, player_season_id, player_season_type_id, turnovers, gp, minutes
+    id, player_season_id, player_season_type_id, turnovers, gp, minutes, pts,
+    oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
   )
   SELECT
-    player_stats_seq.NEXTVAL, #{offset} + player_stats_seq.CURRVAL, ps.id,
-    #{PlayerSeasonType::REGULAR}, turnover, gp, minutes
+    player_stats_seq.NEXTVAL, ps.id, #{PlayerSeasonType::REGULAR}, turnover,
+    gp, minutes, pts, oreb, dreb, reb, asts, stl, blk, pf, fga, fgm, fta, ftm,
+    tpa, tpm
   FROM
     #{tmp} tmp, people p, leagues l, players pl, teams t, player_seasons ps
   WHERE
@@ -288,7 +254,7 @@ INSERT INTO player_stats (
     ) AND
     ps.year = tmp.year AND ps.player_id = pl.id AND ps.team_id = t.id
 "
-    puts "#{total} player regular seasons inserted"
+    puts "#{total} player regular season stats inserted"
     cleanup(tmp)
   end
 
@@ -328,35 +294,14 @@ INSERT INTO player_seasons (
     puts "#{total} more player seasons inserted"
 
     total = conn.exec "
-INSERT INTO stats (
-    id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm,
-    tpa, tpm
-  )
-  SELECT
-    stats_seq.NEXTVAL, pts, oreb, dreb, reb, asts, stl, blk, pf, fga, fgm, fta, ftm,
-    tpa, tpm
-  FROM
-    #{tmp}
-"
-    puts "#{total} more stats inserted"
-
-    # The sequences may already be containing data (initial value being 1)
-    offset = 0
-    conn.exec("SELECT max(id) from stats") do |l|
-      offset = l[0].to_i
-    end
-    conn.exec("SELECT max(stat_id) from player_stats") do |l|
-      offset -= l[0].to_i
-    end
-    offset -= total
-
-    total = conn.exec "
 INSERT INTO player_stats (
-    id, stat_id, player_season_id, player_season_type_id, turnovers, gp, minutes
+    id, player_season_id, player_season_type_id, turnovers, gp, minutes, pts,
+    oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
   )
   SELECT
-    player_stats_seq.NEXTVAL, #{offset} + player_stats_seq.CURRVAL, ps.id,
-    #{PlayerSeasonType::PLAYOFF}, turnover, gp, minutes
+    player_stats_seq.NEXTVAL, ps.id, #{PlayerSeasonType::PLAYOFF}, turnover,
+    gp, minutes, pts, oreb, dreb, reb, asts, stl, blk, pf, fga, fgm, fta, ftm,
+    tpa, tpm
   FROM
     #{tmp} tmp, people p, leagues l, players pl, teams t, player_seasons ps
   WHERE
@@ -367,48 +312,31 @@ INSERT INTO player_stats (
     substr(l.name, 0, 1) = tmp.leag AND
     ps.year = tmp.year AND ps.player_id = pl.id AND ps.team_id = t.id
 "
-    puts "#{total} player playoff seasons inserted"
+    puts "#{total} player playoff stats inserted"
     cleanup(tmp)
   end
 
+  # Some ABA are a bit funky, we set everything to Western which is wrong...
+  #
+  # AllStars is 1975:
+  # https://en.wikipedia.org/wiki/American_Basketball_Association#List_of_ABA_championships
   desc "Import all stars season stats from the CSV"
   task :allstars => :environment do
     conn = connection
     csv = '../dataset/player_allstar.csv'
     tmp = 'temp_seasons'
-    fields = %w(ilkid year firstname lastname conference leag gp minutes pts dreb oreb
-                reb asts stl blk turnover pf fga fgm fta ftm tpa tpm)
+    fields = %w(ilkid year firstname lastname conference leag gp minutes pts
+                dreb oreb reb asts stl blk turnover pf fga fgm fta ftm tpa tpm)
 
     sqlldr(csv, tmp, fields)
     total = conn.exec "
-INSERT INTO stats (
-    id, pts, oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm,
-    tpa, tpm
-  )
-  SELECT
-    stats_seq.NEXTVAL, pts, oreb, dreb, reb, asts, stl, blk, pf, fga, fgm, fta, ftm,
-    tpa, tpm
-  FROM
-    #{tmp}
-  WHERE
-    ilkid <> 'THOMPDA01' OR year <> '1982' OR tpm IS NOT NULL -- row to ignore
-"
-    puts "#{total} more stats inserted"
-
-    # The sequences may already be containing data (initial value being 1)
-    offset = 0
-    conn.exec("SELECT max(id) from stats") do |l|
-      offset = l[0].to_i
-    end
-    offset -= total
-
-    total = conn.exec "
 INSERT INTO player_allstars (
-    id, stat_id, player_id, conference_id, year, turnovers, gp, minutes
+    id, player_id, conference_id, year, turnovers, gp, minutes, pts, oreb,
+    dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
   )
   SELECT
-    player_allstars_seq.NEXTVAL, #{offset} + player_allstars_seq.CURRVAL, pl.id,
-    c.id, year, turnover, gp, minutes
+    player_allstars_seq.NEXTVAL, pl.id, c.id, year, turnover, gp, minutes, pts,
+    oreb, dreb, reb, asts, stl, blk, pf, fga, fgm, fta, ftm, tpa, tpm
   FROM
     #{tmp} tmp, people p, players pl, conferences c
   WHERE
@@ -423,11 +351,12 @@ INSERT INTO player_allstars (
     (
       substr(c.name, 0, 4) = tmp.conference OR
       lower(substr(c.name, 0, 4)) = tmp.conference OR
-      c.name = 'Western' AND (tmp.conference = 'weset' OR tmp.conference = 'Denver' or tmp.conference = 'AllStars')
-      -- AllStars is 1975: https://en.wikipedia.org/wiki/American_Basketball_Association#List_of_ABA_championships
+      c.name = 'Western' AND (
+        tmp.conference = 'weset' OR
+        tmp.conference = 'Denver' or
+        tmp.conference = 'AllStars')
     )
 "
-
     puts "#{total} player allstars seasons inserted"
     cleanup(tmp)
   end
