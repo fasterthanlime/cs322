@@ -1,7 +1,5 @@
 -- Print the names of coaches who participated in both leagues (NBA and ABA).
 
-CREATE OR REPLACE VIEW nba_coaches AS
-
 SELECT DISTINCT
     p.id, p.lastname, p.firstname
 FROM

@@ -1,6 +1,5 @@
 class Player < ActiveRecord::Base
   belongs_to :person
-  has_many :drafts
   has_many :player_seasons
   has_many :player_allstars
   attr_accessible :person, :position, :height, :weight, :birthdate
