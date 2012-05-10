@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ $# -lt 1 ]]; then
-    echo "Usage: $0 [abcdef]"
+    echo "Usage: $0 [a-t]"
     exit
 fi
 
