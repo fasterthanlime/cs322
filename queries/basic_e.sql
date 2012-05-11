@@ -75,6 +75,6 @@ SELECT
     wp.worst_player_pts
 FROM
     best_players_unique bp
-    JOIN worst_players_unique wp ON wp.year = bp.year  
+    JOIN worst_players_unique wp ON wp.year = bp.year
 ORDER BY
     year ASC;

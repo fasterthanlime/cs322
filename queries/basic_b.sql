@@ -9,8 +9,7 @@ FROM
     JOIN player_seasons ps ON ps.player_id = pl.id
     JOIN teams t           ON t.id = ps.team_id
     JOIN leagues l         ON l.id = t.league_id
-    JOIN coaches c         ON c.person_id = p.id
-    JOIN coach_seasons cs  ON cs.coach_id = c.id
+    JOIN coach_seasons cs  ON cs.person_id = p.id
     JOIN teams t2          ON t2.id = cs.team_id
 WHERE
     l.name = 'NBA' AND

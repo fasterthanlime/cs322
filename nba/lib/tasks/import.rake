@@ -133,9 +133,9 @@ INSERT ALL
     people_seq.NEXTVAL, SUBSTR(coachid, 0, 9), firstname, lastname
   )
   INTO coaches (
-    id, person_id
+    person_id, season_win, season_loss, playoff_win, playoff_loss
   ) VALUES (
-    coaches_seq.NEXTVAL, people_seq.CURRVAL
+    people_seq.CURRVAL, 0, 0, 0, 0
   )
   SELECT *
   FROM #{tmp}
@@ -155,15 +155,14 @@ INSERT ALL
     sqlldr(csv, tmp, fields)
     total = conn.exec "
 INSERT INTO coach_seasons (
-    id, team_id, coach_id, year, year_order, season_win, season_loss,
+    id, team_id, person_id, year, year_order, season_win, season_loss,
     playoff_win, playoff_loss
   )
   SELECT
-    coach_seasons_seq.NEXTVAL, t.id, c.id, year, yr_order, season_win,
+    coach_seasons_seq.NEXTVAL, t.id, p.id, year, yr_order, season_win,
     season_loss, playoff_win, playoff_loss
   FROM #{tmp} tmp
   JOIN people p ON p.ilkid = SUBSTR(tmp.coachid, 0, 9)
-  JOIN coaches c ON c.person_id = p.id
   JOIN teams t ON t.trigram = tmp.team
 "
 

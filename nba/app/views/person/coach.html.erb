@@ -46,7 +46,7 @@ coach = @person.coach
         </tr>
       </thead>
       <tbody>
-<%- coach.coach_seasons.each do |season| -%>
+<%- @person.coach_seasons.each do |season| -%>
         <tr>
             <th scope=row><%= season.year -%></th>
             <td><%= link_to(

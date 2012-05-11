@@ -40,18 +40,6 @@ CREATE SEQUENCE players_seq
     START WITH 1
     INCREMENT BY 1;
 
-CREATE TABLE coaches (
-    id INT,
-    person_id INT NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (person_id)
-        REFERENCES people (id) ON DELETE CASCADE
-);
-
-CREATE SEQUENCE coaches_seq
-    START WITH 1
-    INCREMENT BY 1;
-
 --
 -- Group of people
 -- ===============
@@ -101,7 +89,7 @@ CREATE SEQUENCE teams_seq
 -- @weak
 CREATE TABLE coach_seasons (
     id INT,
-    coach_id INT NOT NULL,
+    person_id INT NOT NULL,
     team_id INT NOT NULL,
     year INT NOT NULL,
     year_order INT,
@@ -110,9 +98,9 @@ CREATE TABLE coach_seasons (
     playoff_win INT,
     playoff_loss INT,
     PRIMARY KEY (id),
-    CONSTRAINT coach_seasons_unique UNIQUE (coach_id, team_id, year),
-    FOREIGN KEY (coach_id)
-        REFERENCES coaches (id) ON DELETE CASCADE,
+    CONSTRAINT coach_seasons_unique UNIQUE (person_id, team_id, year),
+    FOREIGN KEY (person_id)
+        REFERENCES people (id) ON DELETE CASCADE,
     FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE
 );
@@ -314,3 +302,62 @@ CREATE TABLE player_allstars (
 CREATE SEQUENCE player_allstars_seq
     START WITH 1
     INCREMENT BY 1;
+
+-- Denormalized data
+
+CREATE TABLE coaches (
+    person_id INT NOT NULL,
+    season_win INT,
+    season_loss INT,
+    playoff_win INT,
+    playoff_loss INT,
+    PRIMARY KEY (person_id),
+    FOREIGN KEY (person_id)
+        REFERENCES people (id) ON DELETE CASCADE
+);
+
+CREATE OR REPLACE TRIGGER coaches_data
+AFTER INSERT OR UPDATE OR DELETE ON coach_seasons
+FOR EACH ROW
+DECLARE
+  c INT;
+  r_id coach_seasons.person_id%type := NULL;
+  r_season_win coach_seasons.season_win%type := 0;
+  r_season_loss coach_seasons.season_loss%type := 0;
+  r_playoff_win coach_seasons.playoff_win%type := 0;
+  r_playoff_loss coach_seasons.playoff_loss%type := 0;
+BEGIN
+  IF UPDATING OR INSERTING THEN
+    r_id := :new.person_id;
+    r_season_win := :new.season_win;
+    r_season_loss := :new.season_loss;
+    r_playoff_win := :new.playoff_win;
+    r_playoff_loss := :new.playoff_loss;
+  END IF;
+
+  IF UPDATING OR DELETING THEN
+    r_id := :new.person_id;
+    r_season_win := r_season_win - :old.season_win;
+    r_season_loss := r_season_loss - :old.season_loss;
+    r_playoff_win := r_playoff_win - :old.playoff_win;
+    r_playoff_loss := r_playoff_loss - :old.playoff_loss;
+  END IF;
+
+  SELECT COUNT(id) INTO c FROM people WHERE id = r_id;
+
+  IF c = 0 THEN
+    INSERT INTO coaches
+      (person_id, season_win, season_loss, playoff_win, playoff_loss)
+    VALUES
+      (:new.person_id, 0, 0, 0, 0);
+  END IF;
+
+  UPDATE coaches SET
+    season_win = season_win + r_season_win,
+    season_loss = season_loss + r_season_loss,
+    playoff_win = playoff_win + r_playoff_win,
+    playoff_loss = playoff_loss + r_playoff_loss
+  WHERE
+    person_id = :new.person_id;
+END coaches_data;
+/
