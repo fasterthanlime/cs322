@@ -14,6 +14,39 @@ Deliverable 3
 Post-mortem deliverable 2
 =========================
 
+    *Good job with the queries. Is there a reason why all queries are expressed as views? Please include the explanation for this decision in the report.*
+
+It seemed easier for us to reuse them automagically from the web UI, but we were mistaken and the final code doesn't do that anymore. Both the SQL queries and the web application were simplified following that change.
+
+    *Can you explain the remark about “different join order not giving any results” in query D? Please include this explanation in the final version of the report. Keep in mind that you're not getting the correct result (should be indeed 0 rows).*
+
+**TODO**
+
+    *Keep up the good work! (at least you're gonna read this...)*
+
+Indeed!
+
+Changes to the schema
+---------------------
+
+**TODO**
+
+Importing data
+--------------
+
+    *As per your comment, the logic in `import.rake` is quite hardcore. I'm not questioning at all your choice—as a matter of fact, in the same scenario I tend to attack the problem in the very same way (especially because the code plays the role of implicit documentation for each data transformation). Still, for the sake of completeness, I've to mention two other options:*
+
+    * *manipulating the .csv with Excel/LibreOffice Calc is a viable and usually quicker solution (but worse in terms of maintainability).*
+    * *instead of importing directly into the tables of your final DB schema, you could create a temporary table for each .csv file (same schema, no constraints) and ALTER them progressively. This usually leads to less LOC (being SQL more expressive than Ruby).*
+
+**TODO**
+
+Denormalization
+---------------
+
+Coach
+'''''
+
 **TODO**
 
 The queries
@@ -68,7 +101,11 @@ Query M
 
     *For coaches who coached at most 7 seasons but more than 1 season, who are the three more successful? (Success rate is season win percentage:* ``season_win / (season_win + season_loss))`` *. Be sure to count all seasons when computing the percentage.*
 
-**TODO**
+Here, we are using the table `coaches` which contains denormalized data built from the `coach_seasons` table and filled via a `TRIGGER`.
+
+.. literalinclude:: ../../../queries/basic_m.sql
+   :language: sql
+   :lines: 8-
 
 Query N
 -------

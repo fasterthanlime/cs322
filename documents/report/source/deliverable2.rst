@@ -150,7 +150,7 @@ Missing teams
 
 Some teams are missing from the CSV, so we are creating them before starting importing everything.
 
-.. literalinclude:: ../../../nba/lib/tasks/import.rake
+.. literalinclude:: _static/2/import.rake
    :language: ruby
    :lines: 21-33
 
@@ -159,7 +159,7 @@ The Floridians
 
 That team doesn't have any location for historic reasons.
 
-.. literalinclude:: ../../../nba/lib/tasks/import.rake
+.. literalinclude:: _static/2/import.rake
    :language: ruby
    :lines: 39-43
 
@@ -168,7 +168,7 @@ Non-breaking space
 
 There are some silly characters into the CSV.
 
-.. literalinclude:: ../../../nba/lib/tasks/import.rake
+.. literalinclude:: _static/2/import.rake
    :language: ruby
    :lines: 123-124
 
@@ -177,7 +177,7 @@ Magic Johnson and Marques Johnson
 
 Two players are sharing the same `ilkid` and it's a mistake in the data.
 
-.. literalinclude:: ../../../nba/lib/tasks/import.rake
+.. literalinclude:: _static/2/import.rake
    :language: ruby
    :lines: 313-316
 
@@ -186,7 +186,7 @@ One entry is a buggy duplicate
 
 In the all star file, there is a duplicate entry that we decided to simply ignore.
 
-.. literalinclude:: ../../../nba/lib/tasks/import.rake
+.. literalinclude:: _static/2/import.rake
    :language: ruby
    :lines: 317-320
 
