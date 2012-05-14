@@ -31,10 +31,10 @@
       <tr>
         <th scope=row><%= season.year if year != season.year %></th>
         <td><%= link_to(
-          season.coach.person.fullname,
+          season.person.fullname,
           :controller => 'person',
           :action => 'coach',
-          :id => season.coach_id
+          :id => season.person_id
         ) %></td>
         <td><%= season.season_win -%></td>
         <td><%= season.season_loss -%></td>

@@ -8,10 +8,9 @@ ActiveAdmin.register PlayerSeason do
       link_to "#{team.trigram} #{team.name}", admin_team_path(team)
     end
     column 'player' do |ps|
-      player = ps.player
-      person = player.person
+      person = ps.person
       ilkid = "(#{person.ilkid})" if person.ilkid
-      link_to "#{person.fullname} #{ilkid}", admin_player_path(player)
+      link_to "#{person.fullname} #{ilkid}", admin_person_path(person)
     end
     default_actions
   end

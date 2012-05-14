@@ -3,10 +3,9 @@ ActiveAdmin.register PlayerAllstar do
 
   index do
     column :player do |pas|
-      player = pas.player
-      person = player.person
+      person = pas.person
       ilkid = "(#{person.ilkid})" if person.ilkid
-      link_to "#{person.fullname} #{ilkid}", admin_player_path(player)
+      link_to "#{person.fullname} #{ilkid}", admin_person_path(person)
     end
     column :year
     column :conference do |pas|

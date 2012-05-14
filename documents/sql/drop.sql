@@ -2,9 +2,6 @@
 DROP TABLE people CASCADE CONSTRAINTS PURGE;
 DROP SEQUENCE people_seq;
 
-DROP TABLE players CASCADE CONSTRAINTS PURGE;
-DROP SEQUENCE players_seq;
-
 DROP TABLE teams CASCADE CONSTRAINTS PURGE;
 DROP SEQUENCE teams_seq;
 
@@ -43,5 +40,5 @@ DROP SEQUENCE player_allstars_seq;
 
 -- Denormalized data and triggers
 
-DROP TRIGGER coaches_data;
 DROP TABLE coaches PURGE;
+DROP TRIGGER coaches_data;

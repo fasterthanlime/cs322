@@ -5,8 +5,7 @@ SELECT DISTINCT
     p.id, p.firstname, p.lastname
 FROM
     people p
-    JOIN players pl        ON pl.person_id = p.id
-    JOIN player_seasons ps ON ps.player_id = pl.id
+    JOIN player_seasons ps ON ps.person_id = p.id
     JOIN teams t           ON t.id = ps.team_id
     JOIN leagues l         ON l.id = t.league_id
     JOIN coach_seasons cs  ON cs.person_id = p.id

@@ -12,15 +12,15 @@ FROM (
         RANK() OVER (PARTITION BY year ORDER BY birthdate DESC) r
     FROM (
         SELECT
-            pl.id, p.lastname, p.firstname, psea.year, pl.birthdate
+            p.id, p.lastname, p.firstname, psea.year, p.birthdate
         FROM
-            players pl
-            JOIN player_seasons psea      ON psea.player_id = pl.id
+            people p
+            JOIN player_seasons psea      ON psea.person_id = p.id
             JOIN player_stats psta        ON psta.player_season_id = psea.id
             JOIN player_season_types psty ON psta.player_season_type_id = psty.id
-            JOIN people p ON p.id = pl.person_id
         WHERE
-            psty.name = 'Playoff'
+            psty.name = 'Playoff' AND
+            p.birthdate IS NOT NULL
     )
 )
 WHERE r = 1;
@@ -37,15 +37,15 @@ FROM (
         RANK() OVER (PARTITION BY year ORDER BY birthdate ASC) r
     FROM (
         SELECT
-            pl.id, p.lastname, p.firstname, psea.year, pl.birthdate
+            p.id, p.lastname, p.firstname, psea.year, p.birthdate
         FROM
-            players pl
-            JOIN player_seasons psea      ON psea.player_id = pl.id
+            people p
+            JOIN player_seasons psea      ON psea.person_id = p.id
             JOIN player_stats psta        ON psta.player_season_id = psea.id
             JOIN player_season_types psty ON psta.player_season_type_id = psty.id
-            JOIN people p                 ON p.id = pl.person_id
         WHERE
-            psty.name = 'Playoff'
+            psty.name = 'Playoff' AND
+            p.birthdate IS NOT NULL
     )
 )
 WHERE r = 1;
@@ -83,4 +83,3 @@ FROM
     JOIN oldest_players op ON op.year = yp.year
 ORDER BY
     year ASC;
-

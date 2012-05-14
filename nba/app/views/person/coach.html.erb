@@ -39,6 +39,7 @@ coach = @person.coach
         <tr>
           <th scope=col>Year</th>
           <th scope=col>Team</th>
+          <th scope=col>League</th>
           <th scope=col>Win</th>
           <th scope=col>Loss</th>
           <th scope=col>Win</th>
@@ -50,11 +51,12 @@ coach = @person.coach
         <tr>
             <th scope=row><%= season.year -%></th>
             <td><%= link_to(
-              season.team.name,
+              "#{season.team.name} #{season.team.trigram}",
               :controller => 'team',
               :action => 'view',
               :id => season.team_id
             ) -%></td>
+            <td><%= season.team.league.name -%></td>
             <td><%= season.season_win -%></td>
             <td><%= season.season_loss -%></td>
             <td><%= season.playoff_win -%></td>

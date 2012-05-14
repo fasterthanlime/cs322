@@ -1,26 +1,23 @@
-<%-
-player = @person.player
--%>
 <%= render :partial => 'header' %>
 <div class=row-fluid>
-  <div class="span4">
+  <div class=span4>
     <h3>Details</h3>
     <dl class=well>
-    <%- if player.position != '0' -%>
+    <%- unless @person.position.nil? then -%>
       <dt>Position</dt>
-      <dd><%= player.position -%></dd>
+      <dd><%= @person.position -%></dd>
     <%- end -%>
-    <%- if player.height -%>
+    <%- if @person.height then -%>
       <dt>Height</dt>
-      <dd><%= player.height_in_ft -%></dd>
+      <dd><%= @person.height_in_ft -%></dd>
     <%- end -%>
-    <%- if player.weight -%>
+    <%- if @person.weight then -%>
       <dt>Weight</dt>
-      <dd><%= player.weight -%></dd>
+      <dd><%= @person.weight -%></dd>
     <%- end -%>
-    <%- if player.birthdate -%>
+    <%- if @person.birthdate then -%>
       <dt>Birthdate</dt>
-      <dd><%= player.birthdate.strftime('%Y-%m-%d') -%></dd>
+      <dd><%= @person.birthdate.strftime('%Y-%m-%d') -%></dd>
     <%- end -%>
     <%- if @person.drafts.count > 0 then -%>
       <dt>College</dt>
@@ -41,7 +38,7 @@ player = @person.player
     </ul>
   <%- end -%>
   </div>
-  <%- if player.player_seasons.count > 0 then -%>
+  <%- if @person.player_seasons.count > 0 then -%>
   <div class=span4>
     <h3>Seasons in a team</h3>
     <table class="table table-stripped">
@@ -54,7 +51,7 @@ player = @person.player
         </tr>
       </thead>
       <tbody>
-    <%- player.player_seasons.each do |season| -%>
+    <%- @person.player_seasons.each do |season| -%>
         <tr>
           <th scope=row><%= season.year -%></th>
           <td><%= link_to(
@@ -85,7 +82,7 @@ player = @person.player
     </table>
   </div>
   <%- end -%>
-  <%- if player.player_allstars.count > 0 then -%>
+  <%- if @person.player_allstars.count > 0 then -%>
   <div class=span4>
     <h3>Allstar seasons</h3>
     <table class="table table-stripped">
@@ -97,7 +94,7 @@ player = @person.player
         </tr>
       </thead>
       <tbody>
-    <%- player.player_allstars.each do |allstar| -%>
+    <%- @person.player_allstars.each do |allstar| -%>
         <tr>
           <th scope=row><%= allstar.year -%></th>
           <td><%= allstar.conference.name -%></td>

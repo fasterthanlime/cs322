@@ -16,27 +16,15 @@ CREATE TABLE people (
     ilkid VARCHAR(10),
     firstname VARCHAR(255) NOT NULL,
     lastname VARCHAR(255) NOT NULL,
-    PRIMARY KEY (id),
-    CONSTRAINT person_unique UNIQUE (ilkid, firstname, lastname)
-);
-
-CREATE SEQUENCE people_seq
-    START WITH 1
-    INCREMENT BY 1;
-
-CREATE TABLE players (
-    id INT,
-    person_id INT NOT NULL,
     position CHAR(1),
     height INT, -- in inches
     weight INT,
     birthdate DATE,
     PRIMARY KEY (id),
-    FOREIGN KEY (person_id)
-        REFERENCES people (id) ON DELETE CASCADE
+    CONSTRAINT person_unique UNIQUE (ilkid, firstname, lastname)
 );
 
-CREATE SEQUENCE players_seq
+CREATE SEQUENCE people_seq
     START WITH 1
     INCREMENT BY 1;
 
@@ -209,13 +197,13 @@ CREATE SEQUENCE team_stats_seq
 
 CREATE TABLE player_seasons (
     id INT,
-    player_id INT NOT NULL,
+    person_id INT NOT NULL,
     team_id INT NOT NULL,
     year INT NOT NULL,
     PRIMARY KEY (id),
-    CONSTRAINT player_season_unique UNIQUE (player_id, team_id, year),
-    FOREIGN KEY (player_id)
-        REFERENCES players (id) ON DELETE CASCADE,
+    CONSTRAINT player_season_unique UNIQUE (person_id, team_id, year),
+    FOREIGN KEY (person_id)
+        REFERENCES people (id) ON DELETE CASCADE,
     FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE
 );
@@ -271,7 +259,7 @@ CREATE SEQUENCE player_stats_seq
 
 CREATE TABLE player_allstars (
     id INT,
-    player_id INT NOT NULL,
+    person_id INT NOT NULL,
     conference_id INT NOT NULL,
     year INT NOT NULL,
     pts INT,
@@ -292,9 +280,9 @@ CREATE TABLE player_allstars (
     gp INT,
     minutes INT,
     PRIMARY KEY(id),
-    CONSTRAINT player_allstars_unique UNIQUE (player_id, conference_id, year),
-    FOREIGN KEY (player_id)
-        REFERENCES players (id) ON DELETE CASCADE,
+    CONSTRAINT player_allstars_unique UNIQUE (person_id, conference_id, year),
+    FOREIGN KEY (person_id)
+        REFERENCES people (id) ON DELETE CASCADE,
     FOREIGN KEY (conference_id)
         REFERENCES conferences (id) ON DELETE CASCADE
 );

@@ -3,22 +3,16 @@
 CREATE OR REPLACE VIEW best_players AS
 
 SELECT
-    player_id best_player_id, player_firstname best_player_firstname,
-    player_lastname best_player_lastname, pts best_player_pts, year
+    person_id best_player_id, pts best_player_pts, year
 FROM (
     SELECT
-        player_id, player_firstname, player_lastname, year, pts,
+        person_id, year, pts,
         RANK() OVER (PARTITION BY year ORDER BY pts DESC) r
     FROM (
         SELECT
-            pl.id player_id, p.lastname player_lastname,
-            p.firstname player_firstname, psea.year year, stat.pts pts
-        FROM
-            players pl
-            JOIN player_seasons psea ON psea.player_id = pl.id
-            JOIN player_stats psta   ON psta.player_season_id = psea.id
-            JOIN stats stat          ON psta.stat_id = stat.id
-            JOIN people p            ON p.id = pl.person_id
+            psea.person_id, psea.year year, psta.pts pts
+        FROM player_seasons psea
+        JOIN player_stats psta ON psta.player_season_id = psea.id
     )
 )
 WHERE r = 1;
@@ -27,22 +21,16 @@ WHERE r = 1;
 CREATE OR REPLACE VIEW worst_players AS
 
 SELECT
-    player_id worst_player_id, player_firstname worst_player_firstname,
-    player_lastname worst_player_lastname, pts worst_player_pts, year
+    person_id worst_player_id, pts worst_player_pts, year
 FROM (
     SELECT
-        player_id, player_firstname, player_lastname, year, pts,
+        person_id, year, pts,
         RANK() OVER (PARTITION BY year ORDER BY pts ASC) r
     FROM (
         SELECT
-            pl.id player_id, p.lastname player_lastname,
-            p.firstname player_firstname, psea.year year, stat.pts pts
-        FROM
-            players pl
-            JOIN player_seasons psea ON psea.player_id = pl.id
-            JOIN player_stats psta   ON psta.player_season_id = psea.id
-            JOIN stats stat          ON psta.stat_id = stat.id
-            JOIN people p            ON p.id = pl.person_id
+            psea.person_id, psea.year year, psta.pts pts
+        FROM player_seasons psea
+        JOIN player_stats psta ON psta.player_season_id = psea.id
     )
 )
 WHERE r = 1;
@@ -69,12 +57,12 @@ WHERE ROWID IN (
 
 SELECT
     bp.year,
-    bp.best_player_id, bp.best_player_firstname, bp.best_player_lastname,
-    bp.best_player_pts,
-    wp.worst_player_id, wp.worst_player_firstname, wp.worst_player_lastname,
-    wp.worst_player_pts
+    bp.best_player_id, p1.firstname, p1.lastname, bp.best_player_pts,
+    wp.worst_player_id, p2.firstname, p2.lastname, wp.worst_player_pts
 FROM
     best_players_unique bp
     JOIN worst_players_unique wp ON wp.year = bp.year
+    JOIN people p1 ON p1.id = bp.best_player_id
+    JOIN people p2 ON p2.id = wp.worst_player_id
 ORDER BY
     year ASC;

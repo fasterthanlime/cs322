@@ -2,14 +2,14 @@
 <div class=well style="overflow:hidden">
 <div class=span3>
   <div class=btn-group>
-<%- if @person.coach -%>
+<%- if @person.coach then -%>
     <%= link_to(
       'Coach',
       {:action => 'coach', :id => @person.id},
       :class => 'btn'
     ) %>
 <%- end -%>
-<%- if @person.player -%>
+<%- if @person.player_seasons.count() > 0 then -%>
     <%= link_to(
       'Player',
       {:action => 'player', :id => @person.id},
