@@ -144,6 +144,9 @@ INSERT ALL
     cleanup(tmp)
   end
 
+  # This CSV gives only the team trigram, which could have existed for teams
+  # in both leagues, the where part is the heuristic to avoid duplicate rows
+  # and "guess" the correct league based on the trigram and year.
   desc "Import coach seasons from the CSV"
   task :coach_seasons => :environment do
     conn = connection
@@ -164,6 +167,13 @@ INSERT INTO coach_seasons (
   FROM #{tmp} tmp
   JOIN people p ON p.ilkid = SUBSTR(tmp.coachid, 0, 9)
   JOIN teams t ON t.trigram = tmp.team
+  JOIN leagues l ON l.id = t.league_id
+  WHERE
+    l.name = CASE
+      WHEN tmp.year >= 1976 THEN 'NBA'
+      WHEN (tmp.year < 1976 AND tmp.team = 'STL') THEN 'NBA'
+      ELSE l.name
+    END
 "
 
     cleanup(tmp)
