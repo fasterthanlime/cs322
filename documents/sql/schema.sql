@@ -307,6 +307,7 @@ CREATE SEQUENCE player_allstars_seq
 
 CREATE TABLE coaches (
     person_id INT NOT NULL,
+    season_count INT,
     season_win INT,
     season_loss INT,
     playoff_win INT,
@@ -321,14 +322,16 @@ AFTER INSERT OR UPDATE OR DELETE ON coach_seasons
 FOR EACH ROW
 DECLARE
   c INT;
-  r_id coach_seasons.person_id%type := NULL;
-  r_season_win coach_seasons.season_win%type := 0;
-  r_season_loss coach_seasons.season_loss%type := 0;
-  r_playoff_win coach_seasons.playoff_win%type := 0;
-  r_playoff_loss coach_seasons.playoff_loss%type := 0;
+  r_id coaches.person_id%type := NULL;
+  r_season_count coaches.season_count%type := 0;
+  r_season_win coaches.season_win%type := 0;
+  r_season_loss coaches.season_loss%type := 0;
+  r_playoff_win coaches.playoff_win%type := 0;
+  r_playoff_loss coaches.playoff_loss%type := 0;
 BEGIN
   IF UPDATING OR INSERTING THEN
     r_id := :new.person_id;
+    r_season_count := 1;
     r_season_win := :new.season_win;
     r_season_loss := :new.season_loss;
     r_playoff_win := :new.playoff_win;
@@ -337,6 +340,7 @@ BEGIN
 
   IF UPDATING OR DELETING THEN
     r_id := :new.person_id;
+    r_season_count := r_season_count - 1;
     r_season_win := r_season_win - :old.season_win;
     r_season_loss := r_season_loss - :old.season_loss;
     r_playoff_win := r_playoff_win - :old.playoff_win;
@@ -347,12 +351,13 @@ BEGIN
 
   IF c = 0 THEN
     INSERT INTO coaches
-      (person_id, season_win, season_loss, playoff_win, playoff_loss)
+      (person_id, season_count, season_win, season_loss, playoff_win, playoff_loss)
     VALUES
-      (:new.person_id, 0, 0, 0, 0);
+      (:new.person_id, 0, 0, 0, 0, 0);
   END IF;
 
   UPDATE coaches SET
+    season_count = season_count + r_season_count,
     season_win = season_win + r_season_win,
     season_loss = season_loss + r_season_loss,
     playoff_win = playoff_win + r_playoff_win,

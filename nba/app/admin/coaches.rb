@@ -8,6 +8,7 @@ ActiveAdmin.register Coach do
       ilkid = "(#{person.ilkid})" if person.ilkid
       link_to "#{person.fullname} #{ilkid}", admin_person_path(person)
     end
+    column :season_count
     column :season_win
     column :season_loss
     column :playoff_win

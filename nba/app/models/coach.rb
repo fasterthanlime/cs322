@@ -1,6 +1,6 @@
 class Coach < ActiveRecord::Base
   belongs_to :person
-  attr_readonly :person, :season_win, :season_loss, :playoff_win, :playoff_loss
+  attr_readonly :person, :person_id, :season_count, :season_win, :season_loss, :playoff_win, :playoff_loss
 
   def name
     "#{person.name} (Coach)"

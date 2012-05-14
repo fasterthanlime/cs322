@@ -2,7 +2,7 @@ class Person < ActiveRecord::Base
   has_one :coach
   has_one :player
   has_many :drafts
-  has_many :coach_seasons
+  has_many :coach_seasons, :order => 'year'
   attr_accessible :ilkid, :firstname, :lastname
 
   def fullname
