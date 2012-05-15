@@ -132,15 +132,10 @@ INSERT ALL
   ) VALUES (
     people_seq.NEXTVAL, SUBSTR(coachid, 0, 9), firstname, lastname
   )
-  INTO coaches (
-    person_id, season_count, season_win, season_loss, playoff_win, playoff_loss
-  ) VALUES (
-    people_seq.CURRVAL, 0, 0, 0, 0, 0
-  )
   SELECT *
   FROM #{tmp}
 "
-    puts "#{total/2} coaches inserted"
+    puts "#{total} coaches inserted"
     cleanup(tmp)
   end
 

@@ -42,3 +42,8 @@ DROP SEQUENCE player_allstars_seq;
 
 DROP TABLE coaches PURGE;
 DROP TRIGGER coaches_data;
+
+DROP TABLE players PURGE;
+DROP PROCEDURE players_data;
+DROP TRIGGER players_data_before;
+DROP TRIGGER players_data_after;
