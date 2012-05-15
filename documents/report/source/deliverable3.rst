@@ -96,6 +96,10 @@ Query L
 
 **TODO**
 
+.. literalinclude:: ../../../queries/basic_l.sql
+   :language: sql
+   :lines: 3-
+
 Query M
 -------
 
