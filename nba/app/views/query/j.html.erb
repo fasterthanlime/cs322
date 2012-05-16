@@ -1,0 +1,36 @@
+<div class=row-fluid>
+  <div class=span6>
+    <h2>Result of query <%= params[:action].upcase %></h2>
+    <p>
+      List the last and first name of the players which are shorter than the average height of players who have at least 10,000 rebounds and have no more than 12,000 rebounds (if any).
+    </p>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope=col>#</th>
+          <th scope=col>First Name</th>
+          <th scope=col>Last Name</th>
+          <th scope=col>Height</th>
+          <th scope=col>Rebounds</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%- while line = @results.fetch() -%>
+          <tr>
+            <th scope=row><%= link_to(
+              line[0],
+              :controller => "person",
+              :action => "player",
+              :id => line[0]
+            ) %></th>
+            <td><%= line[1] %></td>
+            <td><%= line[2] %></td>
+            <td><%= line[3] / 12 %>' <%= line[3] % 12 %>"</td>
+            <td><%= line[4] %></td>
+          </tr>
+        <%- end -%>
+      </tbody>
+    </table>
+  </div>
+  <%= render :partial => "sql" %>
+</div>
