@@ -10,11 +10,24 @@ FROM (
         SELECT
             il.id, il.name, COUNT(il.id) counter
         FROM
-            locations il
-            JOIN drafts d  ON d.location_id = il.id
-            JOIN teams t  ON t.id = d.team_id
-            JOIN leagues l ON l.id = t.league_id
+            locations il, teams t, leagues l,
+            (
+                SELECT location_id, team_id
+                FROM
+                    drafts d1,
+                    (
+                        SELECT person_id, MAX(CONCAT(year, round)) yr
+                        FROM drafts
+                        GROUP BY person_id
+                    ) d2
+                WHERE
+                    d1.person_id = d2.person_id AND
+                    CONCAT(year, round) = d2.yr
+            )
         WHERE
+            l.id = t.league_id AND
+            il.id = location_id AND
+            t.id = team_id AND
             l.name = 'NBA'
         GROUP BY
             il.id, il.name

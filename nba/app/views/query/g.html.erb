@@ -2,7 +2,7 @@
   <div class=span6>
     <h2>Result of query <%= params[:action].upcase %></h2>
     <p>
-      Print the name of the school with the highest number of players sent to the NBA
+      List the name of the schools according to the number of players they sent to the NBA. Sort them in descending order by number of drafted players.
     </p>
     <table class="table table-striped">
       <thead>
@@ -23,5 +23,5 @@
       </tbody>
     </table>
   </div>
-  <%= render :partial => 'sql' %>
+  <%= render :partial => "sql" %>
 </div>
