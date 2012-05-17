@@ -61,6 +61,10 @@ Query G
 
 **TODO**
 
+.. literalinclude:: ../../../queries/basic_g.sql
+   :language: sql
+   :lines: 4-
+
 Query H
 -------
 
@@ -68,12 +72,20 @@ Query H
 
 **TODO**
 
+.. literalinclude:: ../../../queries/basic_h.sql
+   :language: sql
+   :lines: 4-
+
 Query I
 -------
 
     *List the average weight, average height and average age, of teams of coaches with more than* ``XXX`` *season career wins and more than* ``YYY`` *win percentage, in each season they coached. (* ``XXX`` *and* ``YYY`` *are parameters. Try with combinations:* ``{XXX,YYY}={<1000,70%>,<1000,60%>,<1000,50%>,<700,55%>,<700,45%>}`` *. Sort the result by year in ascending order.*
 
 **TODO**
+
+.. literalinclude:: ../../../queries/basic_i.sql
+   :language: sql
+   :lines: 23-
 
 Query J
 -------
@@ -92,6 +104,10 @@ Query K
     *List the last and first name of the players who played for a Chicago team and Houston team.*
 
 **TODO**
+
+.. literalinclude:: ../../../queries/basic_k.sql
+   :language: sql
+   :lines: 4-
 
 Query L
 -------
@@ -122,12 +138,20 @@ Query N
 
 **TODO**
 
+.. literalinclude:: ../../../queries/basic_n.sql
+   :language: sql
+   :lines: 5-
+
 Query O
 -------
 
     *List the last and first names of the top 10* ``TENDEX`` *players, ordered by descending* ``TENDEX`` *value (Use playoff stats). (* ``TENDEX=(points+reb+ass+st+blk-­missedFT‐missedFG-­TO)/minutes`` *)*
 
 **TODO**
+
+.. literalinclude:: ../../../queries/basic_o.sql
+   :language: sql
+   :lines: 5-
 
 Query P
 -------
@@ -136,12 +160,20 @@ Query P
 
 **TODO**
 
+.. literalinclude:: ../../../queries/basic_p.sql
+   :language: sql
+   :lines: 4-
+
 Query Q
 -------
 
     *Compute the best teams according to statistics: for each season and for each team compute* ``TENDEX`` *values for its best 5 players. Sum these values for each team to compute* ``TEAM TENDEX`` *value. For each season list the team with the best win/loss percentage and the team with the highest* ``TEAM TENDEX`` *value.*
 
 **TODO**
+
+.. literalinclude:: ../../../queries/basic_q.sql
+   :language: sql
+   :lines: 7-
 
 Query R
 -------
@@ -150,6 +182,10 @@ Query R
 
 **TODO**
 
+.. literalinclude:: ../../../queries/basic_r.sql
+   :language: sql
+   :lines: 6-
+
 Query S
 -------
 
@@ -157,9 +193,18 @@ Query S
 
 **TODO**
 
+.. literalinclude:: ../../../queries/basic_s.sql
+   :language: sql
+   :lines: 4-
+
 Query T
 -------
 
     *List all players which never played for the team that drafted them.*
 
 **TODO**
+
+.. literalinclude:: ../../../queries/basic_t.sql
+   :language: sql
+   :lines: 3-
+
