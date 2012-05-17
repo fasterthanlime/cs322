@@ -1,0 +1,27 @@
+<div class=row-fluid>
+  <div class=span6>
+    <h2>Result of query <%= params[:action].upcase %></h2>
+    <p>
+      List the name of the schools according to the number of players they sent to the ABA. Sort them in descending order by number of drafted players.
+    </p>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope=col>#</th>
+          <th scope=col>Name</th>
+          <th scope=col>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%- while line = @results.fetch() -%>
+          <tr>
+            <td><%= line[0] %></td>
+            <th scope=row><%= line[1] %></td>
+            <td><%= line[2].to_i %></td>
+          </tr>
+        <%- end -%>
+      </tbody>
+    </table>
+  </div>
+  <%= render :partial => "sql" %>
+</div>
