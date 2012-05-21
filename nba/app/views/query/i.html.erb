@@ -6,6 +6,20 @@
     with more than 'XXX' season career wins and more than 'YYY' win percentage,
     in each season they coached.
     </p>
+
+    <%= form_tag do %>
+    <%= label_tag = '(XXX, YYY) = ' %>
+    <%= select_tag 'values', options_for_select([
+      ["(1000, 70%)", 0],
+      ["(1000, 60%)", 1],
+      ["(1000, 50%)", 2],
+      ["(1000, 55%)", 3],
+      [ "(700, 55%)", 4],
+      [ "(700, 45%)", 5],
+    ], @values) %>
+
+    <%= submit_tag 'Apply filter' %>
+    <% end %>
     
     <p> 
     Sort the result by year in ascending order 

@@ -37,7 +37,20 @@ class QueryController < ApplicationController
   end
 
   def i
-    fetch_results
+    query_name = params[:action]
+    rc = ActiveRecord::Base.connection.raw_connection
+
+    xxxes = [1000, 1000, 1000, 1000, 700, 700]
+    yyyes = [70,   60,   50,   55,   55,  45]
+
+    @values = params[:values] || 0
+    @xxx = xxxes[@values]
+    @yyy = yyyes[@values]
+
+    @sql = File.read("../queries/basic_#{query_name}.sql")
+    @sql.split(";").slice(0..-2).each { |query|
+      @results = rc.exec(query)
+    }
   end
 
   def j

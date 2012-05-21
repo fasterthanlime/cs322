@@ -8,4 +8,7 @@
 
 $(function() {
   prettyPrint();
+  $('#values').change(function() {
+    $(this).closest('form').submit();
+  });
 });
