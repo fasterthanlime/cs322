@@ -1,0 +1,44 @@
+<div class=row-fluid>
+  <div class=span6>
+    <h2>Result of query <%= params[:action].upcase %></h2>
+    <p>
+    List the average weight, average height and average age, of teams of coaches
+    with more than 'XXX' season career wins and more than 'YYY' win percentage,
+    in each season they coached.
+    </p>
+    
+    <p> 
+    Sort the result by year in ascending order 
+    </p>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope=col>#</th>
+          <th scope=col>Season Win</th>
+          <th scope=col>Season Loss</th>
+          <th scope=col>Win Percentage</th>
+          <th scope=col>Career Wins</th>
+          <th scope=col>Year</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%- while line = @results.fetch() -%>
+          <tr>
+            <th scope=row><%= link_to(
+              line[0],
+              :controller => "person",
+              :action => "player",
+              :id => line[0]
+            ) %></th>
+            <td><%= line[1] %></td>
+            <td><%= line[2] %></td>
+            <td><%= line[3].round(2) %>%</td>
+            <td><%= line[4] %></td>
+            <td><%= line[5] %></td>
+          </tr>
+        <%- end -%>
+      </tbody>
+    </table>
+  </div>
+  <%= render :partial => "sql" %>
+</div>
