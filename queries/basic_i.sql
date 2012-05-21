@@ -51,9 +51,12 @@ CREATE OR REPLACE VIEW best_coaches AS
 ;
 
 SELECT
-    person_id, season_win, season_loss, win_percentage, career_wins, year
+    AVG(weight) avg_weight, AVG(height) avg_height, AVG(ROUND((TO_DATE(year, 'YYYY') - birthdate)/365.24,0)) avg_age, year
 FROM
     best_coaches bc
+    JOIN people p ON p.id = bc.person_id
+GROUP BY
+    year
 ORDER BY
     year
 ;

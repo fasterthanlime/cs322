@@ -13,28 +13,19 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th scope=col>#</th>
-          <th scope=col>Season Win</th>
-          <th scope=col>Season Loss</th>
-          <th scope=col>Win Percentage</th>
-          <th scope=col>Career Wins</th>
+          <th scope=col>Average Weight</th>
+          <th scope=col>Average Height</th>
+          <th scope=col>Average Age</th>
           <th scope=col>Year</th>
         </tr>
       </thead>
       <tbody>
         <%- while line = @results.fetch() -%>
           <tr>
-            <th scope=row><%= link_to(
-              line[0],
-              :controller => "person",
-              :action => "player",
-              :id => line[0]
-            ) %></th>
-            <td><%= line[1] %></td>
+            <td><%= line[0].round %></td>
+            <td><%= (line[1] / 12).round %>' <%= (line[1] % 12).round %>"</td>
             <td><%= line[2] %></td>
-            <td><%= line[3].round(2) %>%</td>
-            <td><%= line[4] %></td>
-            <td><%= line[5] %></td>
+            <td><%= line[3] %></td>
           </tr>
         <%- end -%>
       </tbody>
