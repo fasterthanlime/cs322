@@ -31,18 +31,29 @@ CREATE OR REPLACE VIEW coach_seasons_percentage AS
 
 CREATE OR REPLACE VIEW coach_seasons_career AS
     SELECT
-        person_id, SUM(season_win) career_wins, year
+        person_id, SUM(season_win) career_wins
     FROM
         coach_seasons cs
     GROUP BY
-        person_id, year
+        person_id
+;
+
+CREATE OR REPLACE VIEW best_coaches AS
+    SELECT
+        cp.person_id, season_win, season_loss, win_percentage, career_wins, cp.year
+    FROM
+        coach_seasons_percentage cp
+        JOIN coach_seasons_career cc ON cp.person_id = cc.person_id
+    WHERE
+        win_percentage > 70 AND career_wins > 1000
+    ORDER BY
+        year
 ;
 
 SELECT
-    cp.person_id, season_win, season_loss, win_percentage, career_wins, cp.year
+    person_id, season_win, season_loss, win_percentage, career_wins, year
 FROM
-    coach_seasons_percentage cp
-    JOIN coach_seasons_career cc ON cp.person_id = cc.person_id AND cp.year = cc.year
+    best_coaches bc
 ORDER BY
     year
 ;
