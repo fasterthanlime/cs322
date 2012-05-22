@@ -43,14 +43,17 @@ class QueryController < ApplicationController
     xxxes = [1000, 1000, 1000, 1000, 700, 700]
     yyyes = [70,   60,   50,   55,   55,  45]
 
-    @values = params[:values] || 0
+    @values = (params[:values] || 0).to_i
     @xxx = xxxes[@values]
     @yyy = yyyes[@values]
 
     @sql = File.read("../queries/basic_#{query_name}.sql")
     @sql.split(";").slice(0..-2).each { |query|
-      @results = rc.exec(query)
+        @results = rc.exec(query)
     }
+    query = "SELECT avg_weight, avg_height, avg_age, year FROM query_i WHERE career_wins > #{@xxx} AND win_percentage > #{@yyy}"
+    logger.info "query = #{query}"
+    @results = rc.exec(query)
   end
 
   def j
@@ -105,7 +108,7 @@ class QueryController < ApplicationController
 
     @sql = File.read("../queries/basic_#{query_name}.sql")
     @sql.split(";").slice(0..-2).each { |query|
-      @results = rc.exec(query)
+        @results = rc.exec(query)
     }
   end
 
