@@ -1,0 +1,30 @@
+<div class=row-fluid>
+  <div class=span6>
+    <h2>Result of query <%= params[:action].upcase %></h2>
+    <p>
+      List all players which never played for the team that drafted them.
+    </p>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope=col>#</th>
+          <th scope=col>Name</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%- while line = @results.fetch() -%>
+          <tr>
+            <th scope=row><%= link_to(
+              line[0],
+              :controller => "person",
+              :action => "player",
+              :id => line[0]
+            ) %></th>
+          <td><%= line[1] %> <%= line[2] %></td>
+          </tr>
+        <%- end -%>
+      </tbody>
+    </table>
+  </div>
+  <%= render :partial => "sql" %>
+</div>
