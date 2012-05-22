@@ -1,0 +1,36 @@
+<div class=row-fluid>
+  <div class=span6>
+    <h2>Result of query <%= params[:action].upcase %></h2>
+    <p>
+      Compute which was the team with most wins in regular season during which changed 2, 3 and 4 coaches.
+    </p>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope=col>#</th>
+          <th scope=col>Name</th>
+          <th scope=col>Number of coaches</th>
+          <th scope=col>Total season wins</th>
+          <th scope=col>Year</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%- while line = @results.fetch() -%>
+          <tr>
+            <th scope=row><%= link_to(
+              line[0],
+              :controller => "person",
+              :action => "coach",
+              :id => line[0]
+            ) %></th>
+            <td><%= line[1] %></td>
+            <td><%= line[2].round %></td>
+            <td><%= line[3].round %></td>
+            <td><%= line[4] %></td>
+          </tr>
+        <%- end -%>
+      </tbody>
+    </table>
+  </div>
+  <%= render :partial => "sql" %>
+</div>
