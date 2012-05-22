@@ -85,7 +85,7 @@ Query I
 
 .. literalinclude:: ../../../queries/basic_i.sql
    :language: sql
-   :lines: 23-
+   :lines: 15-
 
 Query J
 -------
