@@ -1,7 +1,6 @@
 -- Compute the highest scoring and lowest scoring player for each season.
 
 CREATE OR REPLACE VIEW best_players AS
-
 SELECT
     person_id best_player_id, pts best_player_pts, year
 FROM (
@@ -19,7 +18,6 @@ WHERE r = 1;
 
 
 CREATE OR REPLACE VIEW worst_players AS
-
 SELECT
     person_id worst_player_id, pts worst_player_pts, year
 FROM (
@@ -37,7 +35,6 @@ WHERE r = 1;
 
 
 CREATE OR REPLACE VIEW best_players_unique AS
-
 SELECT * FROM best_players
 WHERE ROWID IN (
     SELECT MAX(ROWID)
@@ -46,7 +43,6 @@ WHERE ROWID IN (
 
 
 CREATE OR REPLACE VIEW worst_players_unique AS
-
 SELECT * FROM worst_players
 WHERE ROWID IN (
     SELECT MAX(ROWID)
