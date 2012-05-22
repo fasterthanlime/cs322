@@ -4,6 +4,10 @@ class Team < ActiveRecord::Base
   belongs_to :league
   attr_accessible :name, :league, :trigram, :location
 
+  def fullname
+    "#{name} (#{trigram})"
+  end
+
   def to_s
     return "<Team (#{id.to_i}, #{trigram} #{name})>"
   end

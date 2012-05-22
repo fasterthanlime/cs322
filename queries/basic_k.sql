@@ -6,7 +6,7 @@ CREATE OR REPLACE VIEW played_in_chicago AS
         person_id
     FROM
         player_seasons ps
-        JOIN teams t on ps.team_id = t.id AND t.trigram = 'CHI'
+        JOIN teams t on ps.team_id = t.id AND t.trigram IN ('CHI', 'CH1', 'CH2')
 ;
 
 CREATE OR REPLACE VIEW played_in_houston AS
@@ -14,7 +14,7 @@ CREATE OR REPLACE VIEW played_in_houston AS
         person_id
     FROM
         player_seasons ps
-        JOIN teams t on ps.team_id = t.id AND t.trigram = 'HOU'
+        JOIN teams t on ps.team_id = t.id AND t.trigram IN ('HOU', 'HMV')
 ;
 
 SELECT
@@ -32,5 +32,7 @@ FROM
             played_in_houston
     )
     JOIN people p on p.id = person_id
+ORDER BY
+    lastname, firstname
 ;
 

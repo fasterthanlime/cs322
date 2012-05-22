@@ -55,9 +55,9 @@
         <tr>
           <th scope=row><%= season.year -%></th>
           <td><%= link_to(
-            season.team.name,
+            season.team.fullname,
             :controller => 'team',
-            :acton => 'view',
+            :action => 'view',
             :id => season.team_id
           ) -%></td>
           <td><%= link_to(
