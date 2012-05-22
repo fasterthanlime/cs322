@@ -10,7 +10,7 @@
           <th scope=col>#</th>
           <th scope=col>First Name</th>
           <th scope=col>Last Name</th>
-          <th scope=col>Pts</th>
+          <th scope=col>Career points</th>
         </tr>
       </thead>
       <tbody>
@@ -24,7 +24,7 @@
             ) %></th>
             <td><%= line[1] %></td>
             <td><%= line[2] %></td>
-            <td><%= line[3] %></td>
+            <td><%= line[3].round %></td>
           </tr>
         <%- end -%>
       </tbody>
