@@ -1,34 +1,31 @@
--- List the last and first names of the top 30 'TENDEX' players, ordered by descending
--- 'TENDEX' value (Use season stats).
+-- List the last and first names of the top 30 'TENDEX' players, ordered by
+-- descending 'TENDEX' value (Use season stats).
 -- 
--- TENDEX=(points+reb+ass+st+blk‐missedFT‐missedFG‐TO)/minutes
+-- TENDEX=(points+reb+asts+stl+blk‐missedFT‐missedFG‐TO)/minutes
 
-SELECT p.firstname, p.lastname -- TOP 30
-FROM (
-	SELECT p.firstname, p.lastname, (points+reb+asts+st+blk‐missedFT‐missedFG‐to_)/minutes AS tendex
-	FROM (
-		SELECT 
-			p.firstname,
-			p.lastname,
-			SUM(pstats.points) AS points,
-			SUM(pstats.reb) AS reb,
-			SUM(pstats.asts) AS asts,
-			SUM(pstats.steals) AS st,
-			SUM(pstats.blocks) AS blk,
-			SUM(pstats.ftm) AS missedFT,
-			SUM(pstats.fgm) AS missedFG,
-			SUM(pstats.points) AS to_, --TO?
-			SUM(pstats.minutes) AS minutes,
-		FROM
-			people p
-				LEFT OUTER JOIN Players player ON player.person_id = p.id
-				LEFT OUTER JOIN Player_Season pseason ON pseason.player_id = player.id
-				LEFT OUTER JOIN Player_Stats pstats ON pstats.player_season_id = pseason.id
-		GROUP BY p.id
-	)
-	ORDER BY tendex
-)
-WHERE ROWNUM <= 30
+CREATE OR REPLACE VIEW player_tendeses AS
+    SELECT
+        person_id id,
+        MAX((pts+reb+asts+steals+blocks-ftm-fgm-turnovers)/minutes) tendex
+    FROM
+        player_stats s
+        JOIN player_seasons ps ON ps.id = s.player_season_id
+        JOIN player_season_types pst ON pst.id = s.player_season_type_id
+    WHERE
+        pst.name = 'Regular' AND
+        minutes > 0
+    GROUP BY
+        person_id;
 
-
-
+SELECT
+    p.id, firstname, lastname, tendex, r
+FROM
+    (
+        SELECT id, tendex, RANK() OVER (ORDER BY tendex DESC) r
+        FROM player_tendeses
+        WHERE tendex IS NOT NULL
+    ) t,
+    people p
+WHERE p.id = t.id AND r <= 30
+ORDER BY
+    r, lastname, firstname ASC;

@@ -1,0 +1,37 @@
+<div class=row-fluid>
+  <div class=span6>
+    <h2>Result of query <%= params[:action].upcase %></h2>
+    <p>
+      List the last and first names of the top 30 'TENDEX' players, ordered by descending 'TENDEX' value (Use season stats).
+    </p>
+    <p>
+      <code>TENDEX=(points+reb+ass+st+blk‐missedFT‐missedFG‐TO)/minutes</code>
+    </p>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope=col>#</th>
+          <th scope=col>First Name</th>
+          <th scope=col>Last Name</th>
+          <th scope=col>TENDEX</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%- while line = @results.fetch() -%>
+          <tr title="Rank <%= line[4].to_i %>">
+            <th scope=row><%= link_to(
+              line[0],
+              :controller => "person",
+              :action => "player",
+              :id => line[0]
+            ) %></th>
+            <td><%= line[1] %></td>
+            <td><%= line[2] %></td>
+            <td><%= line[3].round(2) %></td>
+          </tr>
+        <%- end -%>
+      </tbody>
+    </table>
+  </div>
+  <%= render :partial => "sql" %>
+</div>
