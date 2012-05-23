@@ -5,7 +5,8 @@ SELECT DISTINCT
     pse.person_id
 FROM
     drafts dr
-    JOIN player_seasons pse ON pse.person_id = dr.person_id AND pse.team_id = dr.team_id
+    JOIN player_seasons pse ON pse.person_id = dr.person_id
+    AND pse.team_id = dr.team_id
 ;
 
 SELECT
