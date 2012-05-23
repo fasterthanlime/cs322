@@ -1,0 +1,25 @@
+<div class=row-fluid>
+  <div class=span6>
+    <h2>Result of query <%= params[:action].upcase %></h2>
+    <p>
+      Compute the least successful draft year – the year when the largest percentage of drafted players never played in any of the leagues.
+    </p>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope=col>Year</th>
+          <th scope=col>Number of non-players</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%- while line = @results.fetch() -%>
+          <tr>
+          <td><%= line[0].round %></td>
+          <td><%= line[1].round %></td>
+          </tr>
+        <%- end -%>
+      </tbody>
+    </table>
+  </div>
+  <%= render :partial => "sql" %>
+</div>
