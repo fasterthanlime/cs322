@@ -1,29 +1,25 @@
 -- List the name of the schools according to the number of players they sent to
 -- the ABA. Sort them in descending order by number of drafted players.
 
-SELECT
-    loc.id, loc.name, COUNT(*) counter
-FROM
-    locations loc, teams t, leagues l,
-    (
-        SELECT location_id, team_id
-        FROM
-            drafts d1,
-            (
-                SELECT person_id, MAX(CONCAT(year, round)) yr
-                FROM drafts
-                GROUP BY person_id
-            ) d2
-        WHERE
-            d1.person_id = d2.person_id AND
-            CONCAT(year, round) = d2.yr
-    )
-WHERE
-    location_id = loc.id AND
-    team_id = t.id AND
-    t.league_id = l.id AND
-    l.name = 'ABA'
-GROUP BY
-    loc.id, loc.name
+SELECT l1.id, l1.name, l2.counter
+FROM locations l1
+LEFT JOIN (
+    SELECT location_id id, COUNT(*) counter
+    FROM
+        drafts d1,
+        (
+            SELECT person_id, MAX(CONCAT(year, round)) yr
+            FROM drafts d3
+            JOIN teams t ON t.id = d3.team_id
+            JOIN leagues l ON l.id = t.league_id
+            WHERE l.name = 'ABA'
+            GROUP BY person_id
+        ) d2
+    WHERE
+        d1.person_id = d2.person_id AND
+        CONCAT(year, round) = d2.yr
+    GROUP BY
+        location_id
+) l2 ON l1.id = l2.id
 ORDER BY
-    counter DESC;
+    counter DESC NULLS LAST;
