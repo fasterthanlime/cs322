@@ -24,6 +24,10 @@ CREATE TABLE people (
     CONSTRAINT person_unique UNIQUE (ilkid, firstname, lastname)
 );
 
+CREATE INDEX people_ilkid_idx ON people (ilkid);
+CREATE INDEX people_firstname_idx ON people (firstname);
+CREATE INDEX people_lastname_idx ON people (lastname);
+
 CREATE SEQUENCE people_seq
     START WITH 1
     INCREMENT BY 1;

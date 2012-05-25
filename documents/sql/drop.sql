@@ -1,5 +1,8 @@
 -- Drop all the things!!
 DROP TABLE people CASCADE CONSTRAINTS PURGE;
+DROP INDEX people_ilkid_idx;
+DROP INDEX people_firstname_idx;
+DROP INDEX people_lastname_idx;
 DROP SEQUENCE people_seq;
 
 DROP TABLE teams CASCADE CONSTRAINTS PURGE;
