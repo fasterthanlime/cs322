@@ -126,14 +126,20 @@ UPDATE #{tmp} SET year = team_stats_seq.NEXTVAL
 
     sqlldr(csv, tmp, fields)
     total = conn.exec "
-INSERT ALL
-  INTO people (
+INSERT INTO people (
     id, ilkid, firstname, lastname
-  ) VALUES (
-    people_seq.NEXTVAL, SUBSTR(coachid, 0, 9), firstname, lastname
   )
-  SELECT *
-  FROM #{tmp}
+  SELECT
+    people_seq.NEXTVAL, SUBSTR(coachid, 0, 9), firstname, lastname
+  FROM #{tmp} tmp
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM people p
+    WHERE
+      SUBSTR(tmp.coachid, 0, 9) = p.ilkid AND
+      tmp.firstname = p.firstname AND
+      tmp.lastname = p.lastname
+  )
 "
     puts "#{total} coaches inserted"
     cleanup(tmp)
@@ -170,9 +176,8 @@ INSERT INTO coach_seasons (
       ELSE l.name
     END
 "
-
-    cleanup(tmp)
     puts "#{total} coach seasons inserted"
+    cleanup(tmp)
   end
 
   desc "Import players data from the CSV"
@@ -193,33 +198,8 @@ INSERT INTO people (
     people_seq.NEXTVAL, ilkid, firstname, lastname, position,
     (h_feet * 12) + h_inches, weight, birthdate
   FROM #{tmp} tmp
-  WHERE NOT EXISTS (
-    SELECT 1
-    FROM people p
-    WHERE
-      tmp.ilkid = p.ilkid AND
-      tmp.firstname = p.firstname AND
-      tmp.lastname = p.lastname
-  )
 "
-    puts "#{total} more people inserted"
-
-    total = conn.exec "
-UPDATE people p1 SET (position, height, weight, birthdate) = (
-  SELECT
-    position, (h_feet * 12) + h_inches, weight, birthdate
-  FROM #{tmp} tmp
-  WHERE p1.id = (
-    SELECT id
-    FROM people p2
-    WHERE
-      tmp.ilkid = p2.ilkid AND
-      tmp.firstname = p2.firstname AND
-      tmp.lastname = p2.lastname
-  )
-)
-"
-    puts "#{total} people updated"
+    puts "#{total} people inserted"
     cleanup(tmp)
   end
 
@@ -441,8 +421,8 @@ INSERT INTO drafts (
   desc "All, remove everything and starts over"
   task :all => :environment do
     %w(
-      schema teams team_stats coaches coach_seasons players regular_seasons
-      playoffs allstars drafts
+      schema teams team_stats players regular_seasons playoffs allstars drafts
+      coaches coach_seasons
     ).each do |t|
       puts
       puts "rake import:#{t}"
