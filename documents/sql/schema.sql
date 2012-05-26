@@ -557,3 +557,19 @@ BEGIN
   );
 END players_data_before;
 /
+
+ALTER TABLE player_stats ADD (
+    d_tendex NUMBER
+);
+
+CREATE OR REPLACE TRIGGER player_stats_tendices
+BEFORE INSERT OR UPDATE ON player_stats
+FOR EACH ROW
+BEGIN
+    IF :new.minutes > 0 THEN
+        :new.d_tendex := (:new.pts + :new.asts + :new.asts + :new.steals +
+                         :new.blocks - :new.ftm - :new.fgm - :new.turnovers) /
+                         :new.minutes;
+    END IF;
+END player_stats_tendices;
+/

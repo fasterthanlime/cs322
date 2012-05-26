@@ -1,8 +1,5 @@
 -- Drop all the things!!
 DROP TABLE people CASCADE CONSTRAINTS PURGE;
-DROP INDEX people_ilkid_idx;
-DROP INDEX people_firstname_idx;
-DROP INDEX people_lastname_idx;
 DROP SEQUENCE people_seq;
 
 DROP TABLE teams CASCADE CONSTRAINTS PURGE;
@@ -41,12 +38,9 @@ DROP SEQUENCE player_stats_seq;
 DROP TABLE player_allstars CASCADE CONSTRAINTS PURGE;
 DROP SEQUENCE player_allstars_seq;
 
--- Denormalized data and triggers
+-- Denormalized data tables and procedures (triggers are automagically deleted)
 
 DROP TABLE coaches PURGE;
-DROP TRIGGER coaches_data;
 
 DROP TABLE players PURGE;
 DROP PROCEDURE players_data;
-DROP TRIGGER players_data_before;
-DROP TRIGGER players_data_after;
