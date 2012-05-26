@@ -8,7 +8,13 @@ JOIN players pl ON pl.person_id = p.id
 WHERE
     height IS NOT NULL AND
     height < (
-        SELECT AVG(height) FROM people WHERE height IS NOT NULL
+        SELECT AVG(height)
+        FROM
+            people p
+            JOIN players pl ON pl.person_id = p.id
+        WHERE
+            height IS NOT NULL AND
+            reb >= 10000
     ) AND
-    reb BETWEEN 10000 AND 12000
+    reb > 12000
 ORDER BY lastname, firstname;
