@@ -463,7 +463,6 @@ FIELDS TERMINATED BY ','
 TRAILING NULLCOLS
 (#{sqlfields.join(', ')})
 "
-
     c.close
 
     type = "VARCHAR2(255)"
