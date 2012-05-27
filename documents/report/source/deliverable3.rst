@@ -264,7 +264,7 @@ Here, we are using the table `coaches` which contains denormalized data built fr
 Query N
 -------
 
-    *List the last and first names of the top 30* ``TENDEX`` *players, ordered by descending* ``TENDEX`` *value (Use season stats). (* ``TENDEX=(points+reb+ass+st+blk‐missedFT‐missedFG‐TO)/minutes)`` *)*
+    *List the last and first names of the top 30* ``TENDEX`` *players, ordered by descending* ``TENDEX`` *value (Use season stats). (* ``TENDEX=(points+reb+ass+st+blk-missedFT-missedFG-TO)/minutes)`` *)*
 
 **TODO**
 
@@ -275,7 +275,7 @@ Query N
 Query O
 -------
 
-    *List the last and first names of the top 10* ``TENDEX`` *players, ordered by descending* ``TENDEX`` *value (Use playoff stats). (* ``TENDEX=(points+reb+ass+st+blk-­missedFT‐missedFG-­TO)/minutes`` *)*
+    *List the last and first names of the top 10* ``TENDEX`` *players, ordered by descending* ``TENDEX`` *value (Use playoff stats). (* ``TENDEX=(points+reb+ass+st+blk-missedFT-missedFG-TO)/minutes`` *)*
 
 **TODO**
 
