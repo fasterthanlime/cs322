@@ -20,16 +20,75 @@ It seemed easier for us to reuse them automagically from the web UI, but we were
 
     *Can you explain the remark about “different join order not giving any results” in query D? Please include this explanation in the final version of the report. Keep in mind that you're not getting the correct result (should be indeed 0 rows).*
 
-**TODO**
+**TODO: Amos**
 
     *Keep up the good work! (at least you're gonna read this...)*
 
 Indeed!
 
+
 Changes to the schema
 ---------------------
 
-**TODO**
+Many simplifications were made mostly for the sake of *keeping it stupid simple* but also because we gained knowledge of the data as we started used them more.
+
+**TODO: put the new DB schema here!**
+
+
+The `Coach` is dead, long live the `Coach`
+''''''''''''''''''''''''''''''''''''''''''
+
+The `Coach` entity was in the end an empty shell pointing to a `Person`. So we dropped it. As you'll see below, it came back as a denormalization entity.
+
+
+Same fate for the `Player`
+''''''''''''''''''''''''''
+
+After dropping the `Coach` it made sense to also drop the `Player`. Its data got merged into the `Person` entity. Not every `Player` had their ``birthdate`` or ``height`` and ``weight`` information and it could also be useful in the `Coach` use case (besides the ``position`` attribute).
+
+Again, `Player` came back to contain denormalized data of the player's career stats.
+
+
+Overkill `Stat`
+'''''''''''''''
+
+Everything under the `Stat` umbrella has been moved into their more specific entities: `PlayerStat`, `PlayerAllstart` and `TeamStat`. Even if they have many similarities it doesn't make sense to add that much complexity for so little improvement.
+
+I would blame the *Object-Oriented Programming* kind of design we are practicing for years and corrupted our young minds. It doesn't really apply to this use case.
+
+    *“Object-oriented design is the roman numerals of computing.”*
+    — `Rob Pike`_
+
+.. _Rob Pike: https://en.wikiquote.org/wiki/Rob_Pike
+
+
+Changes to the queries
+----------------------
+
+Since the schema changed, we had to change the previously done queries. The report for part 2 will still reflect the state at that point of time although the queries might not be exactly the same.
+
+Queries **A** and **B** have trivial changes regarding the deletion of `Coach` and `Player`, one less join has to be done simplying the final query.
+
+Queries **E** and **F** are also doing less ``JOIN`` since `Player` are no more (its data has being moved into `Person`) and everything that were into `Stat` is now into `PlayerStat`.
+
+Query C
+''''''''
+
+This one changed a lot since the definition of how the `Draft` are counted got clearer. It also uses the powerful ``PARTITION`` method to cut some overkill sub-``SELECT``. Only the last `Draft` into a specified league `League` is kept and thus counts.
+
+.. literalinclude:: ../../../queries/basic_c.sql
+   :language: sql
+   :lines: 4-
+
+Query D
+''''''''
+
+**TODO: Amos**
+
+.. literalinclude:: ../../../queries/basic_d.sql
+   :language: sql
+   :lines: 4-
+
 
 Importing data
 --------------
@@ -39,15 +98,82 @@ Importing data
     * *manipulating the .csv with Excel/LibreOffice Calc is a viable and usually quicker solution (but worse in terms of maintainability).*
     * *instead of importing directly into the tables of your final DB schema, you could create a temporary table for each .csv file (same schema, no constraints) and ALTER them progressively. This usually leads to less LOC (being SQL more expressive than Ruby).*
 
-**TODO**
+This part was totally redone almost from scratch using ``sqlldr``, ``LOAD DATA`` and ``INSERT ALL INTO … SELECT FROM``. It reduced the importing time from more than one hour to around 2 minutes, a 30x improvement. Time improvement was the main goal here to give us more flexibility in playing with changes in the schema. Manipulating the CSV (more than changing the line ending) wasn't an option as it would make things harder to maintain.
+
+A new method has been added ``import:schema`` which runs the three SQL files containing the commands about dropping the tables, sequences and procedures (``drop.sql``), creating the tables, sequences and procedures (``schema.sql``) and also importing some initial data (``data.sql``) like leagues, conferences and such.
+
+Loading data with ``SQLLDR`` 101
+''''''''''''''''''''''''''''''''
+
+How it works for any CSV file:
+
+* First, a table is created for the CSV file with all fields as ``VARCHAR2(255)`` as the CSV contains text.
+* Then a *control.txt* file is created containing the SQL code to load the data. Check the code below. That code says that the fields are separated using the comma (``,``) and will convert any string ``'NULL'`` into the proper SQL ``NULL`` value.
+
+.. literalinclude:: ../../../nba/lib/tasks/import.rake
+   :language: ruby
+   :lines: 450-466
+
+* Next step is the ``sqlldr`` call, which is a call to the executable with some arguments like the ``control.txt`` file, the ``userid`` being the connection string and ``skip`` which is set to 1 telling it to ignore the first line containing the column headings.
+* Then the ``control.txt`` file is deleted.
+* At this point, data is inserted into the *real* tables using a simple ``INSERT INTO`` or the more powerful ``INSERT ALL INTO`` if one row must become two (or more) like `TeamStat` with *Offensive* and *Defensive* data.
+
+.. literalinclude:: ../../../nba/lib/tasks/import.rake
+   :language: ruby
+   :lines: 193-203
+
+* Finally the initially created table is deleted. ``TEMPORARY TABLE``'s don't seem to work with that use case.
+
+We won't clutter this part with more code here and invite you to take a look at ``nba/lib/tasks/import.rake`` for more details.
+
 
 Denormalization
 ---------------
 
+In the phase 1 and 2, we managed to get rid of every duplications, trying to keep the core data considering only consistency of the data stored.
+
+We also knew that for some complex tasks, it'd become much more easier to have precomputed fields, tables. Find below which stuff were *denormalized*, how and why.
+
+We tried to use `Materialized View`_ but they are unfortunately not available on Oracle XE. So we used only the more conventional ``TRIGGER``. Their usage might not be always adequate since its our first time. Any feedbacks will be appreciated.
+
+.. _Materialized View: http://en.wikipedia.org/wiki/Materialized_view
+
+
 Coach
 '''''
 
-**TODO**
+As mentioned before the `Coach` entity was an empty shell and not carrying any data. For the need of some queries and to reflect the CSV file ``coach_career.csv`` the `Coach` entry as been recreated and contains only denormalized data computed from the `CoachSeason` entities.
+
+It could also become a way to know is a `Person` has acted as coach in his career.
+
+.. literalinclude:: ../../sql/schema.sql
+   :language: sql
+   :lines: 300-360
+
+
+Player
+''''''
+
+Again, the `Player` entity was merged into a `Person` to better come back. It's new purpose is to reflect the CSV files ``player_career.csv`` and ``player_playoffs_career.csv`` keeping the denormalized sums of all the `PlayerStat` for each type of `PlayerSeason`.
+
+The ``TRIGGER``'s are a bit trickier than before mostly because there is much more data involved. Also when the ``TRIGGER`` is activated is different depending if it's an insertion, update or deletion.
+
+.. literalinclude:: ../../sql/schema.sql
+   :language: sql
+   :lines: 362-558
+
+
+``TENDEX``
+''''''''''
+
+Since the ``TENDEX`` value is easily computable for every `PlayerStat` entry a very simple trigger can keep that value up-to-date which will simplify much redundancy among the following queries (and prevent mistakes as well).
+
+`PlayerStat` will get on extra column called ``d_tendex`` (``d_`` for denormalized) and an attached trigger called upon insertion or update. That value will remain ``NULL`` if the player never played, which makes sense.
+
+.. literalinclude:: ../../sql/schema.sql
+   :language: sql
+   :lines: 560-674
+
 
 The queries
 ===========
@@ -59,18 +185,22 @@ Query G
 
     *List the name of the schools according to the number of players they sent to the NBA. Sort them in descending order by number of drafted players.*
 
-**TODO**
+That query very similar to the query C of deliverable 2 but all the schools (we call them `Location` since it can be a country as well) have to be displayed. It first counts how many drafts a `Location` has and a ``LEFT JOIN`` is performed on the whole set of `Location`.
+
+Because a `Person` can be drafted in any `League`, Manos_ told us to keep only the last draft for the given league. It means than one player can be counted twice if he was drafted into the two `Leagues` but not if it was drafted two times in the same `League`.
 
 .. literalinclude:: ../../../queries/basic_g.sql
    :language: sql
    :lines: 4-
+
+.. _Manos: http://moodle.epfl.ch/mod/forum/discuss.php?d=171341#p387171
 
 Query H
 -------
 
     *List the name of the schools according to the number of players they sent to the ABA. Sort them in descending order by number of drafted players.*
 
-**TODO**
+Ditto the previous one with ABA instead of NBA.
 
 .. literalinclude:: ../../../queries/basic_h.sql
    :language: sql
@@ -169,7 +299,7 @@ Query Q
 
     *Compute the best teams according to statistics: for each season and for each team compute* ``TENDEX`` *values for its best 5 players. Sum these values for each team to compute* ``TEAM TENDEX`` *value. For each season list the team with the best win/loss percentage and the team with the highest* ``TEAM TENDEX`` *value.*
 
-This *view* is clearly a join of two other *views*:
+iThis *view* is clearly a join of two other *views*:
 
 * One listing for a given year the best team according to the ``TEAM TENDEX`` value decribed as above;
 * the second, for a given year the best team according to the ``season_win / season_loss`` ratio.

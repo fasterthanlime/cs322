@@ -222,7 +222,7 @@ Implement the simple search queries
 
 The SQL command is right below. Without any external fulltext search engine, we have to perform a `LIKE '%term%'` on any candidates fields of each tables we would like to be searchable. As it's basically *n* queries, we join them together with the table name to be able to figure out where does it come from.
 
-.. literalinclude:: ../../../queries/search.sql
+.. literalinclude:: _static/2/search.sql
    :language: sql
    :lines: 3-
 
@@ -272,7 +272,7 @@ Query A
 
 The *League* information is tied to a *Team* since each team belongs to a *League*. A *Coach* is linked to a *Team* via the *Coaches Team* table which express a season as coach for the given *Team*. A season played for a *Team* by a *Player* is expressed using the *Player Season* relation. This query fetches all the *Coaches* and all the *Players* from the given *League* and see the ones who match the same *Person*.
 
-.. literalinclude:: ../../../queries/basic_a.sql
+.. literalinclude:: _static/2/basic_a.sql
    :language: sql
    :lines: 3-
 
@@ -283,7 +283,7 @@ Query B
 
 This is is very similar to the *Query A* above with one more restriction. The *Coaches Team* and the *Player Season* have to match the same *year* as well.
 
-.. literalinclude:: ../../../queries/basic_b.sql
+.. literalinclude:: _static/2/basic_b.sql
    :language: sql
    :lines: 3-
 
@@ -296,7 +296,7 @@ In order to get the school (or country for foreign players) information, we have
 
 .. _`RANK`: http://www.adp-gmbh.ch/ora/sql/analytical/rank.html
 
-.. literalinclude:: ../../../queries/basic_c.sql
+.. literalinclude:: _static/2/basic_c.sql
    :language: sql
    :lines: 3-
 
@@ -311,7 +311,7 @@ What we are looking for is simply the intersection of coaches who participated i
 
 The `[an]ba_coaches` views are just simple `JOIN` with a condition on the league name. **NB:** with a different `JOIN` order, it gives no results. With the same order, we have 45 results.
 
-.. literalinclude:: ../../../queries/basic_d.sql
+.. literalinclude:: _static/2/basic_d.sql
    :language: sql
    :lines: 3-
 
@@ -328,7 +328,7 @@ The next problem is that, for some seasons, there are ex aequos: there might be 
 
 With all that done, we're just left with combining the `best_players_unique` and `worst_players_unique` views, simply joining them on the year.
 
-.. literalinclude:: ../../../queries/basic_e.sql
+.. literalinclude:: _static/2/basic_e.sql
    :language: sql
    :lines: 3-
 
@@ -347,7 +347,7 @@ Query F
 
 This query works exactly like *Query E*, except that instead of `best_players` and `worst_players` we have `youngest_players` and `oldest_players`. The ranking works exactly the same, only ordered by birthdate instead of season points. We also need to weed out duplicates, and to add a test on season types to only get players who participated in the playoffs. Similarly, `youngest_players_unique` and `oldest_players_unique` are joined on year.
 
-.. literalinclude:: ../../../queries/basic_f.sql
+.. literalinclude:: _static/2/basic_f.sql
    :language: sql
    :lines: 4-
 
