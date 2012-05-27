@@ -169,7 +169,14 @@ Query Q
 
     *Compute the best teams according to statistics: for each season and for each team compute* ``TENDEX`` *values for its best 5 players. Sum these values for each team to compute* ``TEAM TENDEX`` *value. For each season list the team with the best win/loss percentage and the team with the highest* ``TEAM TENDEX`` *value.*
 
-**TODO**
+This *view* is clearly a join of two other *views*:
+
+* One listing for a given year the best team according to the ``TEAM TENDEX`` value decribed as above;
+* the second, for a given year the best team according to the ``season_win / season_loss`` ratio.
+
+Then, it's only a matter of joining them by year and retrieving all the team information that are usefull to display (``name`` or ``trigram`` if empty).
+
+Those requests are making a great use of ``PARTITION`` which is used to *cut* by each year picking what's required (the ``MAX`` value here). But also to select the top *n* of a kind (like the top 5 tendices).
 
 .. literalinclude:: ../../../queries/basic_q.sql
    :language: sql

@@ -1,0 +1,49 @@
+<div class=row-fluid>
+  <div class=span6>
+    <h2>Result of query <%= params[:action].upcase %></h2>
+    <p>
+Compute the best teams according to statistics: for each season and for each team compute <var>TENDEX</var> values for its best 5 players. Sum these values foreach team to compute <var>TEAM TENDEX</var> value. For each season list the team with the best <var>win/loss</var> percentage and the team with the highest <var>TEAM TENDEX</var> value.
+    </p>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope=col rowspan=2>Year</th>
+          <th scope=colgroup colspan=3>Team Tendex</th>
+          <th scope=colgroup colspan=3>Win/Loss Percentage</th>
+        </tr>
+        <tr>
+          <th scope=col>#</th>
+          <th scope=col>Name</th>
+          <th scope=col>Tendex</th>
+          <th scope=col>#</th>
+          <th scope=col>Name</th>
+          <th scope=col>%</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%- while line = @results.fetch() -%>
+          <tr>
+          <th scope=row><%= line[0] %></th>
+          <td><%= link_to(
+            line[1],
+            :controller => "team",
+            :action => "view",
+            :id => line[1]
+          ) %></td>
+          <td><%= line[2] %></td>
+          <td><%= line[3].round(2) %></td>
+          <td><%= link_to(
+            line[4],
+            :controller => "team",
+            :action => "view",
+            :id => line[4]
+          ) %></td>
+          <td><%= line[5] %></td>
+          <td><%= line[6].round(4) * 100 %> %</td>
+          </tr>
+        <%- end -%>
+      </tbody>
+    </table>
+  </div>
+  <%= render :partial => "sql" %>
+</div>
