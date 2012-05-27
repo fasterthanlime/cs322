@@ -359,7 +359,6 @@ BEGIN
 END coaches_data;
 /
 
--- denormalized data
 CREATE TABLE players (
   person_id INT NOT NULL,
   league_id INT NOT NULL,

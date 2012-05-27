@@ -1,37 +1,26 @@
 -- Print the name of the school with the highest number of players sent to the
 -- NBA
 
-SELECT
-    id, name, counter
-FROM ( 
-    SELECT
-        id, name, counter, RANK() OVER (ORDER BY counter DESC) rank
+SELECT l.id, l.name, lc.counter
+FROM (
+    SELECT id, counter, RANK() OVER (ORDER BY counter DESC) r
     FROM (
-        SELECT
-            il.id, il.name, COUNT(il.id) counter
-        FROM
-            locations il,
-            (
-                SELECT location_id, team_id
-                FROM
-                    drafts d1,
-                    (
-                        SELECT person_id, MAX(CONCAT(year, round)) yr
-                        FROM drafts d3
-                        JOIN teams t ON t.id = d3.team_id
-                        JOIN leagues l ON l.id = t.league_id
-                        WHERE l.name = 'NBA'
-                        GROUP BY person_id
-                    ) d2
-                WHERE
-                    d1.person_id = d2.person_id AND
-                    CONCAT(year, round) = d2.yr
-            )
+        SELECT location_id id, COUNT(*) counter
+        FROM (
+            SELECT
+                d.id, CONCAT(year, round) yr, location_id,
+                MAX(CONCAT(year, round)) OVER (PARTITION BY person_id) last_yr
+            FROM drafts d
+            JOIN teams t ON t.id = d.team_id
+            JOIN leagues l ON l.id = t.league_id
+            WHERE l.name = 'NBA'
+        )
         WHERE
-            il.id = location_id
+            yr = last_yr
         GROUP BY
-            il.id, il.name
+            location_id
     )
-)
-WHERE
-    rank = 1;
+) lc
+JOIN locations l ON l.id = lc.id
+WHERE r = 1
+ORDER BY name ASC;
