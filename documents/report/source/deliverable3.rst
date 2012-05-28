@@ -61,6 +61,11 @@ I would blame the *Object-Oriented Programming* kind of design we are practicing
 
 .. _Rob Pike: https://en.wikiquote.org/wiki/Rob_Pike
 
+Missing informations
+''''''''''''''''''''
+
+The `League` was missing from the All Stars seasons (`PlayerAllstar`).
+
 
 Changes to the queries
 ----------------------
@@ -148,7 +153,7 @@ It could also become a way to know is a `Person` has acted as coach in his caree
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 300-360
+   :lines: 302-363
 
 
 Player
@@ -160,7 +165,7 @@ The ``TRIGGER``'s are a bit trickier than before mostly because there is much mo
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 362-558
+   :lines: 364-561
 
 
 ``TENDEX``
@@ -172,7 +177,7 @@ Since the ``TENDEX`` value is easily computable for every `PlayerStat` entry a v
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 560-674
+   :lines: 562-676
 
 
 The queries

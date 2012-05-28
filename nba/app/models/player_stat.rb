@@ -4,5 +4,5 @@ class PlayerStat < ActiveRecord::Base
 
   attr_accessible :player_season, :player_season_type, :turnovers, :gp, :minutes,
                   :pts, :oreb, :dreb, :reb, :asts, :steals, :blocks,
-                  :pf, :fga, :fgm, :ftm, :fta, :tpa, :tpm
+                  :pf, :fga, :fgm, :fta, :ftm, :tpa, :tpm
 end

@@ -265,6 +265,7 @@ CREATE TABLE player_allstars (
     id INT,
     person_id INT NOT NULL,
     conference_id INT NOT NULL,
+    league_id INT NOT NULL,
     year INT NOT NULL,
     pts INT,
     oreb INT,
@@ -288,7 +289,9 @@ CREATE TABLE player_allstars (
     FOREIGN KEY (person_id)
         REFERENCES people (id) ON DELETE CASCADE,
     FOREIGN KEY (conference_id)
-        REFERENCES conferences (id) ON DELETE CASCADE
+        REFERENCES conferences (id) ON DELETE CASCADE,
+    FOREIGN KEY (league_id)
+        REFERENCES leagues (id) ON DELETE CASCADE
 );
 
 CREATE SEQUENCE player_allstars_seq

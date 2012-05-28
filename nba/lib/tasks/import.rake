@@ -324,14 +324,14 @@ INSERT INTO player_stats (
     sqlldr(csv, tmp, fields)
     total = conn.exec "
 INSERT INTO player_allstars (
-    id, person_id, conference_id, year, turnovers, gp, minutes, pts, oreb,
-    dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
+    id, person_id, conference_id, league_id, year, turnovers, gp, minutes, pts,
+    oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
   )
   SELECT
-    player_allstars_seq.NEXTVAL, p.id, c.id, year, turnover, gp, minutes, pts,
-    oreb, dreb, reb, asts, stl, blk, pf, fga, fgm, fta, ftm, tpa, tpm
+    player_allstars_seq.NEXTVAL, p.id, c.id, l.id, year, turnover, gp, minutes,
+    pts, oreb, dreb, reb, asts, stl, blk, pf, fga, fgm, fta, ftm, tpa, tpm
   FROM
-    #{tmp} tmp, people p, conferences c
+    #{tmp} tmp, people p, conferences c, leagues l
   WHERE
     (tmp.ilkid <> 'THOMPDA01' OR tmp.year <> '1982' OR tmp.tpm IS NOT NULL) AND
     (
@@ -347,7 +347,8 @@ INSERT INTO player_allstars (
         tmp.conference = 'weset' OR
         tmp.conference = 'Denver' or
         tmp.conference = 'AllStars')
-    )
+    ) AND
+    substr(l.name, 0, 1) = tmp.leag
 "
     puts "#{total} player allstars seasons inserted"
     cleanup(tmp)
