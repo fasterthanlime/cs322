@@ -1,45 +1,7 @@
 <%= render :partial => 'header' %>
 <div class=row-fluid>
-  <div class=span4>
-    <h3>Details</h3>
-    <dl class=well>
-    <%- unless @person.position.nil? then -%>
-      <dt>Position</dt>
-      <dd><%= @person.position -%></dd>
-    <%- end -%>
-    <%- if @person.height then -%>
-      <dt>Height</dt>
-      <dd><%= @person.height_in_ft -%></dd>
-    <%- end -%>
-    <%- if @person.weight then -%>
-      <dt>Weight</dt>
-      <dd><%= @person.weight -%></dd>
-    <%- end -%>
-    <%- if @person.birthdate then -%>
-      <dt>Birthdate</dt>
-      <dd><%= @person.birthdate.strftime('%Y-%m-%d') -%></dd>
-    <%- end -%>
-    <%- if @person.drafts.count > 0 then -%>
-      <dt>College</dt>
-      <dd><%= @person.drafts[0].location.name -%></dd>
-    <%- end -%>
-    </dl>
-  <%- if @person.drafts.count > 0 then-%>
-    <h4>Draft history</h4>
-    <ul>
-    <%- @person.drafts.each do |draft| -%>
-      <li><%= link_to(
-        "#{draft.year} #{draft.team.league.name}, round #{draft.round}, #{draft.team.name}",
-        :controller => 'team',
-        :action => 'view',
-        :id => draft.team_id
-      ) -%></li>
-    <%- end -%>
-    </ul>
-  <%- end -%>
-  </div>
   <%- if @person.player_seasons.count > 0 then -%>
-  <div class=span4>
+  <div class=span6>
     <h3>Seasons in a team</h3>
     <table class="table table-stripped">
       <thead>
@@ -83,7 +45,7 @@
   </div>
   <%- end -%>
   <%- if @person.player_allstars.count > 0 then -%>
-  <div class=span4>
+  <div class=span6>
     <h3>Allstar seasons</h3>
     <table class="table table-stripped">
       <thead>
