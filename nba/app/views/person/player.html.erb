@@ -1,77 +1,82 @@
 <%= render :partial => 'header' %>
+<%- if @person.player_seasons.count > 0 then -%>
 <div class=row-fluid>
-  <%- if @person.player_seasons.count > 0 then -%>
-  <div class=span6>
+  <div class=span12>
     <h3>Seasons in a team</h3>
-    <table class="table table-stripped">
+    <table class="table table-striped">
       <thead>
         <tr>
           <th scope=col>Year</th>
           <th scope=col>Team</th>
-          <th scope=col>Season</th>
-          <th scope=col>Playoff</th>
+          <th scope=col>Type</th>
+          <%= render :partial => 'stat_header' %>
+          <th scope=col>Links</th>
         </tr>
       </thead>
       <tbody>
-    <%- @person.player_seasons.each do |season| -%>
+  <%- @person.player_seasons.each do |season|
+    rs = (season.regular_season and season.playoff_season) && 2 || 1
+    stat = season.regular_season
+    link = admin_player_stat_path(stat)
+    if stat.nil? then
+      stat = season.playoff_season
+      link = admin_player_allstar_path(stat)
+    end
+  -%>
         <tr>
-          <th scope=row><%= season.year -%></th>
-          <td><%= link_to(
+          <th scope=row rowspan=<%= rs %>><%= season.year -%></th>
+          <td rowspan=<%= rs %>><%= link_to(
             season.team.fullname,
             :controller => 'team',
             :action => 'view',
             :id => season.team_id
           ) -%></td>
-          <td><%= link_to(
-            'View stats',
-            :controller => 'player',
-            :action => 'stat',
-            :year => season.year,
-            :type => 'season',
-            :id => @person.id
-          ) if season.regular_season %></td>
-          <td><%= link_to(
-            'View stats',
-            :controller => 'player',
-            :action => 'stat',
-            :year => season.year,
-            :type => 'playoff',
-            :id => @person.id
-          ) if season.playoff_season %></td>
+          <td><%= stat.player_season_type.name %></td>
+          <%= render :partial => 'stat', :object => stat -%>
+          <td><%= link_to "admin", link %></td>
         </tr>
-    <%- end -%>
+      <%- if rs == 2 then
+        stat = season.playoff_season
+        link = admin_player_allstar_path(stat)
+      -%>
+        <tr>
+          <td><%= stat.player_season_type.name %></td>
+          <%= render :partial => 'stat', :object => stat -%>
+          <td><%= link_to "admin", link %></td>
+        </tr>
+      <%- end -%>
+  <%- end -%>
       </tbody>
     </table>
   </div>
-  <%- end -%>
-  <%- if @person.player_allstars.count > 0 then -%>
-  <div class=span6>
+</div>
+<%- end -%>
+<%- if @person.player_allstars.count > 0 then -%>
+<div class=row-fluid>
+  <div class=span12>
     <h3>Allstar seasons</h3>
     <table class="table table-stripped">
       <thead>
         <tr>
           <th scope=col>Year</th>
           <th scope=col>Conference</th>
-          <th scope=col>Stat</th>
+          <th scope=col>League</th>
+          <%= render :partial => 'stat_header' %>
+          <th scope=col>Link</th>
         </tr>
       </thead>
       <tbody>
-    <%- @person.player_allstars.each do |allstar| -%>
+  <%- @person.player_allstars.each do |stat| -%>
         <tr>
-          <th scope=row><%= allstar.year -%></th>
-          <td><%= allstar.conference.name -%></td>
-          <td><%= link_to(
-            'View stats',
-            :controller => 'player',
-            :action => 'stat',
-            :year => allstar.year,
-            :type => 'allstar',
-            :id => @person.id
-          ) %></td>
+          <th scope=row><%= stat.year -%></th>
+          <td><%= stat.conference.name -%></td>
+          <td><%= stat.league.name -%></td>
+          <%= render :partial => 'stat', :object => stat %>
+          <td><%= link_to "admin", admin_player_allstar_path(stat) %></td>
         </tr>
-    <%- end -%>
+  <%- end -%>
       </tbody>
     </table>
   </div>
-  <%- end -%>
 </div>
+<%- end -%>
