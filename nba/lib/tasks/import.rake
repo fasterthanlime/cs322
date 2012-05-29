@@ -383,7 +383,7 @@ INSERT INTO people (id, ilkid, firstname, lastname)
 # import only null ilkids
 total = conn.exec "
 INSERT INTO people (id, ilkid, firstname, lastname)
-  SELECT people_seq.NEXTVAL, people_seq.NEXTVAL, firstname, lastname
+  SELECT people_seq.NEXTVAL, NULL, firstname, lastname
   FROM (
     SELECT DISTINCT firstname, lastname
     FROM #{tmp} tmp
