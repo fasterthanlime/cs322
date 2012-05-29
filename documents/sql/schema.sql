@@ -569,7 +569,7 @@ BEFORE INSERT OR UPDATE ON player_stats
 FOR EACH ROW
 BEGIN
     IF :new.minutes > 0 THEN
-        :new.d_tendex := (:new.pts + :new.asts + :new.asts + :new.steals +
+        :new.d_tendex := (:new.pts + :new.reb + :new.asts + :new.steals +
                          :new.blocks - :new.ftm - :new.fgm - :new.turnovers) /
                          :new.minutes;
     END IF;
