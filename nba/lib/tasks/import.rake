@@ -230,12 +230,12 @@ INSERT INTO player_seasons (id, person_id, team_id, year)
     total = conn.exec "
 INSERT INTO player_stats (
     id, player_season_id, player_season_type_id, turnovers, gp, minutes, pts,
-    oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
+    oreb, dreb, asts, steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
   )
   SELECT
     player_stats_seq.NEXTVAL, ps.id, #{PlayerSeasonType::REGULAR}, turnover,
-    gp, minutes, pts, oreb, dreb, reb, asts, stl, blk, pf, fga, fgm, fta, ftm,
-    tpa, tpm
+    gp, minutes, pts, oreb, dreb, asts, stl, blk, pf, fga, fgm, fta, ftm, tpa,
+    tpm
   FROM
     #{tmp} tmp, people p, leagues l, teams t, player_seasons ps
   WHERE
@@ -288,12 +288,12 @@ INSERT INTO player_seasons (
     total = conn.exec "
 INSERT INTO player_stats (
     id, player_season_id, player_season_type_id, turnovers, gp, minutes, pts,
-    oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
+    oreb, dreb, asts, steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
   )
   SELECT
     player_stats_seq.NEXTVAL, ps.id, #{PlayerSeasonType::PLAYOFF}, turnover,
-    gp, minutes, pts, oreb, dreb, reb, asts, stl, blk, pf, fga, fgm, fta, ftm,
-    tpa, tpm
+    gp, minutes, pts, oreb, dreb, asts, stl, blk, pf, fga, fgm, fta, ftm, tpa,
+    tpm
   FROM
     #{tmp} tmp, people p, leagues l, teams t, player_seasons ps
   WHERE
@@ -323,11 +323,11 @@ INSERT INTO player_stats (
     total = conn.exec "
 INSERT INTO player_allstars (
     id, person_id, conference_id, league_id, year, turnovers, gp, minutes, pts,
-    oreb, dreb, reb, asts, steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
+    oreb, dreb, asts, steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
   )
   SELECT
     player_allstars_seq.NEXTVAL, p.id, c.id, l.id, year, turnover, gp, minutes,
-    pts, oreb, dreb, reb, asts, stl, blk, pf, fga, fgm, fta, ftm, tpa, tpm
+    pts, oreb, dreb, asts, stl, blk, pf, fga, fgm, fta, ftm, tpa, tpm
   FROM
     #{tmp} tmp, people p, conferences c, leagues l
   WHERE

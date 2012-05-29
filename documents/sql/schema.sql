@@ -235,7 +235,6 @@ CREATE TABLE player_stats (
     pts INT,
     oreb INT,
     dreb INT,
-    reb INT,
     asts INT,
     steals INT,
     blocks INT,
@@ -270,7 +269,6 @@ CREATE TABLE player_allstars (
     pts INT,
     oreb INT,
     dreb INT,
-    reb INT,
     asts INT,
     steals INT,
     blocks INT,
@@ -299,6 +297,36 @@ CREATE SEQUENCE player_allstars_seq
     INCREMENT BY 1;
 
 -- Denormalized data
+
+ALTER TABLE player_stats ADD (
+    d_reb INT,
+    d_tendex NUMBER
+);
+
+CREATE OR REPLACE TRIGGER player_stats_before
+BEFORE INSERT OR UPDATE ON player_stats
+FOR EACH ROW
+BEGIN
+    :new.d_reb := :new.oreb + :new.dreb;
+    IF :new.minutes > 0 THEN
+        :new.d_tendex := (:new.pts + :new.d_reb + :new.asts + :new.steals +
+                         :new.blocks - :new.ftm - :new.fgm - :new.turnovers) /
+                         :new.minutes;
+    END IF;
+END player_stats_before;
+/
+
+ALTER TABLE player_allstars ADD (
+    d_reb INT
+);
+
+CREATE OR REPLACE TRIGGER player_allstars_before
+BEFORE INSERT OR UPDATE ON player_allstars
+FOR EACH ROW
+BEGIN
+    :new.d_reb := :new.oreb + :new.dreb;
+END player_allstars_before;
+/
 
 CREATE TABLE coaches (
     person_id INT NOT NULL,
@@ -418,8 +446,8 @@ CREATE OR REPLACE PROCEDURE players_data (
 BEGIN
   IF c = 0 THEN
     INSERT INTO players (
-      person_id, league_id, player_season_type_id, gp, minutes, pts, oreb, dreb, reb,
-      asts, steals, blocks, turnovers, pf, fga, fgm, fta, ftm, tpa, tpm
+      person_id, league_id, player_season_type_id, gp, minutes, pts, oreb, dreb,
+      reb, asts, steals, blocks, turnovers, pf, fga, fgm, fta, ftm, tpa, tpm
     ) VALUES (
       p_person_id, p_league_id, p_player_season_type_id, p_gp, p_minutes, p_pts,
       p_oreb, p_dreb, p_reb, p_asts, p_steals, p_blocks, p_turnovers, p_pf,
@@ -483,7 +511,7 @@ BEGIN
     r_pts := :new.pts;
     r_oreb := :new.oreb;
     r_dreb := :new.dreb;
-    r_reb := :new.reb;
+    r_reb := :new.d_reb;
     r_asts := :new.asts;
     r_steals := :new.steals;
     r_blocks := :new.blocks;
@@ -503,7 +531,7 @@ BEGIN
     r_pts := r_pts - :old.pts;
     r_oreb := r_oreb - :old.oreb;
     r_dreb := r_dreb - :old.dreb;
-    r_reb := r_reb - :old.reb;
+    r_reb := r_reb - :old.d_reb;
     r_asts := r_asts - :old.asts;
     r_steals := r_steals - :old.steals;
     r_blocks := r_blocks - :old.blocks;
@@ -553,25 +581,9 @@ BEGIN
 
   players_data(
     c, r_person_id, r_league_id, :old.player_season_type_id, -:old.gp,
-    -:old.minutes, -:old.pts, -:old.oreb, -:old.dreb, -:old.reb, -:old.asts,
+    -:old.minutes, -:old.pts, -:old.oreb, -:old.dreb, -:old.d_reb, -:old.asts,
     -:old.steals, -:old.blocks, -:old.turnovers, -:old.pf, -:old.fga,
     -:old.fgm, -:old.fta, -:old.ftm, -:old.tpa, -:old.tpm
   );
 END players_data_before;
-/
-
-ALTER TABLE player_stats ADD (
-    d_tendex NUMBER
-);
-
-CREATE OR REPLACE TRIGGER player_stats_tendices
-BEFORE INSERT OR UPDATE ON player_stats
-FOR EACH ROW
-BEGIN
-    IF :new.minutes > 0 THEN
-        :new.d_tendex := (:new.pts + :new.reb + :new.asts + :new.steals +
-                         :new.blocks - :new.ftm - :new.fgm - :new.turnovers) /
-                         :new.minutes;
-    END IF;
-END player_stats_tendices;
 /
