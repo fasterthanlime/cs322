@@ -7,27 +7,27 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th scope=col>#</th>
-          <th scope=col>Name</th>
-          <th scope=col>Number of coaches</th>
-          <th scope=col>Total season wins</th>
           <th scope=col>Year</th>
+          <th scope=col>Team</th>
+          <th scope=col><abbr title="Number of coaches"># Coaches</abbr></th>
+          <th scope=col><abbr title="Total season wins">Tot. wins</abbr></th>
         </tr>
       </thead>
       <tbody>
-        <%- while line = @results.fetch() -%>
+        <%- year = nil -%>
+        <%- while line = @results.fetch() do -%>
           <tr>
-            <th scope=row><%= link_to(
-              line[0],
-              :controller => "person",
-              :action => "coach",
+            <th scope=row><%= year != line[4] ? line[4] : '' %></th>
+            <td><%= link_to(
+              line[1],
+              :controller => "team",
+              :action => "view",
               :id => line[0]
-            ) %></th>
-            <td><%= line[1] %></td>
+            ) %></td>
             <td><%= line[2].round %></td>
             <td><%= line[3].round %></td>
-            <td><%= line[4] %></td>
           </tr>
+          <%- year = line[4] -%>
         <%- end -%>
       </tbody>
     </table>

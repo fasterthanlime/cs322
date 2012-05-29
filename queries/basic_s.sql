@@ -25,8 +25,3 @@ FROM (
 )
     JOIN teams team ON team.id = team_id
 ;
-
--- Note that this might give duplicates for ex aequo teams
--- We can't use the ROWID trick as in Query E, because we
--- use GROUP BY, so... we'll just be happy with duplicates here.
-
