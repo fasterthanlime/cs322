@@ -42,7 +42,7 @@ CREATE OR REPLACE VIEW team_season_winlosses AS
         FROM (
             SELECT
                 team_id id, year,
-                SUM(season_win) / SUM(season_loss) winloss
+                SUM(season_win) / (SUM(season_win) + SUM(season_loss)) winloss
             FROM
                 coach_seasons cs
             GROUP BY year, team_id
