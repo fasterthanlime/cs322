@@ -27,19 +27,19 @@
     <table class="table table-striped">
       <thead>
         <tr>
+          <th scope=col>Year</th>
           <th scope=col>Average Weight</th>
           <th scope=col>Average Height</th>
           <th scope=col>Average Age</th>
-          <th scope=col>Year</th>
         </tr>
       </thead>
       <tbody>
         <%- while line = @results.fetch() -%>
           <tr>
+            <th scope=row><%= line[3] %></th>
             <td><%= line[0].round %></td>
             <td><%= (line[1] / 12).round %>' <%= (line[1] % 12).round %>"</td>
             <td><%= line[2] %></td>
-            <td><%= line[3] %></td>
           </tr>
         <%- end -%>
       </tbody>

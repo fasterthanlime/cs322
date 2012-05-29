@@ -15,16 +15,17 @@
 
 CREATE OR REPLACE VIEW coach_seasons_percentage AS
     SELECT
-        person_id, season_win, season_loss,
-        100 * (season_win / (season_win + season_loss)) win_percentage, year
+        person_id, year,
+        100 * SUM(season_win) / (SUM(season_win) + SUM(season_loss)) win_percentage
     FROM
         coach_seasons cs
+    GROUP BY
+        person_id, year
 ;
 
 CREATE OR REPLACE VIEW best_coaches AS
     SELECT
-        cp.person_id, cp.season_win, cp.season_loss, cp.win_percentage,
-        c.season_win career_wins, cp.year
+        cp.person_id, cp.win_percentage, c.season_win career_wins, cp.year
     FROM
         coach_seasons_percentage cp
         JOIN coaches c ON cp.person_id = c.person_id
