@@ -5,6 +5,7 @@
 SELECT p.id, firstname, lastname, height, reb
 FROM people p
 JOIN players pl ON pl.person_id = p.id
+JOIN player_season_types pst ON pst.id = pl.player_season_type_id
 WHERE
     height IS NOT NULL AND
     height < (
@@ -12,9 +13,12 @@ WHERE
         FROM
             people p
             JOIN players pl ON pl.person_id = p.id
+            JOIN player_season_types pst ON pst.id = pl.player_season_type_id
         WHERE
             height IS NOT NULL AND
+            pst.name = 'Regular' AND
             reb >= 10000
     ) AND
+    pst.name = 'Regular' AND
     reb > 12000
 ORDER BY lastname, firstname;
