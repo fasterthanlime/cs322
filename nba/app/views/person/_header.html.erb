@@ -2,6 +2,11 @@
 <div class=well style="overflow:hidden">
 <div class=span3>
   <div class=btn-group>
+    <%= link_to(
+      'General',
+      {:action => 'view', :id => @person.id},
+      :class => 'btn'
+    ) %>
 <%- if @person.coach then -%>
     <%= link_to(
       'Coach',
