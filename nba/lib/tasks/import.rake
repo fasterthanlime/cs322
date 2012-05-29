@@ -136,9 +136,7 @@ INSERT INTO people (
     SELECT 1
     FROM people p
     WHERE
-      SUBSTR(tmp.coachid, 0, 9) = p.ilkid AND
-      tmp.firstname = p.firstname AND
-      tmp.lastname = p.lastname
+      SUBSTR(tmp.coachid, 0, 9) = p.ilkid
   )
 "
     puts "#{total} coaches inserted"
@@ -363,7 +361,7 @@ INSERT INTO player_allstars (
                 draft_from leag)
 
     sqlldr(csv, tmp, fields)
-
+# avoids null ilkids
     total = conn.exec "
 INSERT INTO people (id, ilkid, firstname, lastname)
   SELECT people_seq.NEXTVAL, ilkid, firstname, lastname
@@ -371,13 +369,32 @@ INSERT INTO people (id, ilkid, firstname, lastname)
     SELECT DISTINCT ilkid, firstname, lastname
     FROM #{tmp} tmp
     WHERE
+      tmp.ilkid IS NOT NULL AND
       NOT EXISTS (
         SELECT 1
         FROM people p
         WHERE
-          p.ilkid = tmp.ilkid AND
+          p.ilkid = tmp.ilkid
+      )
+  )
+"
+    puts "#{total} more people inserted"
+
+# import only null ilkids
+total = conn.exec "
+INSERT INTO people (id, ilkid, firstname, lastname)
+  SELECT people_seq.NEXTVAL, NULL, firstname, lastname
+  FROM (
+    SELECT firstname, lastname
+    FROM #{tmp} tmp
+    WHERE
+      tmp.ilkid IS NULL AND
+      NOT EXISTS (
+        SELECT 1
+        FROM people p
+        WHERE
           p.firstname = tmp.firstname AND
-          p.lastname = tmp.lastname
+	  p.lastname = tmp.lastname
       )
   )
 "
