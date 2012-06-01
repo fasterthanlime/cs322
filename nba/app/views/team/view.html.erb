@@ -1,18 +1,73 @@
 <div class=row-fluid>
   <div class=span12>
     <h2><%= @team.name -%> <small><%= @team.trigram -%></small></h2>
-    <h3>League: <%= @team.league.name %></h3>
+    <p>Playing in <%= @team.league.name %></p>
   </div>
 </div>
 <div class=row-fluid>
-<div class=span12>
+<div class=span9>
+  <h3>Team Stat</h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope=col>Year</th>
+        <th scope=col>Type</th>
+        <th scope=col>Pts</th>
+        <th scope=col><abbr title="Assists">Ast</abbr></th>
+        <th scope=col><abbr title="Steals">Stl</abbr></th>
+        <th scope=col><abbr title="Blocks">Blk</abbr></th>
+        <th scope=col><abbr title="Rebounds">Reb</abbr></th>
+        <th scope=col>OReb</th>
+        <th scope=col>DReb</th>
+        <th scope=col>PF</th>
+        <th scope=col>FGA</th>
+        <th scope=col>FGM</th>
+        <th scope=col>FTA</th>
+        <th scope=col>FTM</th>
+        <th scope=col>3PA</th>
+        <th scope=col>3PM</th>
+        <th scope=col>Pace</th>
+      </tr>
+    </thead>
+    <tbody>
+<%- @team.team_stats.each do |stat| -%>
+      <tr>
+      <%- if stat.team_stat_tactique_id == TeamStatTactique::OFFENSIVE then -%>
+        <th scope=row rowspan=2><%= stat.year -%></th>
+      <%- end -%>
+        <td><%= stat.team_stat_tactique.name -%></td>
+        <td><%= stat.pts %></td>
+        <td><%= stat.asts %></td>
+        <td><%= stat.steals %></td>
+        <td><%= stat.blocks %></td>
+        <td><%= stat.reb %></td>
+        <td><%= stat.oreb %></td>
+        <td><%= stat.dreb %></td>
+        <td><%= stat.pf %></td>
+        <td><%= stat.fga %></td>
+        <td><%= stat.fgm %></td>
+        <td><%= stat.fta %></td>
+        <td><%= stat.ftm %></td>
+        <td><%= stat.tpa %></td>
+        <td><%= stat.tpm %></td>
+      <%- if stat.team_stat_tactique_id == TeamStatTactique::OFFENSIVE then -%>
+        <td><%= stat.pace.round(2) -%></td>
+      <%- else -%>
+        <td></td>
+      <%- end -%>
+      </tr>
+<%- end -%>
+    </tbody>
+  </table>
+</div>
+<div class=span3>
+  <h3>Coach Stat</h3>
   <table class="table table-striped">
     <thead>
       <tr>
         <th colspan=2></th>
         <th scope=colgroup colspan=2>Regular</th>
         <th scope=colgroup colspan=2>Playoff</th>
-        <th scope=colgroup colspan=2>Stat</th>
       </tr>
       <tr>
         <th scope=col>Year</th>
@@ -21,8 +76,6 @@
         <th scope=col>Loss</th>
         <th scope=col>Win</th>
         <th scope=col>Loss</th>
-        <th scope=col>Offensive</th>
-        <th scope=col>Defensive</th>
       </tr>
     </thead>
     <tbody>
@@ -40,8 +93,6 @@
         <td><%= season.season_loss -%></td>
         <td><%= season.playoff_win -%></td>
         <td><%= season.playoff_loss -%></td>
-        <td><%= link_to('View', :action => 'stat', :id => @team.id, :year => season.year, :type => :offensive) if year != season.year %></td>
-        <td><%= link_to('View', :action => 'stat', :id => @team.id, :year => season.year, :type => :defensive) if year != season.year %></td>
       </tr>
     <%- year = season.year -%>
 <%- end -%>
