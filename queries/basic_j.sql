@@ -17,8 +17,8 @@ WHERE
         WHERE
             height IS NOT NULL AND
             pst.name = 'Regular' AND
-            reb >= 10000
+            reb < 12000 AND reb >= 10000
     ) AND
     pst.name = 'Regular' AND
-    reb > 12000
+    reb < 12000 AND reb >= 10000
 ORDER BY lastname, firstname;
