@@ -99,6 +99,8 @@ CREATE TABLE coach_seasons (
         REFERENCES teams (id) ON DELETE CASCADE
 );
 
+CREATE INDEX coach_seasons_year_idx ON coach_seasons (year);
+
 CREATE SEQUENCE coach_seasons_seq
     START WITH 1
     INCREMENT BY 1;
@@ -143,6 +145,8 @@ CREATE TABLE drafts (
     FOREIGN KEY (location_id)
         REFERENCES locations (id) ON DELETE CASCADE
 );
+
+CREATE INDEX drafts_year_idx ON drafts (year);
 
 CREATE SEQUENCE drafts_seq
     START WITH 1
@@ -192,6 +196,8 @@ CREATE TABLE team_seasons (
         REFERENCES teams (id) ON DELETE CASCADE
 );
 
+CREATE INDEX team_seasons_year_idx ON team_seasons (year);
+
 CREATE SEQUENCE team_seasons_seq
     START WITH 1
     INCREMENT BY 1;
@@ -212,6 +218,8 @@ CREATE TABLE player_seasons (
     FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE
 );
+
+CREATE INDEX player_seasons_year_idx ON player_seasons (year);
 
 CREATE SEQUENCE player_seasons_seq
     START WITH 1
@@ -292,6 +300,8 @@ CREATE TABLE player_allstars (
     FOREIGN KEY (league_id)
         REFERENCES leagues (id) ON DELETE CASCADE
 );
+
+CREATE INDEX player_allstars_year_idx ON player_allstars (year);
 
 CREATE SEQUENCE player_allstars_seq
     START WITH 1

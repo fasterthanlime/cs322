@@ -20,7 +20,7 @@ $s .= "
 select plan_table_output from
 table(dbms_xplan.display('plan_table',null,'typical -cost -bytes'))";
 
-$s =~ s/^--.+$//gm;
+$s =~ s/--.*$//gm;
 $s =~ s/\n/ /g;
 $s =~ s/  +/ /g;
 my @sql = split ';', $s;
