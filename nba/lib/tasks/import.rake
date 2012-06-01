@@ -365,18 +365,16 @@ INSERT INTO people (id, ilkid, firstname, lastname)
 "
     puts "#{total} more people inserted"
 
-    # TODO: trim!
     total = conn.exec "
 INSERT INTO locations (id, name)
   SELECT locations_seq.NEXTVAL, draft_from
   FROM (
-    SELECT DISTINCT draft_from
+    SELECT DISTINCT TRIM(draft_from) draft_from
     FROM #{tmp}
   )
 "
     puts "#{total} locations inserted"
 
-    # TODO: trim!
     total = conn.exec "
 INSERT INTO drafts (
     id, person_id, team_id, location_id, year, selection, round
@@ -395,7 +393,7 @@ INSERT INTO drafts (
   JOIN leagues l ON
     t.league_id = l.id AND
     tmp.leag = SUBSTR(l.name, 0, 1)
-  LEFT JOIN locations loc ON tmp.draft_from = loc.name
+  LEFT JOIN locations loc ON TRIM(tmp.draft_from) = loc.name
 "
     puts "#{total} drafts inserted"
     cleanup(tmp)
