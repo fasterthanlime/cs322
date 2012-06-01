@@ -113,19 +113,19 @@ Loading data with ``SQLLDR`` 101
 How it works for any CSV file:
 
 * First, a table is created for the CSV file with all fields as ``VARCHAR2(255)`` as the CSV contains text.
-* Then a *control.txt* file is created containing the SQL code to load the data. Check the code below. That code says that the fields are separated using the comma (``,``) and will convert any string ``'NULL'`` into the proper SQL ``NULL`` value.
+* Then a *control.txt* file is created containing the SQL code to load the data. Check the code below. That code says that the fields are separated using the comma (``,``) and will convert any string ``'NULL'`` into the proper SQL ``NULL`` value:
 
 .. literalinclude:: ../../../nba/lib/tasks/import.rake
    :language: ruby
-   :lines: 450-466
+   :lines: 434-447
 
 * Next step is the ``sqlldr`` call, which is a call to the executable with some arguments like the ``control.txt`` file, the ``userid`` being the connection string and ``skip`` which is set to 1 telling it to ignore the first line containing the column headings.
 * Then the ``control.txt`` file is deleted.
-* At this point, data is inserted into the *real* tables using a simple ``INSERT INTO`` or the more powerful ``INSERT ALL INTO`` if one row must become two (or more) like `TeamStat` with *Offensive* and *Defensive* data.
+* At this point, data is inserted into the *real* tables using a simple ``INSERT INTO`` (``#{tmp}`` is replaced by the _temporary_ table name):
 
 .. literalinclude:: ../../../nba/lib/tasks/import.rake
    :language: ruby
-   :lines: 193-203
+   :lines: 190-201
 
 * Finally the initially created table is deleted. ``TEMPORARY TABLE``'s don't seem to work with that use case.
 
@@ -153,7 +153,7 @@ It could also become a way to know is a `Person` has acted as coach in his caree
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 302-363
+   :lines: 330-390
 
 
 Player
@@ -165,7 +165,7 @@ The ``TRIGGER``'s are a bit trickier than before mostly because there is much mo
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 364-561
+   :lines: 392-
 
 
 ``TENDEX``
@@ -177,7 +177,7 @@ Since the ``TENDEX`` value is easily computable for every `PlayerStat` entry a v
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 562-676
+   :lines: 300-328
 
 
 The queries
