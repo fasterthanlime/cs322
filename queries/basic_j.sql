@@ -20,5 +20,5 @@ WHERE
             reb >= 10000
     ) AND
     pst.name = 'Regular' AND
-    reb > 12000
+    reb < 12000
 ORDER BY lastname, firstname;
