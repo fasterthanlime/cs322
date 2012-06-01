@@ -61,10 +61,37 @@ I would blame the *Object-Oriented Programming* kind of design we are practicing
 
 .. _Rob Pike: https://en.wikiquote.org/wiki/Rob_Pike
 
+`TeamSeason` is the new `TeamStat`
+''''''''''''''''''''''''''''''''''
+
+The team statistics for each year were separated between *Defensive* and *Offensive* stats (badly called the *tactique*) creating two rows for a year. It doesn't make much sense and can only lead to further integrity problems if insertion or deletion fail at keeping a couple for a given year.
+
+The new table is now very close to the original CSV file.
+
+
 Missing informations
 ''''''''''''''''''''
 
 The `League` was missing from the All Stars seasons (`PlayerAllstar`).
+
+
+Adding the indices
+''''''''''''''''''
+
+SQL ``INDEX`` were created on the following columns:
+
+* ``year`` everywhere it is used since it's acting as a *foreign key* identifying seasons without the burden of maintaining such an entity.
+* `Person`'s ``ilkid``, ``firstname`` and ``lastname`` which is very useful during bulk insertion of new players. The current queries don't take advantages of those.
+* `Team`'s ``trigram`` which is used as an identifier in some queries and in the CSV files during the import.
+
+Were we did not create any indices:
+
+* the small tables with very few items like `Conference`, `League` or `PlayerSeasonType` because:
+
+ * the query could be optimized to use the `id` instead of the literal name;
+ * those tables contain very few elements (here it's 2).
+
+More explainations may be found on the details of the queries below.
 
 
 Changes to the queries
@@ -153,7 +180,7 @@ It could also become a way to know is a `Person` has acted as coach in his caree
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 330-390
+   :lines: 342-402
 
 
 Player
@@ -165,11 +192,13 @@ The ``TRIGGER``'s are a bit trickier than before mostly because there is much mo
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 392-
+   :lines: 404-
 
 
-``TENDEX``
-''''''''''
+Rebounds and ``TENDEX``
+'''''''''''''''''''''''
+
+For `PlayerStat` and `PlayerAllstar` (but **not** `TeamSeason`), the ``reb`` (rebounds), value is the sum of ``oreb`` and ``dreb``, so we were able to remove it which will enforce more integrity. Unfortunately the `TeamSeason` dataset contains data where that condition is not respected because ``oreb`` and ``dreb`` are empty.
 
 Since the ``TENDEX`` value is easily computable for every `PlayerStat` entry a very simple trigger can keep that value up-to-date which will simplify much redundancy among the following queries (and prevent mistakes as well).
 
@@ -177,7 +206,7 @@ Since the ``TENDEX`` value is easily computable for every `PlayerStat` entry a v
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 300-328
+   :lines: 312-340
 
 
 The queries
@@ -227,18 +256,28 @@ Query J
 
     *List the last and first name of the players which are shorter than the average height of players who have at least 10,000 rebounds and have no more than 12,000 rebounds (if any).*
 
-**TODO**
+    **Updated description** *we ask you to list the last and first name of the players which have more than 12,000 rebounds and are shorter than the average height of players who have at least 10,000 rebounds (if any).*
+
+This request happens in two times:
+
+1. the average ``height`` is calculated among the players with enough rebounds (``reb``) made during their career (*regular* seasons).
+2. are selected the players that are smaller but managed to get more than 12'000 rebounds overall.
+
+It's pretty straightforward once the description is fully understood. Thanks to the denormalized `Player` table.
 
 .. literalinclude:: ../../../queries/basic_j.sql
    :language: sql
    :lines: 4-
+
 
 Query K
 -------
 
     *List the last and first name of the players who played for a Chicago team and Houston team.*
 
-**TODO**
+It creates two joins, to filter seasons played in Houston (two teams) or Chicago (three teams). Other strategies are also possible, this one seemed simple enough.
+
+For this request, an ``INDEX`` on the ``trigram`` was added.
 
 .. literalinclude:: ../../../queries/basic_k.sql
    :language: sql
@@ -260,7 +299,7 @@ Query M
 
     *For coaches who coached at most 7 seasons but more than 1 season, who are the three more successful? (Success rate is season win percentage:* ``season_win / (season_win + season_loss))`` *. Be sure to count all seasons when computing the percentage.*
 
-Here, we are using the table `coaches` which contains denormalized data built from the `coach_seasons` table and filled via a `TRIGGER`.
+Here, we are using the table `coaches` which contains denormalized data built from the `coach_seasons` table and filled via a `TRIGGER`. The ``RANK()`` method is used and may return more than 3 results in case of a tie.
 
 .. literalinclude:: ../../../queries/basic_m.sql
    :language: sql
