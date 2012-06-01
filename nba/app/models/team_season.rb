@@ -1,16 +1,17 @@
-class TeamStat < ActiveRecord::Base
+class TeamSeason < ActiveRecord::Base
   belongs_to :team
-  belongs_to :team_stat_tactique
 
-  attr_accessible :team, :team_stat_tactique, :year, :pace,
-                  :pts, :oreb, :dreb, :reb, :asts, :steals, :blocks,
-                  :pf, :fga, :fgm, :ftm, :fta, :tpa, :tpm
+  attr_accessible :team, :year, :pace,
+                  :opts, :ooreb, :odreb, :oreb, :oasts, :osteals, :oblocks,
+                  :opf, :ofga, :ofgm, :oftm, :ofta, :otpa, :otpm,
+                  :dpts, :doreb, :ddreb, :dreb, :dasts, :dsteals, :dblocks,
+                  :dpf, :dfga, :dfgm, :dftm, :dfta, :dtpa, :dtpm
 
   def name
-    return "#{team.name} #{year} #{team_stat_tactique.name}"
+    return "#{team.name} #{year}"
   end
 
   def to_s
-    return "<TeamStat(#{id}, #{name})>"
+    return "<TeamSeason(#{id}, #{name})>"
   end
 end

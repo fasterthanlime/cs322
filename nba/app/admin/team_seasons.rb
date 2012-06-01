@@ -1,4 +1,4 @@
-ActiveAdmin.register TeamStat do
+ActiveAdmin.register TeamSeason do
   menu :parent => 'Stats'
 
   index do
@@ -7,24 +7,35 @@ ActiveAdmin.register TeamStat do
       link_to team.name, admin_team_path(team)
     end
     column :year
-    column :team_stat_tactique do |ts|
-      status_tag ts.team_stat_tactique.name, ts.team_stat_tactique_id == 1 ? :ok : :info
-    end
     column :pace
-    column :pts
+    column :opts
+    column :ooreb
+    column :odreb
     column :oreb
+    column :oasts
+    column :osteals
+    column :oblocks
+    column :opf
+    column :ofga
+    column :ofgm
+    column :ofta
+    column :oftm
+    column :otpa
+    column :otpm
+    column :dpts
+    column :doreb
+    column :ddreb
     column :dreb
-    column :reb
-    column :asts
-    column :steals
-    column :blocks
-    column :pf
-    column :fga
-    column :fgm
-    column :fta
-    column :ftm
-    column :tpa
-    column :tpm
+    column :dasts
+    column :dsteals
+    column :dblocks
+    column :dpf
+    column :dfga
+    column :dfgm
+    column :dfta
+    column :dftm
+    column :dtpa
+    column :dtpm
     default_actions
   end
 end

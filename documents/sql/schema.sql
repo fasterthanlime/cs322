@@ -147,51 +147,50 @@ CREATE SEQUENCE drafts_seq
     INCREMENT BY 1;
 
 
--- Teams stats
--- ===========
-
-
-CREATE TABLE team_stat_tactiques (
-    id INT NOT NULL,
-    name VARCHAR(31),
-    PRIMARY KEY (id),
-    UNIQUE (name)
-);
-
-CREATE SEQUENCE team_stat_tactiques_seq
-    START WITH 1
-    INCREMENT BY 1;
+-- Teams seasons
+-- =============
 
 -- @weak
-CREATE TABLE team_stats (
+CREATE TABLE team_seasons (
     id INT,
     team_id INT NOT NULL,
     year INT NOT NULL,
-    team_stat_tactique_id INT NOT NULL,
-    pts INT,
-    oreb INT,
-    dreb INT,
-    reb INT,
-    asts INT,
-    steals INT,
-    blocks INT,
-    pf INT,
-    fga INT,
-    fgm INT,
-    fta INT,
-    ftm INT,
-    tpa INT, -- 3pa
-    tpm INT, -- 3pm
     pace NUMBER NULL,
+    opts INT, -- Offensive
+    ooreb INT,
+    odreb INT,
+    oreb INT,
+    oasts INT,
+    osteals INT,
+    oblocks INT,
+    opf INT,
+    ofga INT,
+    ofgm INT,
+    ofta INT,
+    oftm INT,
+    otpa INT, -- 3pa
+    otpm INT, -- 3pm
+    dpts INT, -- Defensive
+    doreb INT,
+    ddreb INT,
+    dreb INT,
+    dasts INT,
+    dsteals INT,
+    dblocks INT,
+    dpf INT,
+    dfga INT,
+    dfgm INT,
+    dfta INT,
+    dftm INT,
+    dtpa INT, -- 3pa
+    dtpm INT, -- 3pm
     PRIMARY KEY (id),
-    CONSTRAINT team_stat_unique UNIQUE (team_id, year, team_stat_tactique_id),
+    CONSTRAINT team_season_unique UNIQUE (team_id, year),
     FOREIGN KEY (team_id)
-        REFERENCES teams (id) ON DELETE CASCADE,
-    FOREIGN KEY (team_stat_tactique_id)
-        REFERENCES team_stat_tactiques (id) ON DELETE CASCADE
+        REFERENCES teams (id) ON DELETE CASCADE
 );
 
-CREATE SEQUENCE team_stats_seq
+CREATE SEQUENCE team_seasons_seq
     START WITH 1
     INCREMENT BY 1;
 

@@ -61,8 +61,8 @@ INSERT INTO teams (id, trigram, location, name, league_id)
     end
   end
 
-  desc "Import team stats from the CSV"
-  task :team_stats => :environment do
+  desc "Import team seasons from the CSV"
+  task :team_seasons => :environment do
     conn = connection
     csv = '../dataset/team_season.csv'
     tmp = 'temp_seasons'
@@ -71,49 +71,24 @@ INSERT INTO teams (id, trigram, location, name, league_id)
                 d_ftm d_fta d_oreb d_dreb d_reb d_asts d_pf d_stl d_to d_blk
                 d_3pm d_3pa d_pts pace won lost)
 
-    # The sequences may already be containing data (initial value being 1)
-    stats_offset = -1
-    team_stats_offset = -1
-    conn.exec("SELECT last_number FROM user_sequences WHERE sequence_name = 'STATS_SEQ'") do |l|
-      stats_offset += l[0].to_i
-    end
-    conn.exec("SELECT last_number FROM user_sequences WHERE sequence_name = 'TEAM_STATS_SEQ'") do |l|
-      team_stats_offset += l[0].to_i
-    end
-    offset = stats_offset - team_stats_offset;
-
     sqlldr(csv, tmp, fields)
     total = conn.exec "
-INSERT ALL
-  INTO team_stats (
-    id, team_id, year, team_stat_tactique_id, pace, pts, oreb, dreb, reb, asts,
-    steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
-  ) VALUES (
-    2 * team_stats_seq.NEXTVAL - 1, team_id, year,
-    #{TeamStatTactique::OFFENSIVE}, pace, o_pts, o_oreb, o_dreb, o_reb, o_asts,
-    o_stl, o_blk, o_pf, o_fga, o_fgm, o_fta, o_ftm, o_3pa, o_3pm
+INSERT INTO team_seasons (
+    id, team_id, year, pace, opts, ooreb, odreb, oreb, oasts, osteals, oblocks,
+    opf, ofga, ofgm, ofta, oftm, otpa, otpm, dpts, doreb, ddreb, dreb, dasts,
+    dsteals, dblocks, dpf, dfga, dfgm, dfta, dftm, dtpa, dtpm
   )
-  INTO team_stats (
-    id, team_id, year, team_stat_tactique_id, pts, oreb, dreb, reb, asts,
-    steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
-  ) VALUES (
-    2 * team_stats_seq.CURRVAL, team_id, year, #{TeamStatTactique::DEFENSIVE},
+  SELECT
+    team_seasons_seq.NEXTVAL, t.id, year, pace, o_pts, o_oreb, o_dreb, o_reb,
+    o_asts, o_stl, o_blk, o_pf, o_fga, o_fgm, o_fta, o_ftm, o_3pa, o_3pm,
     d_pts, d_oreb, d_dreb, d_reb, d_asts, d_stl, d_blk, d_pf, d_fga, d_fgm,
     d_fta, d_ftm, d_3pa, d_3pm
-  )
-  SELECT tmp.*, t.id team_id
   FROM #{tmp} tmp
   JOIN teams t ON t.trigram = tmp.team
   JOIN leagues l ON l.id = t.league_id
   WHERE tmp.leag = SUBSTR(l.name, 0, 1)
 "
-    puts "#{total} team_stats inserted"
-
-    # HACK! fix the sequence (since we multiplied by 2 right above)
-    conn.exec "
-UPDATE #{tmp} SET year = team_stats_seq.NEXTVAL
-"
-
+    puts "#{total} team seasons inserted"
     cleanup(tmp)
   end
 
@@ -390,6 +365,7 @@ INSERT INTO people (id, ilkid, firstname, lastname)
 "
     puts "#{total} more people inserted"
 
+    # TODO: trim!
     total = conn.exec "
 INSERT INTO locations (id, name)
   SELECT locations_seq.NEXTVAL, draft_from
@@ -400,6 +376,7 @@ INSERT INTO locations (id, name)
 "
     puts "#{total} locations inserted"
 
+    # TODO: trim!
     total = conn.exec "
 INSERT INTO drafts (
     id, person_id, team_id, location_id, year, selection, round
@@ -427,7 +404,7 @@ INSERT INTO drafts (
   desc "All, remove everything and starts over"
   task :all => :environment do
     %w(
-      schema teams team_stats players regular_seasons playoffs allstars drafts
+      schema teams team_seasons players regular_seasons playoffs allstars drafts
       coaches coach_seasons
     ).each do |t|
       puts
@@ -481,6 +458,5 @@ TRAILING NULLCOLS
     system cmd
     File.delete(control)
   end
-
 
 end

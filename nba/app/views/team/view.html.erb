@@ -30,31 +30,43 @@
       </tr>
     </thead>
     <tbody>
-<%- @team.team_stats.each do |stat| -%>
+<%- @team.team_seasons.each do |stat| -%>
       <tr>
-      <%- if stat.team_stat_tactique_id == TeamStatTactique::OFFENSIVE then -%>
         <th scope=row rowspan=2><%= stat.year -%></th>
-      <%- end -%>
-        <td><%= stat.team_stat_tactique.name -%></td>
-        <td><%= stat.pts %></td>
-        <td><%= stat.asts %></td>
-        <td><%= stat.steals %></td>
-        <td><%= stat.blocks %></td>
-        <td><%= stat.reb %></td>
+        <td><abbr title="Offensive">O</abbr></td>
+        <td><%= stat.opts %></td>
+        <td><%= stat.oasts %></td>
+        <td><%= stat.osteals %></td>
+        <td><%= stat.oblocks %></td>
         <td><%= stat.oreb %></td>
-        <td><%= stat.dreb %></td>
-        <td><%= stat.pf %></td>
-        <td><%= stat.fga %></td>
-        <td><%= stat.fgm %></td>
-        <td><%= stat.fta %></td>
-        <td><%= stat.ftm %></td>
-        <td><%= stat.tpa %></td>
-        <td><%= stat.tpm %></td>
-      <%- if stat.team_stat_tactique_id == TeamStatTactique::OFFENSIVE then -%>
+        <td><%= stat.ooreb %></td>
+        <td><%= stat.odreb %></td>
+        <td><%= stat.opf %></td>
+        <td><%= stat.ofga %></td>
+        <td><%= stat.ofgm %></td>
+        <td><%= stat.ofta %></td>
+        <td><%= stat.oftm %></td>
+        <td><%= stat.otpa %></td>
+        <td><%= stat.otpm %></td>
         <td><%= stat.pace.round(2) -%></td>
-      <%- else -%>
+      </tr>
+      <tr>
+        <td><abbr title="Defensive">D</abbr></td>
+        <td><%= stat.dpts %></td>
+        <td><%= stat.dasts %></td>
+        <td><%= stat.dsteals %></td>
+        <td><%= stat.dblocks %></td>
+        <td><%= stat.dreb %></td>
+        <td><%= stat.doreb %></td>
+        <td><%= stat.ddreb %></td>
+        <td><%= stat.dpf %></td>
+        <td><%= stat.dfga %></td>
+        <td><%= stat.dfgm %></td>
+        <td><%= stat.dfta %></td>
+        <td><%= stat.dftm %></td>
+        <td><%= stat.dtpa %></td>
+        <td><%= stat.dtpm %></td>
         <td></td>
-      <%- end -%>
       </tr>
 <%- end -%>
     </tbody>

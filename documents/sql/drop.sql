@@ -20,11 +20,8 @@ DROP SEQUENCE locations_seq;
 DROP TABLE drafts CASCADE CONSTRAINTS PURGE;
 DROP SEQUENCE drafts_seq;
 
-DROP TABLE team_stat_tactiques CASCADE CONSTRAINTS PURGE;
-DROP SEQUENCE team_stat_tactiques_seq;
-
-DROP TABLE team_stats CASCADE CONSTRAINTS PURGE;
-DROP SEQUENCE team_stats_seq;
+DROP TABLE team_seasons CASCADE CONSTRAINTS PURGE;
+DROP SEQUENCE team_seasons_seq;
 
 DROP TABLE player_seasons CASCADE CONSTRAINTS PURGE;
 DROP SEQUENCE player_seasons_seq;
