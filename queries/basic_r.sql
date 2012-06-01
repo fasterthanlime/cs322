@@ -14,10 +14,10 @@ CREATE OR REPLACE VIEW player_location AS
                         pst.id = p.player_season_type_id
   WHERE pst.name = 'Regular';
 
-CREATE OR REPLACE VIEW team_best_reb AS
-  SELECT loc, team_score
+CREATE OR REPLACE VIEW reb_per_location AS
+  SELECT loc, location_score
     FROM (
-      SELECT loc, SUM(reb) team_score
+      SELECT loc, SUM(reb) location_score
       FROM (
         SELECT loc, reb, ROW_NUMBER() OVER (PARTITION BY loc ORDER BY
                       reb DESC) r
@@ -25,15 +25,13 @@ CREATE OR REPLACE VIEW team_best_reb AS
       )
       WHERE r <= 5
       GROUP BY loc
-      ORDER BY team_score DESC
-    )
-    WHERE ROWNUM <=10
-    ORDER BY team_score DESC;
+      ORDER BY location_score DESC
+    );
   
-CREATE OR REPLACE VIEW team_best_pts AS
-  SELECT loc, team_score
+CREATE OR REPLACE VIEW pts_per_location AS
+  SELECT loc, location_score
     FROM (
-      SELECT loc, SUM(pts) team_score
+      SELECT loc, SUM(pts) location_score
       FROM (
         SELECT loc, pts, ROW_NUMBER() OVER (PARTITION BY loc ORDER BY
                       pts DESC) r
@@ -41,15 +39,13 @@ CREATE OR REPLACE VIEW team_best_pts AS
       )
       WHERE r <= 5
       GROUP BY loc
-      ORDER BY team_score DESC
-    )
-    WHERE ROWNUM <=10
-    ORDER BY team_score DESC;
+      ORDER BY location_score DESC
+    );
     
-CREATE OR REPLACE VIEW team_best_blk AS
-  SELECT loc, team_score
+CREATE OR REPLACE VIEW blk_per_location AS
+  SELECT loc, location_score
     FROM (
-      SELECT loc, SUM(blk) team_score
+      SELECT loc, SUM(blk) location_score
       FROM (
         SELECT loc, blk, ROW_NUMBER() OVER (PARTITION BY loc ORDER BY
                       blk DESC) r
@@ -57,7 +53,5 @@ CREATE OR REPLACE VIEW team_best_blk AS
       )
       WHERE r <= 5
       GROUP BY loc
-      ORDER BY team_score DESC
-    )
-    WHERE ROWNUM <=10
-    ORDER BY team_score DESC;
+      ORDER BY location_score DESC
+    );

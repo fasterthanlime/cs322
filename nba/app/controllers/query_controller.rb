@@ -89,7 +89,24 @@ class QueryController < ApplicationController
   end
 
   def r
-    fetch_results
+    query_name = params[:action]
+    rc = ActiveRecord::Base.connection.raw_connection
+
+    types = ["pts_per_location", "reb_per_location", "blk_per_location"]
+
+    @values = (params[:values] || 0).to_i
+    @type = types[@values]
+
+    @sql = File.read("../queries/basic_#{query_name}.sql")
+    @sql.split(";").slice(0..-2).each { |query|
+        puts query
+        rc.exec(query)
+    }
+    query = "SELECT loc, location_score FROM #{@type}
+    WHERE ROWNUM <=10
+    ORDER BY location_score DESC"
+    logger.info "query = #{query}"
+    @results = rc.exec(query)
   end
 
   def s
