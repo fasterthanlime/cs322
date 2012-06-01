@@ -15,17 +15,17 @@
 
 CREATE OR REPLACE VIEW coach_seasons_percentage AS
     SELECT
-        person_id, year,
+        person_id, year, team_id,
         100 * SUM(season_win) / (SUM(season_win) + SUM(season_loss)) win_percentage
     FROM
         coach_seasons cs
     GROUP BY
-        person_id, year
+        person_id, year, team_id
 ;
 
 CREATE OR REPLACE VIEW best_coaches AS
     SELECT
-        cp.person_id, cp.win_percentage, c.season_win career_wins, cp.year
+        cp.person_id, cp.win_percentage, c.season_win career_wins, cp.year, cp.team_id
     FROM
         coach_seasons_percentage cp
         JOIN coaches c ON cp.person_id = c.person_id
@@ -35,14 +35,15 @@ CREATE OR REPLACE VIEW best_coaches AS
 
 CREATE OR REPLACE VIEW query_i AS
     SELECT
-        AVG(weight) avg_weight, AVG(height) avg_height,
-        AVG(ROUND((TO_DATE(year, 'YYYY') - birthdate)/365.24,0)) avg_age, year,
-        win_percentage, career_wins
+        AVG(p.weight) avg_weight, AVG(p.height) avg_height,
+        AVG(ROUND((TO_DATE(bc.year, 'YYYY') - p.birthdate)/365.24,0)) avg_age, bc.year,
+        bc.win_percentage, bc.career_wins
     FROM
         best_coaches bc
-        JOIN people p ON p.id = bc.person_id AND p.weight IS NOT NULL
+        JOIN player_seasons ps ON ps.team_id = bc.team_id AND ps.year = bc.year
+        JOIN people p ON p.id = ps.person_id AND p.weight IS NOT NULL
     GROUP BY
-        year, win_percentage, career_wins
+        bc.year, bc.win_percentage, bc.career_wins
     ORDER BY
-        year
+        bc.year
 ;
