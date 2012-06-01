@@ -74,6 +74,8 @@ CREATE TABLE teams (
         REFERENCES leagues (id) ON DELETE CASCADE
 );
 
+CREATE INDEX teams_trigram_idx ON teams (trigram);
+
 CREATE SEQUENCE teams_seq
     START WITH 1
     INCREMENT BY 1;
