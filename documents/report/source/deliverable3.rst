@@ -20,7 +20,7 @@ It seemed easier for us to reuse them automagically from the web UI, but we were
 
     *Can you explain the remark about “different join order not giving any results” in query D? Please include this explanation in the final version of the report. Keep in mind that you're not getting the correct result (should be indeed 0 rows).*
 
-**TODO: Amos**
+Actually, it seemed fishy that a query would give 0 results, and I have to admit I (Amos) am guilty of trial-and-error on this one. Learning Oracle was very interesting and I finally went with the simplest solution I could think of: an intersect.
 
     *Keep up the good work! (at least you're gonna read this...)*
 
