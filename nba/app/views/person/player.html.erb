@@ -8,6 +8,7 @@
         <tr>
           <th scope=col>Year</th>
           <th scope=col>Team</th>
+          <th scope=col>League</th>
           <th scope=col>Type</th>
           <%= render :partial => 'stat_header' %>
           <th scope=col>Links</th>
@@ -31,6 +32,7 @@
             :action => 'view',
             :id => season.team_id
           ) -%></td>
+          <td rowspan=<%= rs %>><%= season.team.league.name %></td>
           <td><%= stat.player_season_type.name %></td>
           <%= render :partial => 'stat', :object => stat -%>
           <td><%= link_to "admin", link %></td>
