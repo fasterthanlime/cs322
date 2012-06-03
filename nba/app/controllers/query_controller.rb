@@ -48,20 +48,10 @@ class QueryController < ApplicationController
     @yyy = yyyes[@values]
 
     @sql = File.read("../queries/basic_#{query_name}.sql")
-    @sql.split(";").slice(0..-2).each { |query|
-        @results = rc.exec(query)
+    @sql.split(";").slice(0..-2).each_with_index { |query, i|
+      query.sub!(':XXX', @xxx.to_s).sub!(':YYY', @yyy.to_s) if i == 3
+      @results = rc.exec(query)
     }
-    query = "
-SELECT
-  person_id, firstname, lastname, avg_weight, avg_height, avg_age, year
-FROM
-  query_i
-  JOIN people p ON p.id = person_id
-WHERE
-  career_wins > #{@xxx} AND win_percentage > #{@yyy}
-ORDER BY
-  p.lastname, p.firstname, year"
-    @results = rc.exec(query)
   end
 
   def j
@@ -107,14 +97,14 @@ ORDER BY
 
     @sql = File.read("../queries/basic_#{query_name}.sql")
     @sql.split(";").slice(0..-2).each { |query|
-        puts query
         rc.exec(query)
     }
     query = "
 SELECT loc, location_score
 FROM #{@type}
 WHERE ROWNUM <=10
-ORDER BY location_score DESC"
+ORDER BY location_score DESC
+"
     @results = rc.exec(query)
   end
 
