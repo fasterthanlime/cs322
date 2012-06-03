@@ -1,0 +1,40 @@
+<div class=row-fluid>
+  <div class=span6>
+    <h2>Result of query <%= params[:action].upcase %></h2>
+    <p>
+List the best 10 schools for each of the following categories: scorers, rebounders, blockers. Each
+school’s category ranking is computed as the average of the statistical value for 5 best players that
+went to that school. Use player’s career average for inputs.
+    </p>
+
+    <%= form_tag do %>
+    <%= label_tag = 'Order by score, reb, or blocks? ' %>
+    <%= select_tag 'values', options_for_select([
+      ["by score", 0],
+      ["by reb", 1],
+      ["by blocks", 2],
+    ], @values) %>
+
+    <%= submit_tag 'Apply filter' %>
+    <% end %>
+    
+    </p>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope=col>School (or location)</th>
+          <th scope=col>Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%- while line = @results.fetch() -%>
+          <tr>
+            <th scope=row><%= line[0] %></th>
+            <td><%= line[1] %></td>
+          </tr>
+        <%- end -%>
+      </tbody>
+    </table>
+  </div>
+  <%= render :partial => "sql" %>
+</div>
