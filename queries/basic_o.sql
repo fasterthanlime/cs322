@@ -10,7 +10,9 @@ FROM (
             id, MAX(tendex) tendex,
             RANK() OVER (ORDER BY MAX(tendex) DESC) r
         FROM (
-            SELECT person_id id, year, SUM(d_tendex * minutes) / SUM(minutes) tendex
+            SELECT
+                person_id id, year,
+                SUM(d_tendex * minutes) / SUM(minutes) tendex
             FROM
                 player_seasons ps
                 JOIN player_season_types pst ON

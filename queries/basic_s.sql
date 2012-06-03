@@ -8,7 +8,7 @@ FROM (
             team_id, year, d_coach_counter num_coaches, d_season_win total_wins,
             RANK() OVER (ORDER BY d_season_win DESC) r
         FROM team_seasons
-        WHERE d_coach_counter BETWEEN 2 AND 6
+        WHERE d_coach_counter BETWEEN 2 AND 4
     ) ts
     JOIN teams t ON t.id = ts.team_id
 WHERE
