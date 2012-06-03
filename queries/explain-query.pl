@@ -17,8 +17,9 @@ close($fh);
 
 # http://prsync.com/oracle/displaying-the-execution-plan-for-a-sql-statement-26490/
 $s .= "
-select plan_table_output from
-table(dbms_xplan.display('plan_table',null,'typical -cost -bytes'))";
+SELECT plan_table_output
+FROM table(dbms_xplan.display('plan_table', NULL, 'typical -cost -bytes'))
+";
 
 $s =~ s/--.*$//gm;
 $s =~ s/\n/ /g;
