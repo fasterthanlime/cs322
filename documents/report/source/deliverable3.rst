@@ -240,7 +240,11 @@ This denormalization was initiated by the Query S.
 The queries
 ===========
 
-**TODO**
+The ``EXPLAIN PLAN`` has been computing using *Oracle SQLDeveloper* and the following SQL command:
+
+.. literalinclude:: ../../../queries/explain-query.pl
+   :language: perl
+   :lines: 18,20-21
 
 Query G
 -------
@@ -411,18 +415,60 @@ Query S
 
     *Compute which was the team with most wins in regular season during which it changed 2, 3 and 4 coaches.*
 
-**TODO**
+That query is using two denormalized fields added on the `TeamSeason`. Otherwise we would have to read the whole table of `CoachSeason`.
 
 .. literalinclude:: ../../../queries/basic_s.sql
    :language: sql
    :lines: 4-
+
+Explain Plan
+''''''''''''
+
+The Query plan using pure SQL:
+
++-----+--------------------------------+----------------------------+-------+----------+
+| Id  | Operation                      | Name                       | Rows  | Time     |
++=====+================================+============================+=======+==========+
+|   0 | SELECT STATEMENT               |                            |   178 | 00:00:01 |
++-----+--------------------------------+----------------------------+-------+----------+
+| \*1 |  HASH JOIN                     |                            |   178 | 00:00:01 |
++-----+--------------------------------+----------------------------+-------+----------+
+| \*2 |   VIEW                         |                            |   178 | 00:00:01 |
++-----+--------------------------------+----------------------------+-------+----------+
+| \*3 |    WINDOW SORT PUSHED RANK     |                            |   178 | 00:00:01 |
++-----+--------------------------------+----------------------------+-------+----------+
+|   4 |     TABLE ACCESS BY INDEX ROWID| TEAM_SEASONS               |   178 | 00:00:01 |
++-----+--------------------------------+----------------------------+-------+----------+
+| \*5 |      INDEX RANGE SCAN          | TEAM_SEASONS_D_COUNTER_IDX |     6 | 00:00:01 |
++-----+--------------------------------+----------------------------+-------+----------+
+|   6 |   TABLE ACCESS FULL            | TEAMS                      |   107 | 00:00:01 |
++-----+--------------------------------+----------------------------+-------+----------+
+
+The one from SQLDeveloper:
+
+.. image:: _static/3/explain_s.png
+   :scale: 100%
+
+This query seems to be interpreted in the following order:
+
+1. the ``RANGE SCAN`` using the index on ``d_coach_counter``.
+2. returning the `TeamSeason` by ``ROWID`` according to the result of the scan. In total, there are 1337 rows in that table. Only 13% is read (even though many page may have be read since the index is unclustered)
+3. the ``RANK()`` operation is performed
+4. a ``HASH JOIN`` is made between the result of the previous operation (``VIEW``) and the `Team`.
+5. Finally the ``SELECT`` is made.
+
+According the following web article: `Interpreting EXPLAIN PLAN`_ tells us that the *Hash join* is way of joining more efficient than *Sort-Merge join* and *Nested Loops* which is a good sign here.
+
+The naive solution would have performed a full table scan on the table `CoachSeason` which is around 1450 rows long and operations like ``SUM`` and ``GROUP BY``. It seems the full access on the `Team` cannot be prevented even though we are matching a *foreign key*.
+
+.. _Interpreting EXPLAIN PLAN: http://www.akadia.com/services/ora_interpreting_explain_plan.html
 
 Query T
 -------
 
     *List all players which never played for the team that drafted them.*
 
-**TODO**
+Here a basic usage of the ``LEFT JOIN``. It's matching the `Draft` information with the `PlayerSeason` information regarding `Person` and `Team` (via ``person_id`` and ``team_id``). If no matches are made then no `PlayerSeason` are found and thus any of its expected fields are empty (``IS NULL``). 
 
 .. literalinclude:: ../../../queries/basic_t.sql
    :language: sql
