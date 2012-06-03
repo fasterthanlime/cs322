@@ -5,11 +5,9 @@ Deliverable 3
     *A series of more interesting queries should be implemented with SQL and/or using the preferred application programming language:*
 
     * *Explain the necessities of indexes based on the queries and the query plans that you can find from the system;*
-    * *Report the performance of all queries and explain the distribution of the cost (based again on the plans;*
+    * *Report the performance of all queries and explain the distribution of the cost (based again on the plans)*
     * *Visualize the results of the queries (in case they are not scalar);*
     * *Build an interface to run queries/insert data/delete data giving as parameters the details of the queries.*
-
-**TODO**
 
 Post-mortem deliverable 2
 =========================
@@ -352,7 +350,7 @@ The Query plan using pure SQL:
 .. image:: _static/3/explain_k.png
    :scale: 100%
 
-This query requires to tables to be accessed in full, but it is still not
+This query requires two tables to be accessed in full, but it is still not
 as heavy as query P, for example.
 
 It uses a *hash join* between our intermediary view and the `teams` table
@@ -426,27 +424,27 @@ A quite straightforward query which make usage of ``LEFT JOIN`` to grab all the 
 Explain plan
 ''''''''''''
 
-+=====+============================+======================+=======+==========+
-| Id  | Operation                  | Name                 | Rows  | Time     |
-+-----+----------------------------+----------------------+-------+----------+
-|   0 | SELECT STATEMENT           |                      |  8703 | 00:00:03 |
-+-----+----------------------------+----------------------+-------+----------+
-| \*1 |  VIEW                      |                      |  8703 | 00:00:03 |
-+-----+----------------------------+----------------------+-------+----------+
-| \*2 |   WINDOW SORT PUSHED RANK  |                      |  8703 | 00:00:03 |
-+-----+----------------------------+----------------------+-------+----------+
-|   3 |    HASH GROUP BY           |                      |  8703 | 00:00:03 |
-+-----+----------------------------+----------------------+-------+----------+
-|   4 |     VIEW                   | VW_DAG_0             |  8703 | 00:00:02 |
-+-----+----------------------------+----------------------+-------+----------+
-|   5 |      HASH GROUP BY         |                      |  8703 | 00:00:02 |
-+-----+----------------------------+----------------------+-------+----------+
-| \*6 |       HASH JOIN ANTI       |                      |  8703 | 00:00:01 |
-+-----+----------------------------+----------------------+-------+----------+
-|   7 |        TABLE ACCESS FULL   | DRAFTS               |  8703 | 00:00:01 |
-+-----+----------------------------+----------------------+-------+----------+
-|   8 |        INDEX FAST FULL SCAN| PLAYER_SEASON_UNIQUE | 26280 | 00:00:01 |
-+-----+----------------------------+----------------------+-------+----------+
++-------+---------------------------+---------------------+-------+----------+
+| Id    | Operation                 | Name                | Rows  | Time     |
++=======+===========================+=====================+=======+==========+
+|     0 | SELECT STATEMENT          |                     |  8703 | 00:00:03 |
++-------+---------------------------+---------------------+-------+----------+
+| \*  1 |  VIEW                     |                     |  8703 | 00:00:03 |
++-------+---------------------------+---------------------+-------+----------+
+| \*  2 |   WINDOW SORT PUSHED RANK |                     |  8703 | 00:00:03 |
++-------+---------------------------+---------------------+-------+----------+
+|     3 |    HASH GROUP BY          |                     |  8703 | 00:00:03 |
++-------+---------------------------+---------------------+-------+----------+
+|     4 |     VIEW                  | VW_DAG_0            |  8703 | 00:00:02 |
++-------+---------------------------+---------------------+-------+----------+
+|     5 |   HASH GROUP BY           |                     |  8703 | 00:00:02 |
++-------+---------------------------+---------------------+-------+----------+
+| \*  6 |   HASH JOIN ANTI          |                     |  8703 | 00:00:01 |
++-------+---------------------------+---------------------+-------+----------+
+|     7 |   TABLE ACCESS FULL       | DRAFTS              |  8703 | 00:00:01 |
++-------+---------------------------+---------------------+-------+----------+
+|     8 |   INDEX FAST FULL SCAN    | PLAYER_SEASON_UNIQUE| 26280 | 00:00:01 |
++-------+---------------------------+---------------------+-------+----------+
 
 ::
 
@@ -486,13 +484,13 @@ Query R
 
     *List the best 10 schools for each of the following categories: scorers, rebounders, blockers. Each school’s category ranking is computed as the average of the statistical value for 5 best players that went to that school. Use player’s career average for inputs.*
 
-For this request we created a view to contain the required data per player: the draft location and the statistics. Aiming for reusability, we tried to keep the view general by including the first and last name of each player.
+For this request we created a view to gather the required statistics per location.
 
 Then we created three views with the computed rankings. We chose to give the application's user the choice to sort the locations by scorers, rebounders, or blockers. This goal is achieved in the controller of the rails view.
 
 .. literalinclude:: ../../../nba/app/controllers/query_controller.rb
    :language: ruby
-   :lines: 105-107
+   :lines: 103-111
 
 Here #{@type} is the name of the corresponding view defined below.
 
