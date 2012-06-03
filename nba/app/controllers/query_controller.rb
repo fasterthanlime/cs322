@@ -90,27 +90,16 @@ class QueryController < ApplicationController
     query_name = params[:action]
     rc = ActiveRecord::Base.connection.raw_connection
 
-    types = ["pts_per_location", "reb_per_location", "blk_per_location"]
+    types = ["pts", "rebs", "blocks"]
 
     @values = (params[:values] || 0).to_i
     @type = types[@values]
 
     @sql = File.read("../queries/basic_#{query_name}.sql")
-    @sql.split(";").slice(0..-2).each { |query|
-        rc.exec(query)
+    @sql.split(";").slice(0..-2).each_with_index { |query, i|
+      query.sub!(':TYPE', @type) if i == 5
+      @results = rc.exec(query)
     }
-    query = "
-SELECT *
-FROM (
-    SELECT l.name, location_score
-    FROM #{@type}
-        JOIN locations l ON
-      l.id = loc
-    ORDER BY location_score DESC
-    )
-WHERE ROWNUM <=10
-"
-    @results = rc.exec(query)
   end
 
   def s

@@ -23,14 +23,19 @@ went to that school. Use player’s career average for inputs.
       <thead>
         <tr>
           <th scope=col>School (or location)</th>
-          <th scope=col>Score</th>
+          <th scope=col>Top 5 average value</th>
         </tr>
       </thead>
       <tbody>
         <%- while line = @results.fetch() -%>
           <tr>
-            <th scope=row><%= line[0] %></th>
-            <td><%= line[1].round %></td>
+            <th scope=row><%= link_to(
+              line[1],
+              :controller => 'location',
+              :name => 'view',
+              :id => line[0]
+            ) %></th>
+            <td><%= line[2].round %></td>
           </tr>
         <%- end -%>
       </tbody>

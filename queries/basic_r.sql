@@ -3,58 +3,72 @@
 -- average of the statistical value for 5 best players that went to that
 -- school. Use player’s career average for inputs.
 
-CREATE OR REPLACE VIEW location_stats AS
-    SELECT d.person_id, d.location_id loc, p.reb reb, p.blocks blk, p.pts pts
-    FROM 
-      (drafts d
-          -- One person has many drafts, take only one.
-          RIGHT JOIN (SELECT DISTINCT person_id FROM drafts) d2
-                              ON d2.person_id = d.person_id
-          JOIN players p      ON d.person_id = p.person_id
-          JOIN player_season_types pst
-                              ON pst.id = p.player_season_type_id
-          )
-    WHERE pst.name = 'Regular';
+CREATE OR REPLACE VIEW player_averages AS
+    SELECT
+        person_id, AVG(d_reb) rebs, AVG(pts) pts, AVG(blocks) blocks
+    FROM
+        player_seasons ps
+        JOIN player_season_types pst ON
+            pst.id = ps.player_season_type_id AND
+            pst.name = 'Regular'
+    GROUP BY person_id;
 
-CREATE OR REPLACE VIEW reb_per_location AS
-    SELECT loc, SUM(reb) location_score
+CREATE OR REPLACE VIEW player_locations AS
+    SELECT
+        person_id, MAX(location_id) location_id -- arbitrary choice
+    FROM
+        drafts d
+    GROUP BY person_id;
+
+CREATE OR REPLACE VIEW location_rebs AS
+    SELECT
+        location_id, AVG(rebs) value,
+        RANK() OVER (ORDER BY AVG(rebs) DESC) r
     FROM (
-      SELECT loc, reb, ROW_NUMBER() OVER (PARTITION BY loc ORDER BY
-                    reb DESC) r
-        FROM player_location
+        SELECT
+            location_id, rebs,
+            ROW_NUMBER() OVER (PARTITION BY location_id ORDER BY rebs DESC) r
+        FROM
+            player_averages pa
+            JOIN player_locations pl ON pl.person_id = pa.person_id
     )
     WHERE r <= 5
-    GROUP BY loc;
-  
-CREATE OR REPLACE VIEW pts_per_location AS
-    SELECT loc, SUM(pts) location_score
+    GROUP BY location_id;
+
+CREATE OR REPLACE VIEW location_pts AS
+    SELECT
+        location_id, AVG(pts) value,
+        RANK() OVER (ORDER BY AVG(pts) DESC) r
     FROM (
-  	    SELECT loc, pts, ROW_NUMBER() OVER (PARTITION BY loc ORDER BY
-				  pts DESC) r
-		FROM player_location
-    )
-	  WHERE r <= 5
-	  GROUP BY loc;
-    
-CREATE OR REPLACE VIEW blk_per_location AS
-    SELECT loc, SUM(blk) location_score
-    FROM (
-    SELECT loc, blk, ROW_NUMBER() OVER (PARTITION BY loc ORDER BY
-            blk DESC) r
-      FROM player_location
+        SELECT
+            location_id, pts,
+            ROW_NUMBER() OVER (PARTITION BY location_id ORDER BY pts DESC) r
+        FROM
+            player_averages pa
+            JOIN player_locations pl ON pl.person_id = pa.person_id
     )
     WHERE r <= 5
-    GROUP BY loc;
+    GROUP BY location_id;
 
-SELECT *
-FROM (
-    SELECT l.name, location_score
-    FROM blk_per_location
-        JOIN locations l ON
-      l.id = loc
-    ORDER BY location_score DESC
+CREATE OR REPLACE VIEW location_blocks AS
+    SELECT
+        location_id, AVG(blocks) value,
+        RANK() OVER (ORDER BY AVG(blocks) DESC) r
+    FROM (
+        SELECT
+            location_id, blocks,
+            ROW_NUMBER() OVER (PARTITION BY location_id ORDER BY blocks DESC) r
+        FROM
+            player_averages pa
+            JOIN player_locations pl ON pl.person_id = pa.person_id
     )
-WHERE ROWNUM <=10
+    WHERE r <= 5
+    GROUP BY location_id;
 
-    
-
+SELECT
+    location_id, name, value
+FROM
+    location_:TYPE
+    JOIN locations l ON l.id = location_id
+WHERE r <= 10
+ORDER BY r ASC, name ASC;
