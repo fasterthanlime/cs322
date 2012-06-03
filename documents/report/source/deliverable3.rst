@@ -366,7 +366,7 @@ Query L
 
     *List the top 20 career scorers of NBA.*
 
-`Player` is a denormalized table for each `League` and each `PlayerSeasonType`, we just `̀SUM`̀  all the points (`̀ pts``) made in NBA, `̀ RANK()`` and keep the better ones.
+`Player` is a denormalized table for each `League` and each `PlayerSeasonType`, we just ``SUM`` all the points (``pts``) made in NBA, ``RANK()`` and keep the better ones.
 
 .. literalinclude:: ../../../queries/basic_l.sql
    :language: sql
@@ -388,7 +388,7 @@ Query N
 
     *List the last and first names of the top 30* ``TENDEX`` *players, ordered by descending* ``TENDEX`` *value (Use season stats). (* ``TENDEX=(points+reb+ass+st+blk-missedFT-missedFG-TO)/minutes)`` *)*
 
-The `PlayerSeason` already have a precomputed `̀ TENDEX`` but some players did play for many teams during a specific year, thus we must adapte the new computed value. It means re-reading the whole table and that no indices can be used for that.
+The `PlayerSeason` already have a precomputed ``TENDEX`` but some players did play for many teams during a specific year, thus we must adapte the new computed value. It means re-reading the whole table and that no indices can be used for that.
 
 Then it's a matter of ordering them, ranking them and picking the right number.
 
