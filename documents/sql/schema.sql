@@ -78,7 +78,6 @@ CREATE SEQUENCE teams_seq
     START WITH 1
     INCREMENT BY 1;
 
--- @weak
 CREATE TABLE coach_seasons (
     id INT,
     person_id INT NOT NULL,
@@ -125,7 +124,6 @@ CREATE SEQUENCE locations_seq
 -- Drafts
 --
 
--- @weak
 CREATE TABLE drafts (
     id INT,
     person_id INT NOT NULL,
@@ -154,7 +152,6 @@ CREATE SEQUENCE drafts_seq
 -- Teams seasons
 -- =============
 
--- @weak
 CREATE TABLE team_seasons (
     id INT,
     team_id INT NOT NULL,
@@ -234,7 +231,6 @@ CREATE SEQUENCE player_season_types_seq
     START WITH 1
     INCREMENT BY 1;
 
--- @weak
 CREATE TABLE player_stats (
     id INT,
     player_season_id INT NOT NULL,

@@ -32,7 +32,7 @@ Changes to the schema
 
 Many simplifications were made mostly for the sake of *keeping it stupid simple* but also because we gained knowledge of the data as we started used them more.
 
-**TODO: put the new DB schema here!**
+At the end of this section, you'll find the updated schema both picture (UML-like diagram) and SQL commands (without the denormalized stuff that will be describe after that).
 
 
 The `Coach` is dead, long live the `Coach`
@@ -91,6 +91,17 @@ Were we did not create any indices:
  * those tables contain very few elements (here it's 2).
 
 More explainations may be found on the details of the queries below.
+
+
+Final schema
+''''''''''''
+
+.. image:: ../../design/er2.png
+   :scale: 100%
+
+.. literalinclude:: ../../sql/schema.sql
+   :language: sql
+   :lines: 4-302
 
 
 Changes to the queries
@@ -179,7 +190,7 @@ It could also become a way to know if a `Person` has acted as coach in his caree
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 340-400
+   :lines: 336-396
 
 
 Player
@@ -191,7 +202,7 @@ The ``TRIGGER``'s are a bit trickier than before mostly because there is much mo
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 402-
+   :lines: 398-
 
 
 Rebounds and ``TENDEX``
@@ -205,7 +216,7 @@ Since the ``TENDEX`` value is easily computable for every `PlayerStat` entry a v
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 310-338
+   :lines: 306-334
 
 
 The queries
