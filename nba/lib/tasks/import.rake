@@ -48,7 +48,7 @@ INSERT INTO teams (id, trigram, city, name, league_id)
     # Fixing the data
     missing_teams = {
       "ABA" => %w(NYJ),
-      "NBA" => %w(NEW NOR PHW SAN SL1 TAT TOT)
+      "NBA" => %w(NEW NOR PHW SAN SL1 TAT)
     }
     missing_teams.each do |league, teams|
       league = League.find_by_name(league)
@@ -186,6 +186,8 @@ INSERT INTO people (
 
     sqlldr(csv, tmp, fields)
 
+    # TOT means total for player who played in many teams during a season
+    # early denormalization we dont keep
     total = conn.exec "
 INSERT INTO player_seasons (
     id, person_id, team_id, year, player_season_type_id, turnovers, gp, minutes,
@@ -198,12 +200,11 @@ INSERT INTO player_seasons (
   FROM
     #{tmp} tmp, people p, leagues l, teams t
   WHERE
+    tmp.team NOT LIKE 'TOT' AND
     p.ilkid = tmp.ilkid AND
     t.trigram = tmp.team AND
-    t.league_id = l.id AND (
-      substr(l.name, 0, 1) = tmp.leag OR
-      l.name = 'NBA' AND tmp.team = 'TOT' -- TOT never played in ABA
-    )
+    t.league_id = l.id AND
+    substr(l.name, 0, 1) = tmp.leag
 "
     puts "#{total} player regular seasons inserted"
     cleanup(tmp)
@@ -231,12 +232,11 @@ INSERT INTO player_seasons (
   FROM
     #{tmp} tmp, people p, leagues l, teams t
   WHERE
+    tmp.team NOT LIKE 'TOT' AND
     p.ilkid = tmp.ilkid AND
     t.trigram = tmp.team AND
-    t.league_id = l.id AND (
-      substr(l.name, 0, 1) = tmp.leag OR
-      l.name = 'NBA' AND tmp.team = 'TOT' -- TOT never played in ABA
-    )
+    t.league_id = l.id AND
+    substr(l.name, 0, 1) = tmp.leag
 "
     puts "#{total} player playoff seasons inserted"
     cleanup(tmp)
