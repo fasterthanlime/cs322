@@ -17,17 +17,17 @@
         <%- year = nil -%>
         <%- while line = @results.fetch() do -%>
           <tr>
-            <th scope=row><%= year != line[4] ? line[4] : '' %></th>
+            <th scope=row><%= year != line[5] ? line[5] : '' %></th>
             <td><%= link_to(
-              line[1],
+              "#{line[1]} (#{line[2]})",
               :controller => "team",
               :action => "view",
               :id => line[0]
             ) %></td>
-            <td><%= line[2].round %></td>
             <td><%= line[3].round %></td>
+            <td><%= line[4].round %></td>
           </tr>
-          <%- year = line[4] -%>
+          <%- year = line[5] -%>
         <%- end -%>
       </tbody>
     </table>

@@ -89,7 +89,7 @@ CREATE TABLE coach_seasons (
     playoff_win INT,
     playoff_loss INT,
     PRIMARY KEY (id),
-    CONSTRAINT coach_seasons_unique UNIQUE (person_id, team_id, year),
+    CONSTRAINT coach_seasons_unique UNIQUE (person_id, team_id, year, year_order),
     FOREIGN KEY (person_id)
         REFERENCES people (id) ON DELETE CASCADE,
     FOREIGN KEY (team_id)
