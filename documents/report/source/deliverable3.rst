@@ -9,7 +9,6 @@ Deliverable 3
     * *Visualize the results of the queries (in case they are not scalar);*
     * *Build an interface to run queries/insert data/delete data giving as parameters the details of the queries.*
 
-**TODO**
 
 Post-mortem deliverable 2
 =========================
@@ -61,12 +60,21 @@ I would blame the *Object-Oriented Programming* kind of design we are practicing
 
 .. _Rob Pike: https://en.wikiquote.org/wiki/Rob_Pike
 
+
 `TeamSeason` is the new `TeamStat`
 ''''''''''''''''''''''''''''''''''
 
 The team statistics for each year were separated between *Defensive* and *Offensive* stats (badly called the *tactique*) creating two rows for a year. It doesn't make much sense and can only lead to further integrity problems if insertion or deletion fail at keeping a couple for a given year.
 
 The new table is now very close to the original CSV file.
+
+
+`PlayerSeason` and `PlayerStat` merged into `PlayerSeason`
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+The `PlayerSeason` was only creating a key linking `Person`,  `Team` and a year which might be seen as the season entity. But no data were associated with that. So that *key* moved into `PlayerStat` which got renamed into `PlayerSeason`. It makes the import much more easier, the schema smaller and some of the queries simpler too, removing joins.
+
+If some denormalization were to be made on that kind of element, it might be as useful to create a linked table and keep the table hierarchy as low as possible.
 
 
 Missing informations
@@ -551,3 +559,8 @@ Here a basic usage of the ``LEFT JOIN``. It's matching the `Draft` information w
    :language: sql
    :lines: 3-
 
+
+Conclusion
+==========
+
+**TODO**
