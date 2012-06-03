@@ -37,7 +37,7 @@ namespace :import do
 
     sqlldr(csv, tmp, fields)
     total = conn.exec "
-INSERT INTO teams (id, trigram, location, name, league_id)
+INSERT INTO teams (id, trigram, city, name, league_id)
   SELECT teams_seq.NEXTVAL, tt.team trigram, location, tt.name, l.id league_id
   FROM #{tmp} tt, leagues l
   WHERE tt.leag = SUBSTR(l.name, 0, 1)

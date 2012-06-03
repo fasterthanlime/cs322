@@ -1,10 +1,11 @@
 -- The search
 
 (SELECT
-    'teams' tname, id, concat(concat(trigram, ' '), name) str
+    'teams' tname, id,
+    concat(concat(concat(concat(trigram, ' '), name), ' '), city) str
 FROM teams
 WHERE
-    concat(concat(trigram, ' '), name) LIKE ?
+    concat(concat(concat(concat(trigram, ' '), name), ' '), city) LIKE ?
 
 ) UNION (
 

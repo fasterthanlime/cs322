@@ -82,7 +82,6 @@ SQL ``INDEX`` were created on the following columns:
 
 * ``year`` everywhere it is used since it's acting as a *foreign key* identifying seasons without the burden of maintaining such an entity.
 * `Person`'s ``ilkid``, ``firstname`` and ``lastname`` which is very useful during bulk insertion of new players. The current queries don't take advantages of those.
-* `Team`'s ``trigram`` which is used as an identifier in some queries and in the CSV files during the import.
 
 Were we did not create any indices:
 
@@ -180,7 +179,7 @@ It could also become a way to know is a `Person` has acted as coach in his caree
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 342-402
+   :lines: 340-400
 
 
 Player
@@ -192,7 +191,7 @@ The ``TRIGGER``'s are a bit trickier than before mostly because there is much mo
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 404-
+   :lines: 402-
 
 
 Rebounds and ``TENDEX``
@@ -206,7 +205,7 @@ Since the ``TENDEX`` value is easily computable for every `PlayerStat` entry a v
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 312-340
+   :lines: 310-338
 
 
 The queries
@@ -275,9 +274,9 @@ Query K
 
     *List the last and first name of the players who played for a Chicago team and Houston team.*
 
-It creates two joins, to filter seasons played in Houston (two teams) or Chicago (three teams). Other strategies are also possible, this one seemed simple enough.
+It creates two joins, to filter seasons played in Houston (two teams) or Chicago (four teams). Other strategies are also possible, this one seemed simple enough.
 
-For this request, an ``INDEX`` on the ``trigram`` was added.
+**TODO** index!
 
 .. literalinclude:: ../../../queries/basic_k.sql
    :language: sql

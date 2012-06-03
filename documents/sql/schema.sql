@@ -67,14 +67,12 @@ CREATE TABLE teams (
     league_id INT NOT NULL,
     trigram CHAR(3) NOT NULL,
     name VARCHAR(255),
-    location VARCHAR(255),
+    city VARCHAR(255),
     PRIMARY KEY (id),
     CONSTRAINT team_unique UNIQUE (league_id, trigram),
     FOREIGN KEY (league_id)
         REFERENCES leagues (id) ON DELETE CASCADE
 );
-
-CREATE INDEX teams_trigram_idx ON teams (trigram);
 
 CREATE SEQUENCE teams_seq
     START WITH 1

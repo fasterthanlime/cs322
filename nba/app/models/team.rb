@@ -2,7 +2,7 @@ class Team < ActiveRecord::Base
   has_many :team_seasons, :order => 'year'
   has_many :coach_seasons, :order => 'year, year_order'
   belongs_to :league
-  attr_accessible :name, :league, :trigram, :location
+  attr_accessible :name, :league, :trigram, :city
 
   def fullname
     "#{name} (#{trigram})"

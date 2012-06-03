@@ -3,7 +3,7 @@ ActiveAdmin.register Team do
     column :id
     column :trigram
     column :name
-    column :location
+    column :city
     column 'League' do |team|
       league = team.league
       link_to "#{league.name}", admin_league_path(league)
