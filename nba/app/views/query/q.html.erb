@@ -8,14 +8,12 @@ Compute the best teams according to statistics: for each season and for each tea
       <thead>
         <tr>
           <th scope=col rowspan=2>Year</th>
-          <th scope=colgroup colspan=3>Team Tendex</th>
-          <th scope=colgroup colspan=3>Win/Loss Percentage</th>
+          <th scope=colgroup colspan=2>Team TENDEX</th>
+          <th scope=colgroup colspan=2>Win/Loss Percentage</th>
         </tr>
         <tr>
-          <th scope=col>#</th>
           <th scope=col>Name</th>
-          <th scope=col>Tendex</th>
-          <th scope=col>#</th>
+          <th scope=col>TENDEX</th>
           <th scope=col>Name</th>
           <th scope=col>%</th>
         </tr>
@@ -25,21 +23,19 @@ Compute the best teams according to statistics: for each season and for each tea
           <tr>
           <th scope=row><%= line[0] %></th>
           <td><%= link_to(
-            line[1],
+            "#{line[2]} (#{line[3]})",
             :controller => "team",
             :action => "view",
             :id => line[1]
           ) %></td>
-          <td><%= line[2] %></td>
-          <td><%= line[3].round(2) %></td>
+          <td><%= line[4].round(2) %></td>
           <td><%= link_to(
-            line[4],
+            "#{line[6]} (#{line[7]})",
             :controller => "team",
             :action => "view",
-            :id => line[4]
+            :id => line[5]
           ) %></td>
-          <td><%= line[5] %></td>
-          <td><%= line[6].round(4) * 100 %> %</td>
+          <td><%= line[8].round(4) * 100 %> %</td>
           </tr>
         <%- end -%>
       </tbody>

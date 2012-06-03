@@ -51,8 +51,8 @@ CREATE OR REPLACE VIEW team_season_winlosses AS
 
 SELECT
     tst.year,
-    tst.id tid, COALESCE(t1.name, t1.trigram) tname, team_tendex,
-    tswl.id wlid, COALESCE(t2.name, t2.trigram) wlname, winloss
+    tst.id tid, t1.name tname, t1.trigram ttrigram, team_tendex,
+    tswl.id wlid, t2.name wlname, t2.trigram wltrigram, winloss
 FROM
     team_season_tendices tst
     JOIN teams t1 ON t1.id = tst.id
