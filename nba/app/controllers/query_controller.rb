@@ -100,10 +100,15 @@ class QueryController < ApplicationController
         rc.exec(query)
     }
     query = "
-SELECT loc, location_score
-FROM #{@type}
+SELECT *
+FROM (
+    SELECT l.name, location_score
+    FROM #{@type}
+        JOIN locations l ON
+      l.id = loc
+    ORDER BY location_score DESC
+    )
 WHERE ROWNUM <=10
-ORDER BY location_score DESC
 "
     @results = rc.exec(query)
   end
