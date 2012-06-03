@@ -279,7 +279,17 @@ Query I
 
     *List the average weight, average height and average age, of teams of coaches with more than* ``XXX`` *season career wins and more than* ``YYY`` *win percentage, in each season they coached. (* ``XXX`` *and* ``YYY`` *are parameters. Try with combinations:* ``{XXX,YYY}={<1000,70%>,<1000,60%>,<1000,50%>,<700,55%>,<700,45%>}`` *. Sort the result by year in ascending order.*
 
-**TODO**
+The first step here is to compute the season career wins of all coaches (XXX). It is done by simply summing the ratio from season wins to the total number of plays (both wins and defeats). As for the YYY criterion, it is already stored in the ``coaches`` table as ``season_win``.
+
+A first ``JOIN`` allows us to have XXX and YYY in the same table, along with the coache's identity, its team, and the year of the season in question.
+
+The next step is the trickiest: we have to join the view we just created with the ``player_seasons`` table, so that we can compute the average of the weight, height, and age of the players who were in the team of a given coach, for a given season. Only the birthdate is stored (as it should), so we have to use the season's year to compute the age of a player at the time of the season.
+
+It turns out that there are NULL weights, so we had to add an additional criterion to prevent those values from corrupting the mean. The query we just discussed is very expensive, because it involves three joins and three ``AVG`` statements.
+
+However, once that step is done, it's simply a matter of filtering the resulting table according to the :XXX and :YYY parameteres, which are specified from the web interface we built.
+
+As for the front-end, we simply have an HTML form with a select tag, allowing us to pick from the predefined values of :XXX and :YYY that were specified in the project statement. Finally, the view filters out the coach id, first name and last name for duplicates, in order to have a nice display where the seasons of each coach are grouped and easily distinguishable.
 
 .. literalinclude:: ../../../queries/basic_i.sql
    :language: sql
