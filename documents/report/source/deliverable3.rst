@@ -175,7 +175,7 @@ Coach
 
 As mentioned before the `Coach` entity was an empty shell and not carrying any data. For the need of some queries and to reflect the CSV file ``coach_career.csv`` the `Coach` entry as been recreated and contains only denormalized data computed from the `CoachSeason` entities.
 
-It could also become a way to know is a `Person` has acted as coach in his career.
+It could also become a way to know if a `Person` has acted as coach in his career.
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
@@ -360,7 +360,15 @@ Query R
 
     *List the best 10 schools for each of the following categories: scorers, rebounders, blockers. Each school’s category ranking is computed as the average of the statistical value for 5 best players that went to that school. Use player’s career average for inputs.*
 
-**TODO**
+For this request we created a view to contain the required data per player: the draft location and the statistics. Aiming for reusability, we tried to keep the view general by including the first and last name of each player.
+
+Then we created three views with the computed rankings. We chose to give the application's user the choice to sort the locations by scorers, rebounders, or blockers. This goal is achieved in the controller of the rails view.
+
+.. literalinclude:: ../../../nba/app/controllers/query_controller.rb
+   :language: ruby
+   :lines: 105-107
+
+Here #{@type} is the name of the corresponding view defined below.
 
 .. literalinclude:: ../../../queries/basic_r.sql
    :language: sql
