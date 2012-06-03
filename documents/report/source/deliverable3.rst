@@ -324,11 +324,31 @@ Query K
 
 It creates two joins, to filter seasons played in Houston (two teams) or Chicago (four teams). Other strategies are also possible, this one seemed simple enough.
 
-**TODO** index!
-
 .. literalinclude:: ../../../queries/basic_k.sql
    :language: sql
    :lines: 4-
+
+Explain Plan
+''''''''''''
+
+The Query plan using pure SQL:
+
++-------+---------------------------+--------------+-------+----------+
+| Id    | Operation                 | Name         | Rows  | Time     |
++=======+===========================+==============+=======+==========+
+|     0 | SELECT STATEMENT          |              |   178 | 00:00:01 |
++-------+---------------------------+--------------+-------+----------+
+| \*  1 |  HASH JOIN                |              |   178 | 00:00:01 |
++-------+---------------------------+--------------+-------+----------+
+| \*  2 |   VIEW                    |              |   178 | 00:00:01 |
++-------+---------------------------+--------------+-------+----------+
+| \*  3 |    WINDOW SORT PUSHED RANK|              |   178 | 00:00:01 |
++-------+---------------------------+--------------+-------+----------+
+| \*  4 |     TABLE ACCESS FULL     | TEAM_SEASONS |   178 | 00:00:01 |
++-------+---------------------------+--------------+-------+----------+
+|     5 |   TABLE ACCESS FULL       | TEAMS        |   107 | 00:00:01 |
++-------+--------------------------------------------------+----------+
+
 
 Query L
 -------
