@@ -357,6 +357,9 @@ The Query plan using pure SQL:
 |     5 |   TABLE ACCESS FULL       | TEAMS        |   107 | 00:00:01 |
 +-------+--------------------------------------------------+----------+
 
+.. image:: _static/3/explain_k.png
+   :scale: 100%
+
 
 Query L
 -------
