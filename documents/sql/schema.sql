@@ -198,27 +198,8 @@ CREATE SEQUENCE team_seasons_seq
     INCREMENT BY 1;
 
 --
--- Players stats
--- =============
-
-CREATE TABLE player_seasons (
-    id INT,
-    person_id INT NOT NULL,
-    team_id INT NOT NULL,
-    year INT NOT NULL,
-    PRIMARY KEY (id),
-    CONSTRAINT player_season_unique UNIQUE (person_id, team_id, year),
-    FOREIGN KEY (person_id)
-        REFERENCES people (id) ON DELETE CASCADE,
-    FOREIGN KEY (team_id)
-        REFERENCES teams (id) ON DELETE CASCADE
-);
-
-CREATE INDEX player_seasons_year_idx ON player_seasons (year);
-
-CREATE SEQUENCE player_seasons_seq
-    START WITH 1
-    INCREMENT BY 1;
+-- Players seasons
+-- ===============
 
 CREATE TABLE player_season_types (
     id INT,
@@ -231,16 +212,21 @@ CREATE SEQUENCE player_season_types_seq
     START WITH 1
     INCREMENT BY 1;
 
-CREATE TABLE player_stats (
+CREATE TABLE player_seasons (
     id INT,
-    player_season_id INT NOT NULL,
+    person_id INT NOT NULL,
+    team_id INT NOT NULL,
+    year INT NOT NULL,
     player_season_type_id INT NOT NULL,
+    gp INT,
+    minutes INT,
     pts INT,
     oreb INT,
     dreb INT,
     asts INT,
     steals INT,
     blocks INT,
+    turnovers INT,
     pf INT,
     fga INT,
     fgm INT,
@@ -248,18 +234,21 @@ CREATE TABLE player_stats (
     ftm INT,
     tpa INT, -- 3pa
     tpm INT, -- 3pm
-    turnovers INT,
-    gp INT,
-    minutes INT,
     PRIMARY KEY (id),
-    CONSTRAINT player_stat_unique UNIQUE (player_season_id, player_season_type_id),
-    FOREIGN KEY (player_season_id)
-        REFERENCES player_seasons (id) ON DELETE CASCADE,
+    CONSTRAINT player_season_unique UNIQUE (
+        person_id, team_id, year, player_season_type_id
+    ),
+    FOREIGN KEY (person_id)
+        REFERENCES people (id) ON DELETE CASCADE,
+    FOREIGN KEY (team_id)
+        REFERENCES teams (id) ON DELETE CASCADE,
     FOREIGN KEY (player_season_type_id)
         REFERENCES player_season_types (id) ON DELETE CASCADE
 );
 
-CREATE SEQUENCE player_stats_seq
+CREATE INDEX player_seasons_year_idx ON player_seasons (year);
+
+CREATE SEQUENCE player_seasons_seq
     START WITH 1
     INCREMENT BY 1;
 
@@ -269,12 +258,15 @@ CREATE TABLE player_allstars (
     conference_id INT NOT NULL,
     league_id INT NOT NULL,
     year INT NOT NULL,
+    gp INT,
+    minutes INT,
     pts INT,
     oreb INT,
     dreb INT,
     asts INT,
     steals INT,
     blocks INT,
+    turnovers INT,
     pf INT,
     fga INT,
     fgm INT,
@@ -282,9 +274,6 @@ CREATE TABLE player_allstars (
     ftm INT,
     tpa INT, -- 3pa
     tpm INT, -- 3pm
-    turnovers INT,
-    gp INT,
-    minutes INT,
     PRIMARY KEY(id),
     CONSTRAINT player_allstars_unique UNIQUE (person_id, conference_id, year),
     FOREIGN KEY (person_id)
@@ -303,13 +292,13 @@ CREATE SEQUENCE player_allstars_seq
 
 -- Denormalized data
 
-ALTER TABLE player_stats ADD (
+ALTER TABLE player_seasons ADD (
     d_reb INT,
     d_tendex NUMBER
 );
 
-CREATE OR REPLACE TRIGGER player_stats_before
-BEFORE INSERT OR UPDATE ON player_stats
+CREATE OR REPLACE TRIGGER player_seasons_before
+BEFORE INSERT OR UPDATE ON player_seasons
 FOR EACH ROW
 BEGIN
     :new.d_reb := :new.oreb + :new.dreb;
@@ -318,7 +307,7 @@ BEGIN
                          :new.blocks - :new.ftm - :new.fgm - :new.turnovers) /
                          :new.minutes;
     END IF;
-END player_stats_before;
+END player_seasons_before;
 /
 
 ALTER TABLE player_allstars ADD (
@@ -425,73 +414,15 @@ CREATE TABLE players (
     REFERENCES player_season_types (id) ON DELETE CASCADE
 );
 
-CREATE OR REPLACE PROCEDURE players_data (
-  c                  INT,
-  p_person_id        players.person_id%type,
-  p_league_id        players.league_id%type,
-  p_player_season_type_id players.player_season_type_id%type,
-  p_gp               players.gp%type,
-  p_minutes          players.minutes%type,
-  p_pts              players.pts%type,
-  p_oreb             players.oreb%type,
-  p_dreb             players.dreb%type,
-  p_reb              players.reb%type,
-  p_asts             players.asts%type,
-  p_steals           players.steals%type,
-  p_blocks           players.blocks%type,
-  p_turnovers        players.turnovers%type,
-  p_pf               players.pf%type,
-  p_fga              players.fga%type,
-  p_fgm              players.fgm%type,
-  p_fta              players.fta%type,
-  p_ftm              players.ftm%type,
-  p_tpa              players.tpa%type,
-  p_tpm              players.tpm%type
-) IS
-BEGIN
-  IF c = 0 THEN
-    INSERT INTO players (
-      person_id, league_id, player_season_type_id, gp, minutes, pts, oreb, dreb,
-      reb, asts, steals, blocks, turnovers, pf, fga, fgm, fta, ftm, tpa, tpm
-    ) VALUES (
-      p_person_id, p_league_id, p_player_season_type_id, p_gp, p_minutes, p_pts,
-      p_oreb, p_dreb, p_reb, p_asts, p_steals, p_blocks, p_turnovers, p_pf,
-      p_fga, p_fgm, p_fta, p_ftm, p_tpa, p_tpm
-    );
-  ELSE
-    UPDATE players SET
-      gp = gp + p_gp,
-      minutes = gp + p_minutes,
-      pts = pts + p_pts,
-      oreb = dreb + p_oreb,
-      dreb = dreb + p_dreb,
-      reb = reb + p_reb,
-      asts = asts + p_asts,
-      steals = steals + p_steals,
-      blocks = blocks + p_blocks,
-      turnovers = turnovers + p_turnovers,
-      pf = pf + p_pf,
-      fga = fga + p_fga,
-      fgm = fgm + p_fgm,
-      fta = fta + p_fta,
-      ftm = ftm + p_ftm,
-      tpa = tpa + p_tpa,
-      tpm = tpm + p_tpm
-    WHERE
-      person_id = p_person_id AND
-      league_id = p_league_id AND
-      player_season_type_id = p_player_season_type_id;
-  END IF;
-END players_data;
-/
-
-CREATE OR REPLACE TRIGGER players_data_after
-AFTER INSERT OR UPDATE ON player_stats
+CREATE OR REPLACE TRIGGER players_data
+AFTER INSERT OR UPDATE OR DELETE ON player_seasons
 FOR EACH ROW
 DECLARE
   c INT;
-  r_person_id players.person_id%type := 0;
-  r_league_id players.league_id%type := 0;
+  r_person_id players.person_id%type := NULL;
+  r_team_id player_seasons.team_id%type := NULL;
+  r_league_id players.league_id%type := NULL;
+  r_player_season_type_id players.player_season_type_id%type := NULL;
   r_gp players.gp%type := 0;
   r_minutes players.minutes%type := 0;
   r_pts players.pts%type := 0;
@@ -511,6 +442,9 @@ DECLARE
   r_tpm players.tpm%type := 0;
 BEGIN
   IF INSERTING OR UPDATING THEN
+    r_person_id := :new.person_id;
+    r_team_id := :new.team_id;
+    r_player_season_type_id := :new.player_season_type_id;
     r_gp := :new.gp;
     r_minutes := :new.minutes;
     r_pts := :new.pts;
@@ -530,7 +464,10 @@ BEGIN
     r_tpm := :new.tpm;
   END IF;
 
-  IF UPDATING THEN
+  IF UPDATING OR DELETING THEN
+    r_person_id := :old.person_id;
+    r_team_id := :old.team_id;
+    r_player_season_type_id := :new.player_season_type_id;
     r_gp := r_gp - :old.gp;
     r_minutes := r_minutes - :old.minutes;
     r_pts := r_pts - :old.pts;
@@ -550,45 +487,49 @@ BEGIN
     r_tpm := r_tpm - :old.tpm;
   END IF;
 
-  SELECT ps.person_id, t.league_id INTO r_person_id, r_league_id
-  FROM player_seasons ps, teams t WHERE ps.team_id = t.id AND ps.id = :new.player_season_id;
+  SELECT league_id INTO r_league_id
+  FROM teams
+  WHERE id = r_team_id;
 
   SELECT COUNT(*) INTO c
-  FROM players WHERE
+  FROM players
+  WHERE
     person_id = r_person_id AND
     league_id = r_league_id AND
-    player_season_type_id = :new.player_season_type_id;
+    player_season_type_id = r_player_season_type_id;
 
-  players_data(
-    c, r_person_id, r_league_id, :new.player_season_type_id, r_gp, r_minutes,
-    r_pts, r_oreb, r_dreb, r_reb, r_asts, r_steals, r_blocks, r_turnovers,
-    r_pf, r_fga, r_fgm, r_fta, r_ftm, r_tpa, r_tpm
-  );
-END players_data_after;
-/
-
-CREATE OR REPLACE TRIGGER players_data_before
-BEFORE DELETE ON player_stats
-FOR EACH ROW
-DECLARE
-  c INT;
-  r_person_id players.person_id%type := 0;
-  r_league_id players.league_id%type := 0;
-BEGIN
-  SELECT ps.person_id, t.league_id INTO r_person_id, r_league_id
-  FROM player_seasons ps, teams t WHERE ps.team_id = t.id AND ps.id = :old.player_season_id;
-
-  SELECT COUNT(*) INTO c
-  FROM players WHERE
-    person_id = r_person_id AND
-    league_id = r_league_id AND
-    player_season_type_id = :old.player_season_type_id;
-
-  players_data(
-    c, r_person_id, r_league_id, :old.player_season_type_id, -:old.gp,
-    -:old.minutes, -:old.pts, -:old.oreb, -:old.dreb, -:old.d_reb, -:old.asts,
-    -:old.steals, -:old.blocks, -:old.turnovers, -:old.pf, -:old.fga,
-    -:old.fgm, -:old.fta, -:old.ftm, -:old.tpa, -:old.tpm
-  );
-END players_data_before;
+  IF c = 0 THEN
+    INSERT INTO players (
+      person_id, league_id, player_season_type_id, gp, minutes, pts, oreb, dreb,
+      reb, asts, steals, blocks, turnovers, pf, fga, fgm, fta, ftm, tpa, tpm
+    ) VALUES (
+      r_person_id, r_league_id, r_player_season_type_id, r_gp, r_minutes, r_pts,
+      r_oreb, r_dreb, r_reb, r_asts, r_steals, r_blocks, r_turnovers, r_pf,
+      r_fga, r_fgm, r_fta, r_ftm, r_tpa, r_tpm
+    );
+  ELSE
+    UPDATE players SET
+      gp = gp + r_gp,
+      minutes = gp + r_minutes,
+      pts = pts + r_pts,
+      oreb = dreb + r_oreb,
+      dreb = dreb + r_dreb,
+      reb = reb + r_reb,
+      asts = asts + r_asts,
+      steals = steals + r_steals,
+      blocks = blocks + r_blocks,
+      turnovers = turnovers + r_turnovers,
+      pf = pf + r_pf,
+      fga = fga + r_fga,
+      fgm = fgm + r_fgm,
+      fta = fta + r_fta,
+      ftm = ftm + r_ftm,
+      tpa = tpa + r_tpa,
+      tpm = tpm + r_tpm
+    WHERE
+      person_id = r_person_id AND
+      league_id = r_league_id AND
+      player_season_type_id = r_player_season_type_id;
+  END IF;
+END players_data;
 /

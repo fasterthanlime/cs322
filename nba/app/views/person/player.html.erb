@@ -15,38 +15,28 @@
         </tr>
       </thead>
       <tbody>
-  <%- @person.player_seasons.each do |season|
-    rs = (season.regular_season and season.playoff_season) && 2 || 1
-    stat = season.regular_season
-    link = admin_player_stat_path(stat)
-    if stat.nil? then
-      stat = season.playoff_season
-      link = admin_player_allstar_path(stat)
-    end
-  -%>
+  <%
+  year = nil
+  team = nil
+  %>
+  <%- @person.player_seasons.each do |season| -%>
         <tr>
-          <th scope=row rowspan=<%= rs %>><%= season.year -%></th>
-          <td rowspan=<%= rs %>><%= link_to(
+          <th scope=row><%= season.year if year != season.year -%></th>
+          <td><%= link_to(
             season.team.fullname,
             :controller => 'team',
             :action => 'view',
             :id => season.team_id
-          ) -%></td>
-          <td rowspan=<%= rs %>><%= season.team.league.name %></td>
-          <td><%= stat.player_season_type.name %></td>
-          <%= render :partial => 'stat', :object => stat -%>
-          <td><%= link_to "admin", link %></td>
+          ) if team != season.team_id or year != season.year -%></td>
+          <td><%= season.team.league.name if team != season.team_id or year != season.year %></td>
+          <td><%= season.player_season_type.name %></td>
+          <%= render :partial => 'stat', :object => season -%>
+          <td><%= link_to "admin", admin_player_season_path(season) %></td>
         </tr>
-      <%- if rs == 2 then
-        stat = season.playoff_season
-        link = admin_player_allstar_path(stat)
-      -%>
-        <tr>
-          <td><%= stat.player_season_type.name %></td>
-          <%= render :partial => 'stat', :object => stat -%>
-          <td><%= link_to "admin", link %></td>
-        </tr>
-      <%- end -%>
+    <%
+      year = season.year
+      team = season.team_id
+    %>
   <%- end -%>
       </tbody>
     </table>

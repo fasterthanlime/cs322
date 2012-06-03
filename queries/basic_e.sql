@@ -1,55 +1,45 @@
 -- Compute the highest scoring and lowest scoring player for each season.
 
-CREATE OR REPLACE VIEW best_players AS
+CREATE OR REPLACE VIEW best_players_unique AS
 SELECT
     person_id best_player_id, pts best_player_pts, year
 FROM (
     SELECT
         person_id, year, pts,
-        RANK() OVER (PARTITION BY year ORDER BY pts DESC) r
+        ROW_NUMBER() OVER (PARTITION BY year ORDER BY pts DESC) r
     FROM (
         SELECT
-            psea.person_id, psea.year year, psta.pts pts
-        FROM player_seasons psea
-        JOIN player_stats psta ON psta.player_season_id = psea.id
+            person_id, year, SUM(pts) pts
+        FROM
+            player_seasons ps
+            JOIN player_season_types pst ON
+                pst.id = ps.player_season_type_id AND
+                pst.name = 'Regular'
+        GROUP BY person_id, year
     )
 )
 WHERE r = 1;
 
 
-CREATE OR REPLACE VIEW worst_players AS
+CREATE OR REPLACE VIEW worst_players_unique AS
 SELECT
     person_id worst_player_id, pts worst_player_pts, year
 FROM (
     SELECT
         person_id, year, pts,
-        RANK() OVER (PARTITION BY year ORDER BY pts ASC) r
+        ROW_NUMBER() OVER (PARTITION BY year ORDER BY pts ASC) r
     FROM (
         SELECT
-            psea.person_id, psea.year year, psta.pts pts
-        FROM player_seasons psea
-        JOIN player_stats psta ON psta.player_season_id = psea.id
+            person_id, year, SUM(pts) pts
+        FROM
+            player_seasons ps
+            JOIN player_season_types pst ON
+                pst.id = ps.player_season_type_id AND
+                pst.name = 'Regular'
+        GROUP BY person_id, year
     )
 )
 WHERE r = 1;
-
-
-CREATE OR REPLACE VIEW best_players_unique AS
-SELECT * FROM best_players
-WHERE ROWID IN (
-    SELECT MAX(ROWID)
-    FROM best_players GROUP BY year
-);
-
-
-CREATE OR REPLACE VIEW worst_players_unique AS
-SELECT * FROM worst_players
-WHERE ROWID IN (
-    SELECT MAX(ROWID)
-    FROM worst_players
-    GROUP BY year
-);
-
 
 SELECT
     bp.year,

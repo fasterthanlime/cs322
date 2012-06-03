@@ -7,9 +7,8 @@ CREATE OR REPLACE VIEW player_best_playoff_tendices AS
     SELECT
         person_id id, MAX(d_tendex) tendex
     FROM
-        player_stats s
-        JOIN player_seasons ps ON ps.id = s.player_season_id
-        JOIN player_season_types pst ON pst.id = s.player_season_type_id
+        player_seasons ps
+        JOIN player_season_types pst ON pst.id = ps.player_season_type_id
     WHERE
         pst.name = 'Playoff' AND
         d_tendex IS NOT NULL

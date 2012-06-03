@@ -12,15 +12,15 @@ FROM (
         RANK() OVER (PARTITION BY year ORDER BY birthdate DESC) r
     FROM (
         SELECT
-            p.id, p.lastname, p.firstname, psea.year, p.birthdate
+            p.id, p.lastname, p.firstname, ps.year, p.birthdate
         FROM
             people p
-            JOIN player_seasons psea      ON psea.person_id = p.id
-            JOIN player_stats psta        ON psta.player_season_id = psea.id
-            JOIN player_season_types psty ON psta.player_season_type_id = psty.id
+            JOIN player_seasons ps       ON ps.person_id = p.id
+            JOIN player_season_types pst ON ps.player_season_type_id = pst.id
         WHERE
-            psty.name = 'Playoff' AND
-            p.birthdate IS NOT NULL
+            pst.name = 'Playoff' AND
+            p.birthdate IS NOT NULL AND
+            EXTRACT(YEAR FROM p.birthdate) < year -- for GRANTHA01
     )
 )
 WHERE r = 1;
@@ -37,14 +37,13 @@ FROM (
         RANK() OVER (PARTITION BY year ORDER BY birthdate ASC) r
     FROM (
         SELECT
-            p.id, p.lastname, p.firstname, psea.year, p.birthdate
+            p.id, p.lastname, p.firstname, ps.year, p.birthdate
         FROM
             people p
-            JOIN player_seasons psea      ON psea.person_id = p.id
-            JOIN player_stats psta        ON psta.player_season_id = psea.id
-            JOIN player_season_types psty ON psta.player_season_type_id = psty.id
+            JOIN player_seasons ps       ON ps.person_id = p.id
+            JOIN player_season_types pst ON ps.player_season_type_id = pst.id
         WHERE
-            psty.name = 'Playoff' AND
+            pst.name = 'Playoff' AND
             p.birthdate IS NOT NULL
     )
 )

@@ -101,7 +101,7 @@ Final schema
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 4-302
+   :lines: 4-291
 
 
 Changes to the queries
@@ -153,7 +153,7 @@ How it works for any CSV file:
 * Then a *control.txt* file is created containing the SQL code to load the data. Check the code below. That code says that the fields are separated using the comma (``,``) and will convert any string ``'NULL'`` into the proper SQL ``NULL`` value:
 
 .. literalinclude:: ../../../nba/lib/tasks/import.rake
-   :language: ruby
+   :language: sql
    :lines: 434-447
 
 * Next step is the ``sqlldr`` call, which is a call to the executable with some arguments like the ``control.txt`` file, the ``userid`` being the connection string and ``skip`` which is set to 1 telling it to ignore the first line containing the column headings.
@@ -161,7 +161,7 @@ How it works for any CSV file:
 * At this point, data is inserted into the *real* tables using a simple ``INSERT INTO`` (``#{tmp}`` is replaced by the _temporary_ table name):
 
 .. literalinclude:: ../../../nba/lib/tasks/import.rake
-   :language: ruby
+   :language: sql
    :lines: 190-201
 
 * Finally the initially created table is deleted. ``TEMPORARY TABLE``'s don't seem to work with that use case.
@@ -190,7 +190,7 @@ It could also become a way to know if a `Person` has acted as coach in his caree
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 336-396
+   :lines: 325-385
 
 
 Player
@@ -198,11 +198,11 @@ Player
 
 Again, the `Player` entity was merged into a `Person` to better come back. It's new purpose is to reflect the CSV files ``player_career.csv`` and ``player_playoffs_career.csv`` keeping the denormalized sums of all the `PlayerStat` for each type of `PlayerSeason`.
 
-The ``TRIGGER``'s are a bit trickier than before mostly because there is much more data involved. Also when the ``TRIGGER`` is activated is different depending if it's an insertion, update or deletion.
+The ``TRIGGER``'s are a bit trickier than before mostly because there is much more data involved.
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 398-
+   :lines: 387-
 
 
 Rebounds and ``TENDEX``
@@ -216,7 +216,7 @@ Since the ``TENDEX`` value is easily computable for every `PlayerStat` entry a v
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 306-334
+   :lines: 295-323
 
 
 The queries

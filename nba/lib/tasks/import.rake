@@ -187,9 +187,14 @@ INSERT INTO people (
     sqlldr(csv, tmp, fields)
 
     total = conn.exec "
-INSERT INTO player_seasons (id, person_id, team_id, year)
+INSERT INTO player_seasons (
+    id, person_id, team_id, year, player_season_type_id, turnovers, gp, minutes,
+    pts, oreb, dreb, asts, steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
+  )
   SELECT
-    player_seasons_seq.NEXTVAL, p.id, t.id, tmp.year
+    player_seasons_seq.NEXTVAL, p.id, t.id, tmp.year, #{PlayerSeasonType::REGULAR},
+    turnover, gp, minutes, pts, oreb, dreb, asts, stl, blk, pf, fga, fgm, fta,
+    ftm, tpa, tpm
   FROM
     #{tmp} tmp, people p, leagues l, teams t
   WHERE
@@ -200,29 +205,7 @@ INSERT INTO player_seasons (id, person_id, team_id, year)
       l.name = 'NBA' AND tmp.team = 'TOT' -- TOT never played in ABA
     )
 "
-    puts "#{total} player seasons inserted"
-
-    total = conn.exec "
-INSERT INTO player_stats (
-    id, player_season_id, player_season_type_id, turnovers, gp, minutes, pts,
-    oreb, dreb, asts, steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
-  )
-  SELECT
-    player_stats_seq.NEXTVAL, ps.id, #{PlayerSeasonType::REGULAR}, turnover,
-    gp, minutes, pts, oreb, dreb, asts, stl, blk, pf, fga, fgm, fta, ftm, tpa,
-    tpm
-  FROM
-    #{tmp} tmp, people p, leagues l, teams t, player_seasons ps
-  WHERE
-    p.ilkid = tmp.ilkid AND
-    t.trigram = tmp.team AND
-    t.league_id = l.id AND (
-      substr(l.name, 0, 1) = tmp.leag OR
-      l.name = 'NBA' AND tmp.team = 'TOT' -- TOT never played in ABA
-    ) AND
-    ps.year = tmp.year AND ps.person_id = p.id AND ps.team_id = t.id
-"
-    puts "#{total} player regular season stats inserted"
+    puts "#{total} player regular seasons inserted"
     cleanup(tmp)
   end
 
@@ -238,47 +221,24 @@ INSERT INTO player_stats (
 
     total = conn.exec "
 INSERT INTO player_seasons (
-    id, person_id, team_id, year
+    id, person_id, team_id, year, player_season_type_id, turnovers, gp, minutes, pts,
+    oreb, dreb, asts, steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
   )
   SELECT
-    player_seasons_seq.NEXTVAL, p.id, t.id, year
+    player_seasons_seq.NEXTVAL, p.id, t.id, year, #{PlayerSeasonType::PLAYOFF}, turnover,
+    gp, minutes, pts, oreb, dreb, asts, stl, blk, pf, fga, fgm, fta, ftm, tpa,
+    tpm
   FROM
     #{tmp} tmp, people p, leagues l, teams t
   WHERE
     p.ilkid = tmp.ilkid AND
     t.trigram = tmp.team AND
-    t.league_id = l.id AND
-    substr(l.name, 0, 1) = tmp.leag AND
-    NOT EXISTS (
-      SELECT 1
-      FROM player_seasons ps
-      WHERE
-        tmp.year = ps.year AND
-        p.id = ps.person_id AND
-        t.id = ps.team_id
+    t.league_id = l.id AND (
+      substr(l.name, 0, 1) = tmp.leag OR
+      l.name = 'NBA' AND tmp.team = 'TOT' -- TOT never played in ABA
     )
 "
-    puts "#{total} more player seasons inserted"
-
-    total = conn.exec "
-INSERT INTO player_stats (
-    id, player_season_id, player_season_type_id, turnovers, gp, minutes, pts,
-    oreb, dreb, asts, steals, blocks, pf, fga, fgm, fta, ftm, tpa, tpm
-  )
-  SELECT
-    player_stats_seq.NEXTVAL, ps.id, #{PlayerSeasonType::PLAYOFF}, turnover,
-    gp, minutes, pts, oreb, dreb, asts, stl, blk, pf, fga, fgm, fta, ftm, tpa,
-    tpm
-  FROM
-    #{tmp} tmp, people p, leagues l, teams t, player_seasons ps
-  WHERE
-    p.ilkid = tmp.ilkid AND
-    t.trigram = tmp.team AND
-    t.league_id = l.id AND
-    substr(l.name, 0, 1) = tmp.leag AND
-    ps.year = tmp.year AND ps.person_id = p.id AND ps.team_id = t.id
-"
-    puts "#{total} player playoff stats inserted"
+    puts "#{total} player playoff seasons inserted"
     cleanup(tmp)
   end
 

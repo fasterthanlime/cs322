@@ -35,7 +35,7 @@
             ) %></th>
             <td><%= line[2] %></td>
             <td><%= line[3] %></td>
-            <td><%= line[4] %></td>
+            <td><%= line[4].round %></td>
             <td><%= link_to(
               line[5],
               :controller => "person",
@@ -44,7 +44,7 @@
             ) %></th>
             <td><%= line[6] %></td>
             <td><%= line[7] %></td>
-            <td><%= line[8] %></td>
+            <td><%= line[8].round %></td>
           </tr>
         <%- end -%>
       </tbody>

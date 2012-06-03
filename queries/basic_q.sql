@@ -19,10 +19,9 @@ CREATE OR REPLACE VIEW team_season_tendices AS
                     ROW_NUMBER() OVER (PARTITION BY team_id, year ORDER BY
                     d_tendex DESC) r
                 FROM
-                    player_stats s
-                    JOIN player_seasons ps ON ps.id = s.player_season_id
+                    player_seasons ps
                     JOIN player_season_types pst ON
-                        pst.id = s.player_season_type_id
+                        pst.id = ps.player_season_type_id
                 WHERE
                     pst.name = 'Regular' AND
                     d_tendex IS NOT NULL

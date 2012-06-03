@@ -29,15 +29,9 @@ DROP SEQUENCE player_seasons_seq;
 DROP TABLE player_season_types CASCADE CONSTRAINTS PURGE;
 DROP SEQUENCE player_season_types_seq;
 
-DROP TABLE player_stats CASCADE CONSTRAINTS PURGE;
-DROP SEQUENCE player_stats_seq;
-
 DROP TABLE player_allstars CASCADE CONSTRAINTS PURGE;
 DROP SEQUENCE player_allstars_seq;
 
--- Denormalized data tables and procedures (triggers are automagically deleted)
-
+-- Denormalized data tables
 DROP TABLE coaches PURGE;
-
 DROP TABLE players PURGE;
-DROP PROCEDURE players_data;
