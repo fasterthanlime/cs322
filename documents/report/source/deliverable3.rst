@@ -125,7 +125,9 @@ This one changed a lot since the definition of how the `Draft` are counted got c
 Query D
 ''''''''
 
-**TODO: Amos**
+This query is very straight-forward. Using only two joins per league, we make two different selects, one for all NBA coaches, and one for all ABA coaches. By computing the intersection of those two queries through the ``INTERSECT`` Oracle SQL statement, we keep only coaches who participated in both leagues. As it turns out, there are none!
+
+Had Oracle SQL not the ``INTERSECT`` statement we should have had proceeded otherwise: perhaps by selecting all NBA coaches where ``coach_id IN aba_coaches``. 
 
 .. literalinclude:: ../../../queries/basic_d.sql
    :language: sql
