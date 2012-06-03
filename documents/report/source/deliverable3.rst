@@ -369,18 +369,58 @@ Query P
 
     *Compute the least successful draft year – the year when the largest percentage of drafted players never played in any of the leagues.*
 
-**TODO**
+A quite straightforward query which make usage of ``LEFT JOIN`` to grab all the `Player` who never played at all by testing the ``NULL`` content of the joined table. Then a ``COUNT(DISTINCT person_id))`` to avoid counting players that were drafted many times (various round) and to finish the ``RANK()`` operation to keep the first one only.
 
 .. literalinclude:: ../../../queries/basic_p.sql
    :language: sql
    :lines: 4-
+
+Explain plan
+''''''''''''
+
++=====+============================+======================+=======+==========+
+| Id  | Operation                  | Name                 | Rows  | Time     |
++-----+----------------------------+----------------------+-------+----------+
+|   0 | SELECT STATEMENT           |                      |  8703 | 00:00:03 |
++-----+----------------------------+----------------------+-------+----------+
+| \*1 |  VIEW                      |                      |  8703 | 00:00:03 |
++-----+----------------------------+----------------------+-------+----------+
+| \*2 |   WINDOW SORT PUSHED RANK  |                      |  8703 | 00:00:03 |
++-----+----------------------------+----------------------+-------+----------+
+|   3 |    HASH GROUP BY           |                      |  8703 | 00:00:03 |
++-----+----------------------------+----------------------+-------+----------+
+|   4 |     VIEW                   | VW_DAG_0             |  8703 | 00:00:02 |
++-----+----------------------------+----------------------+-------+----------+
+|   5 |      HASH GROUP BY         |                      |  8703 | 00:00:02 |
++-----+----------------------------+----------------------+-------+----------+
+| \*6 |       HASH JOIN ANTI       |                      |  8703 | 00:00:01 |
++-----+----------------------------+----------------------+-------+----------+
+|   7 |        TABLE ACCESS FULL   | DRAFTS               |  8703 | 00:00:01 |
++-----+----------------------------+----------------------+-------+----------+
+|   8 |        INDEX FAST FULL SCAN| PLAYER_SEASON_UNIQUE | 26280 | 00:00:01 |
++-----+----------------------------+----------------------+-------+----------+
+
+::
+
+    1. filter("R"=1)
+    2. filter(RANK() OVER ( ORDER BY NVL(SUM("ITEM_3"),0) DESC )<=1)
+    6. access("PS"."PERSON_ID"="D"."PERSON_ID")
+
+
+.. image:: _static/3/explain_p.png
+   :scale: 100%
+
+This query seems to be an heavy one were the two involved tables must be read. In fact, *Oracle* performs that ``LEFT JOIN … WHERE IS NULL`` in an optimized way using the *Hash join anti* which in our understanding is a reversed *Hash join* (an optimized join with a bitmap representation). So the ``UNIQUE CONSTRAINTS`` index is used, for the `PlayerSeason`. That *key* is composed of 4 integers where the `person_id` is the first part of it which means we can use it here.
+
+It's still an heavy request, we decided to drop the information ``first_season`` and ``last_season`` from the original dataset and did not recreate it. It might be used here and improve the overall result. It's a pure assumption and must be tested in order to prove it.
+
 
 Query Q
 -------
 
     *Compute the best teams according to statistics: for each season and for each team compute* ``TENDEX`` *values for its best 5 players. Sum these values for each team to compute* ``TEAM TENDEX`` *value. For each season list the team with the best win/loss percentage and the team with the highest* ``TEAM TENDEX`` *value.*
 
-iThis *view* is clearly a join of two other *views*:
+This *view* is clearly a join of two other *views*:
 
 * One listing for a given year the best team according to the ``TEAM TENDEX`` value decribed as above;
 * the second, for a given year the best team according to the ``season_win / season_loss`` ratio.
@@ -426,8 +466,6 @@ That query is using two denormalized fields added on the `TeamSeason`. Otherwise
 Explain Plan
 ''''''''''''
 
-The Query plan using pure SQL:
-
 +-----+--------------------------------+----------------------------+-------+----------+
 | Id  | Operation                      | Name                       | Rows  | Time     |
 +=====+================================+============================+=======+==========+
@@ -453,12 +491,10 @@ The Query plan using pure SQL:
     3. filter(RANK() OVER ( ORDER BY INTERNAL_FUNCTION("D_SEASON_WIN") DESC)<=1)
     5. access("D_COACH_COUNTER">=2 AND "D_COACH_COUNTER"<=4)
 
-The one from SQLDeveloper:
-
 .. image:: _static/3/explain_s.png
    :scale: 100%
 
-This query seems to be interpreted in the following order:
+This query seems to be interpreted in the following chronological order:
 
 1. the ``RANGE SCAN`` using the index on ``d_coach_counter``.
 2. returning the `TeamSeason` by ``ROWID`` according to the result of the scan. In total, there are 1337 rows in that table. Only 13% is read (even though many page may have be read since the index is unclustered)
