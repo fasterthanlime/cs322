@@ -153,8 +153,8 @@ How it works for any CSV file:
 * Then a *control.txt* file is created containing the SQL code to load the data. Check the code below. That code says that the fields are separated using the comma (``,``) and will convert any string ``'NULL'`` into the proper SQL ``NULL`` value:
 
 .. literalinclude:: ../../../nba/lib/tasks/import.rake
-   :language: sql
-   :lines: 434-447
+   :language: ruby
+   :lines: 391-407 
 
 * Next step is the ``sqlldr`` call, which is a call to the executable with some arguments like the ``control.txt`` file, the ``userid`` being the connection string and ``skip`` which is set to 1 telling it to ignore the first line containing the column headings.
 * Then the ``control.txt`` file is deleted.
@@ -162,7 +162,7 @@ How it works for any CSV file:
 
 .. literalinclude:: ../../../nba/lib/tasks/import.rake
    :language: sql
-   :lines: 190-201
+   :lines: 329-334
 
 * Finally the initially created table is deleted. ``TEMPORARY TABLE``'s don't seem to work with that use case.
 
@@ -181,8 +181,8 @@ We tried to use `Materialized View`_ but they are unfortunately not available on
 .. _Materialized View: http://en.wikipedia.org/wiki/Materialized_view
 
 
-Coach
-'''''
+`Coach`
+'''''''
 
 As mentioned before the `Coach` entity was an empty shell and not carrying any data. For the need of some queries and to reflect the CSV file ``coach_career.csv`` the `Coach` entry as been recreated and contains only denormalized data computed from the `CoachSeason` entities.
 
@@ -193,8 +193,8 @@ It could also become a way to know if a `Person` has acted as coach in his caree
    :lines: 325-385
 
 
-Player
-''''''
+`Player`
+''''''''
 
 Again, the `Player` entity was merged into a `Person` to better come back. It's new purpose is to reflect the CSV files ``player_career.csv`` and ``player_playoffs_career.csv`` keeping the denormalized sums of all the `PlayerStat` for each type of `PlayerSeason`.
 
@@ -202,7 +202,7 @@ The ``TRIGGER``'s are a bit trickier than before mostly because there is much mo
 
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
-   :lines: 387-
+   :lines: 387-535
 
 
 Rebounds and ``TENDEX``
@@ -217,6 +217,24 @@ Since the ``TENDEX`` value is easily computable for every `PlayerStat` entry a v
 .. literalinclude:: ../../sql/schema.sql
    :language: sql
    :lines: 295-323
+
+
+`TeamSeason` and `CoachSeason`
+''''''''''''''''''''''''''''''
+
+Like the `Coach`, we'd like to keep some information within the `TeamSeason` coming from `CoachSeason`. This information is:
+
+* How many coach seasons do we have;
+* How many matches has been won during the regular season;
+* How many matches has been lost during the regular season.
+
+No data about the playoffs has been intergrated since `TeamSeason` doesn't reflect any data regarding the playoffs.
+
+This denormalization was initiated by the Query S.
+
+.. literalinclude:: ../../sql/schema.sql
+   :language: sql
+   :lines: 537-
 
 
 The queries

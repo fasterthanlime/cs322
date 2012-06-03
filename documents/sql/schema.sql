@@ -533,3 +533,35 @@ BEGIN
   END IF;
 END players_data;
 /
+
+ALTER TABLE team_seasons ADD (
+    d_coach_counter INT DEFAULT 0,
+    d_season_win INT DEFAULT 0,
+    d_season_loss INT DEFAULT 0
+);
+
+CREATE INDEX team_seasons_d_counter_idx ON team_seasons (d_coach_counter);
+
+CREATE OR REPLACE TRIGGER team_seasons_data
+AFTER INSERT OR UPDATE OR DELETE ON coach_seasons
+FOR EACH ROW
+BEGIN
+    IF DELETING OR (UPDATING AND :old.year != :new.year) THEN
+        UPDATE team_seasons
+        SET
+            d_coach_counter = d_coach_counter - 1,
+            d_season_win = d_season_win - :old.season_win,
+            d_season_loss = d_season_loss - :old.season_loss
+        WHERE team_id = :old.team_id AND year = :old.year;
+    END IF;
+
+    IF INSERTING OR (UPDATING AND :old.year != :new.year) THEN
+        UPDATE team_seasons
+        SET
+            d_coach_counter = d_coach_counter + 1,
+            d_season_win = d_season_win + :new.season_win,
+            d_season_loss = d_season_loss + :new.season_loss
+        WHERE team_id = :new.team_id AND year = :new.year;
+    END IF;
+END team_seasons_data;
+/

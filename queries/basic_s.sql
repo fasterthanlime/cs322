@@ -2,18 +2,14 @@
 -- changed 2, 3 and 4 coaches.
 
 SELECT
-    t.id, name, trigram, num_coaches, total_wins, year
-FROM 
-    (
+    team_id, name, trigram, num_coaches, total_wins, year
+FROM (
         SELECT
-            team_id, COUNT(person_id) num_coaches, SUM(season_win) total_wins, year,
-            RANK() OVER (PARTITION BY year ORDER BY SUM(season_win) DESC) r
-        FROM
-            coach_seasons
-        GROUP BY
-            team_id, year
-        HAVING COUNT(*) BETWEEN 2 AND 4
-    )
-    JOIN teams t ON t.id = team_id
-WHERE r = 1
-ORDER BY year, name;
+            team_id, year, d_coach_counter num_coaches, d_season_win total_wins,
+            RANK() OVER (ORDER BY d_season_win DESC) r
+        FROM team_seasons
+        WHERE d_coach_counter BETWEEN 2 AND 6
+    ) ts
+    JOIN teams t ON t.id = ts.team_id
+WHERE
+    r = 1;
