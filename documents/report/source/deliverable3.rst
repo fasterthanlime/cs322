@@ -446,6 +446,13 @@ The Query plan using pure SQL:
 |   6 |   TABLE ACCESS FULL            | TEAMS                      |   107 | 00:00:01 |
 +-----+--------------------------------+----------------------------+-------+----------+
 
+::
+
+    1. access("T"."ID"="TS"."TEAM_ID")
+    2. filter("TS"."R"=1)
+    3. filter(RANK() OVER ( ORDER BY INTERNAL_FUNCTION("D_SEASON_WIN") DESC)<=1)
+    5. access("D_COACH_COUNTER">=2 AND "D_COACH_COUNTER"<=4)
+
 The one from SQLDeveloper:
 
 .. image:: _static/3/explain_s.png
