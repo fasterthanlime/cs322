@@ -250,6 +250,7 @@ Query I
    :language: sql
    :lines: 15-
 
+
 Query J
 -------
 
@@ -257,12 +258,14 @@ Query J
 
     **Updated description** *we ask you to list the last and first name of the players which have more than 12,000 rebounds and are shorter than the average height of players who have at least 10,000 rebounds (if any).*
 
-This request happens in two times:
+First of all, we must compute the total ``rebounds`` made by a player, here we've take only the one made during *regular* seasons but summed the ABA and NBA scores (for players like Moses Malone ``malonmo01`` who scored in both).
+
+Then the request happens in two phases:
 
 1. the average ``height`` is calculated among the players with enough rebounds (``reb``) made during their career (*regular* seasons).
 2. are selected the players that are smaller but managed to get more than 12'000 rebounds overall.
 
-It's pretty straightforward once the description is fully understood. Thanks to the denormalized `Player` table.
+Here the denormalized `Player` table is used and helps a lot.
 
 .. literalinclude:: ../../../queries/basic_j.sql
    :language: sql
