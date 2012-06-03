@@ -562,4 +562,12 @@ Here a basic usage of the ``LEFT JOIN``. It's matching the `Draft` information w
 Conclusion
 ==========
 
-**TODO**
+So, it's bit in a hurry that we are writing this little conclusion here. Sorry for that, team work is hard in the industry and very hard in the school context. Do-ocracy doesn't always works.
+
+To conclude, we are happy that we forced us to go with Oracle, like many things it might be a real pain to set up, but then you get access to very powerful tools that can do great stuff. Particulary the OLAP-related onces like `RANK()`, `PARTITION()`, that we hope made a good use. Ruby on Rails and ActiveAdmin helped us focusing on the real stuff, the data and forgetting about the UI which is just another one (for people like us who are used to it).
+
+The one thing I'd like to say about this it only works by doing one iteration after the other, especially when you're evoluting in an relatively unknown context (in regards of the dataset, Oracle itself, …). *Iterate, iterate, iterate, …*, no schemas are set in stone and nobody should be scared by starting over. Like we did for the import, with no regrets whatsoever.
+
+In anyways, we learned some stuff about Oracle, why we may just into PostgreSQL more easily in the future. We learned about each other too, why we may to things differently.
+
+Many thanks for supporting our moods, sense of humour, …
