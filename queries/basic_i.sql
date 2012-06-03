@@ -35,6 +35,7 @@ CREATE OR REPLACE VIEW best_coaches AS
 
 CREATE OR REPLACE VIEW query_i AS
     SELECT
+        bc.person_id,
         AVG(p.weight) avg_weight, AVG(p.height) avg_height,
         AVG(ROUND((TO_DATE(bc.year, 'YYYY') - p.birthdate)/365.24,0)) avg_age, bc.year,
         bc.win_percentage, bc.career_wins
@@ -42,8 +43,7 @@ CREATE OR REPLACE VIEW query_i AS
         best_coaches bc
         JOIN player_seasons ps ON ps.team_id = bc.team_id AND ps.year = bc.year
         JOIN people p ON p.id = ps.person_id AND p.weight IS NOT NULL
+        JOIN people p2 ON p2.id = bc.person_id
     GROUP BY
-        bc.year, bc.win_percentage, bc.career_wins
-    ORDER BY
-        bc.year
+        bc.person_id, bc.year, bc.win_percentage, bc.career_wins
 ;

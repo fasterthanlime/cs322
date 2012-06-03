@@ -27,20 +27,37 @@
     <table class="table table-striped">
       <thead>
         <tr>
+          <th scope=col>#</th>
+          <th scope=col>Firstname</th>
+          <th scope=col>Lastname</th>
           <th scope=col>Year</th>
-          <th scope=col>Average Weight</th>
-          <th scope=col>Average Height</th>
-          <th scope=col>Average Age</th>
+          <th scope=col><abbr title="Average Weight">AVG W.</abbr></th>
+          <th scope=col><abbr title="Average Height">AVG H.</abbr></th>
+          <th scope=col><abbr title="Average">AVG</abbr> Age</th>
         </tr>
       </thead>
       <tbody>
+        <%- coach = nil -%>
         <%- while line = @results.fetch() -%>
           <tr>
-            <th scope=row><%= line[3] %></th>
-            <td><%= line[0].round %></td>
-            <td><%= (line[1] / 12).round %>' <%= (line[1] % 12).round %>"</td>
-            <td><%= line[2].round %></td>
+          <%- if coach != line[0] then -%>
+            <th scope=row><%= link_to(
+              line[0],
+              :controller => 'person',
+              :action => 'coach',
+              :id => line[0]
+            ) %></th>
+            <td><%= line[1] %></td>
+            <td><%= line[2] %></td>
+          <%- else -%>
+            <td colspan=3></td>
+          <%- end -%>
+            <td><%= line[6] %></td>
+            <td><%= line[3].round %></td>
+            <td><%= (line[4] / 12).round %>' <%= (line[4] % 12).round %>"</td>
+            <td><%= line[5].round(1) %></td>
           </tr>
+            <%- coach = line[0] -%>
         <%- end -%>
       </tbody>
     </table>

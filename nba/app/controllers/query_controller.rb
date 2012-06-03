@@ -51,8 +51,16 @@ class QueryController < ApplicationController
     @sql.split(";").slice(0..-2).each { |query|
         @results = rc.exec(query)
     }
-    query = "SELECT avg_weight, avg_height, avg_age, year FROM query_i WHERE career_wins > #{@xxx} AND win_percentage > #{@yyy}"
-    logger.info "query = #{query}"
+    query = "
+SELECT
+  person_id, firstname, lastname, avg_weight, avg_height, avg_age, year
+FROM
+  query_i
+  JOIN people p ON p.id = person_id
+WHERE
+  career_wins > #{@xxx} AND win_percentage > #{@yyy}
+ORDER BY
+  p.lastname, p.firstname, year"
     @results = rc.exec(query)
   end
 
@@ -102,10 +110,11 @@ class QueryController < ApplicationController
         puts query
         rc.exec(query)
     }
-    query = "SELECT loc, location_score FROM #{@type}
-    WHERE ROWNUM <=10
-    ORDER BY location_score DESC"
-    logger.info "query = #{query}"
+    query = "
+SELECT loc, location_score
+FROM #{@type}
+WHERE ROWNUM <=10
+ORDER BY location_score DESC"
     @results = rc.exec(query)
   end
 
