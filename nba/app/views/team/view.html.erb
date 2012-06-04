@@ -11,6 +11,7 @@
     <img src="http://<%= @team.city.gsub(/\s/, '-') %>-<%= @team.name.gsub(/\s/, '-') %>.jpg.to/" alt="">
   </p>
 </div>
+<%- if @team.coach_seasons.count > 0 then -%>
 <div class=span8>
   <h3>Coach Stat</h3>
   <table class="table table-striped">
@@ -50,6 +51,7 @@
     </tbody>
   </table>
 </div>
+<%- end -%>
 </div>
 
 <div class=row-fluid>
