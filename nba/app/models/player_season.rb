@@ -5,8 +5,10 @@ class PlayerSeason < ActiveRecord::Base
 
   attr_accessible :year, :person, :team, :player_season_type, :turnovers, :gp,
                   :minutes, :pts, :oreb, :dreb, :asts, :steals, :blocks, :pf,
-                  :fga, :fgm, :fta, :ftm, :tpa, :tpm
-  attr_readonly :d_reb
+                  :fga, :fgm, :fta, :ftm, :tpa, :tpm,
+                  :person_id, :team_id, :player_season_type_id
+  # FIXME: should be readonly (see ActiveAdmin)
+  attr_accessible :d_reb
   alias_attribute :reb, :d_reb
 
   def name

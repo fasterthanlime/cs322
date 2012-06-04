@@ -9,7 +9,7 @@ ActiveAdmin.register Draft do
     column :year
     column :person do |draft|
       person = draft.person
-      ilkid = "(#{person.ilkid})" if person.ilkid
+      ilkid = "(#{person.ilkid})" unless person.nil?
       link_to "#{person.fullname} #{ilkid}", admin_person_path(person)
     end
     column :round
