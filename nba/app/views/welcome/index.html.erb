@@ -1,5 +1,6 @@
 <div class=row-fluid>
   <div class=span3>
+    <h3>Some stuff</h3>
     <ul>
       <li><%= link_to(
         "Teams (#{@teams_count})",
@@ -9,6 +10,19 @@
         "People (#{@people_count})",
         :controller => "person"
       ) %></li>
+    </ul>
+  </div>
+  <div class=span3>
+    <h3>Happy Birthday!</h3>
+    <ul>
+    <%- while line = @birthday.fetch() -%>
+      <li><%= link_to(
+        "#{line[2]} #{line[1]}",
+        :controller => "person",
+        :view => "view",
+        :id => line[0]
+      ) %> is <%= line[3].round -%></li>
+    <%- end -%>
     </ul>
   </div>
   <div class=span6>

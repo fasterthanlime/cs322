@@ -5,12 +5,15 @@
   <%- unless teams.nil? then -%>
   <ul>
     <%- teams.each do |team| -%>
-    <li><%= link_to(
-      "#{team.name} (#{team.trigram})",
-      :controller => 'team',
-      :action => 'view',
-      :id => team.id
-    ) -%></li>
+    <li>
+      <%= team.city %>
+      <%= link_to(
+        "#{team.name} (#{team.trigram})",
+        :controller => 'team',
+        :action => 'view',
+        :id => team.id
+      ) -%>
+    </li>
     <%- end -%>
   </ul>
   <%- else -%>

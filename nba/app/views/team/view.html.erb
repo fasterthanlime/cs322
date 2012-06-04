@@ -4,8 +4,56 @@
     <p>Playing in <%= @team.league.name %></p>
   </div>
 </div>
+
 <div class=row-fluid>
-<div class=span9>
+<div class=span4>
+  <p>
+    <img src="http://<%= @team.city.gsub(/\s/, '-') %>-<%= @team.name.gsub(/\s/, '-') %>.jpg.to/" alt="">
+  </p>
+</div>
+<div class=span8>
+  <h3>Coach Stat</h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th colspan=2></th>
+        <th scope=colgroup colspan=2>Regular</th>
+        <th scope=colgroup colspan=2>Playoff</th>
+      </tr>
+      <tr>
+        <th scope=col>Year</th>
+        <th scope=col>Coach</th>
+        <th scope=col>Win</th>
+        <th scope=col>Loss</th>
+        <th scope=col>Win</th>
+        <th scope=col>Loss</th>
+      </tr>
+    </thead>
+    <tbody>
+<%- year = nil -%>
+<%- @team.coach_seasons.each do |season| -%>
+      <tr>
+        <th scope=row><%= season.year if year != season.year %></th>
+        <td><%= link_to(
+          season.person.fullname,
+          :controller => 'person',
+          :action => 'coach',
+          :id => season.person_id
+        ) %></td>
+        <td><%= season.season_win -%></td>
+        <td><%= season.season_loss -%></td>
+        <td><%= season.playoff_win -%></td>
+        <td><%= season.playoff_loss -%></td>
+      </tr>
+    <%- year = season.year -%>
+<%- end -%>
+    </tbody>
+  </table>
+</div>
+</div>
+
+<div class=row-fluid>
+<div class=span12>
   <h3>Team Stat</h3>
   <table class="table table-striped">
     <thead>
@@ -68,45 +116,6 @@
         <td><%= stat.dtpm %></td>
         <td></td>
       </tr>
-<%- end -%>
-    </tbody>
-  </table>
-</div>
-<div class=span3>
-  <h3>Coach Stat</h3>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th colspan=2></th>
-        <th scope=colgroup colspan=2>Regular</th>
-        <th scope=colgroup colspan=2>Playoff</th>
-      </tr>
-      <tr>
-        <th scope=col>Year</th>
-        <th scope=col>Coach</th>
-        <th scope=col>Win</th>
-        <th scope=col>Loss</th>
-        <th scope=col>Win</th>
-        <th scope=col>Loss</th>
-      </tr>
-    </thead>
-    <tbody>
-<%- year = nil -%>
-<%- @team.coach_seasons.each do |season| -%>
-      <tr>
-        <th scope=row><%= season.year if year != season.year %></th>
-        <td><%= link_to(
-          season.person.fullname,
-          :controller => 'person',
-          :action => 'coach',
-          :id => season.person_id
-        ) %></td>
-        <td><%= season.season_win -%></td>
-        <td><%= season.season_loss -%></td>
-        <td><%= season.playoff_win -%></td>
-        <td><%= season.playoff_loss -%></td>
-      </tr>
-    <%- year = season.year -%>
 <%- end -%>
     </tbody>
   </table>
