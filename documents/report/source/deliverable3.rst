@@ -5,7 +5,7 @@ Deliverable 3
     *A series of more interesting queries should be implemented with SQL and/or using the preferred application programming language:*
 
     * *Explain the necessities of indexes based on the queries and the query plans that you can find from the system;*
-    * *Report the performance of all queries and explain the distribution of the cost (based again on the plans;*
+    * *Report the performance of all queries and explain the distribution of the cost (based again on the plans)*
     * *Visualize the results of the queries (in case they are not scalar);*
     * *Build an interface to run queries/insert data/delete data giving as parameters the details of the queries.*
 
@@ -360,6 +360,19 @@ The Query plan using pure SQL:
 .. image:: _static/3/explain_k.png
    :scale: 100%
 
+This query requires two tables to be accessed in full, but it is still not
+as heavy as query P, for example.
+
+It uses a *hash join* between our intermediary view and the `teams` table
+Hash joins are faster than nested loops and sort merge joins. It creates
+a bitmap for fast lookup of correspondances between the two tables. It's
+especially useful when the tables don't fit in memory.
+
+Although we need full access to both the `team_seasons` and `teams` tables,
+the number of rows selected is very small (178 at most), so the query is,
+in the end, not as expensive as we might think. On a bigger dataset, we 
+might have to redesign part of the model in order to optimize it.
+
 
 Query L
 -------
@@ -421,27 +434,27 @@ A quite straightforward query which make usage of ``LEFT JOIN`` to grab all the 
 Explain plan
 ''''''''''''
 
-+=====+============================+======================+=======+==========+
-| Id  | Operation                  | Name                 | Rows  | Time     |
-+-----+----------------------------+----------------------+-------+----------+
-|   0 | SELECT STATEMENT           |                      |  8703 | 00:00:03 |
-+-----+----------------------------+----------------------+-------+----------+
-| \*1 |  VIEW                      |                      |  8703 | 00:00:03 |
-+-----+----------------------------+----------------------+-------+----------+
-| \*2 |   WINDOW SORT PUSHED RANK  |                      |  8703 | 00:00:03 |
-+-----+----------------------------+----------------------+-------+----------+
-|   3 |    HASH GROUP BY           |                      |  8703 | 00:00:03 |
-+-----+----------------------------+----------------------+-------+----------+
-|   4 |     VIEW                   | VW_DAG_0             |  8703 | 00:00:02 |
-+-----+----------------------------+----------------------+-------+----------+
-|   5 |      HASH GROUP BY         |                      |  8703 | 00:00:02 |
-+-----+----------------------------+----------------------+-------+----------+
-| \*6 |       HASH JOIN ANTI       |                      |  8703 | 00:00:01 |
-+-----+----------------------------+----------------------+-------+----------+
-|   7 |        TABLE ACCESS FULL   | DRAFTS               |  8703 | 00:00:01 |
-+-----+----------------------------+----------------------+-------+----------+
-|   8 |        INDEX FAST FULL SCAN| PLAYER_SEASON_UNIQUE | 26280 | 00:00:01 |
-+-----+----------------------------+----------------------+-------+----------+
++-------+---------------------------+---------------------+-------+----------+
+| Id    | Operation                 | Name                | Rows  | Time     |
++=======+===========================+=====================+=======+==========+
+|     0 | SELECT STATEMENT          |                     |  8703 | 00:00:03 |
++-------+---------------------------+---------------------+-------+----------+
+| \*  1 |  VIEW                     |                     |  8703 | 00:00:03 |
++-------+---------------------------+---------------------+-------+----------+
+| \*  2 |   WINDOW SORT PUSHED RANK |                     |  8703 | 00:00:03 |
++-------+---------------------------+---------------------+-------+----------+
+|     3 |    HASH GROUP BY          |                     |  8703 | 00:00:03 |
++-------+---------------------------+---------------------+-------+----------+
+|     4 |     VIEW                  | VW_DAG_0            |  8703 | 00:00:02 |
++-------+---------------------------+---------------------+-------+----------+
+|     5 |   HASH GROUP BY           |                     |  8703 | 00:00:02 |
++-------+---------------------------+---------------------+-------+----------+
+| \*  6 |   HASH JOIN ANTI          |                     |  8703 | 00:00:01 |
++-------+---------------------------+---------------------+-------+----------+
+|     7 |   TABLE ACCESS FULL       | DRAFTS              |  8703 | 00:00:01 |
++-------+---------------------------+---------------------+-------+----------+
+|     8 |   INDEX FAST FULL SCAN    | PLAYER_SEASON_UNIQUE| 26280 | 00:00:01 |
++-------+---------------------------+---------------------+-------+----------+
 
 ::
 
