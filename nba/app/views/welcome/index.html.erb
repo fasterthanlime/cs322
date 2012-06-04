@@ -19,7 +19,7 @@
       <li><%= link_to(
         "#{line[2]} #{line[1]}",
         :controller => "person",
-        :view => "view",
+        :action => "view",
         :id => line[0]
       ) %> is <%= line[3].round -%></li>
     <%- end -%>
