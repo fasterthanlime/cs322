@@ -287,17 +287,17 @@ Query I
 
     *List the average weight, average height and average age, of teams of coaches with more than* ``XXX`` *season career wins and more than* ``YYY`` *win percentage, in each season they coached. (* ``XXX`` *and* ``YYY`` *are parameters. Try with combinations:* ``{XXX,YYY}={<1000,70%>,<1000,60%>,<1000,50%>,<700,55%>,<700,45%>}`` *. Sort the result by year in ascending order.*
 
-The first step here is to compute the season career wins of all coaches (XXX). It is done by simply summing the ratio from season wins to the total number of plays (both wins and defeats). As for the YYY criterion, it is already stored in the ``coaches`` table as ``season_win``.
+The first step here is to compute the season career wins of all coaches (``XXX``). It is done by simply summing the ratio from season wins to the total number of plays (both wins and defeats). As for the ``YYY`` criterion, it is already stored in the ``coaches`` table as ``season_win``.
 
-A first ``JOIN`` allows us to have XXX and YYY in the same table, along with the coache's identity, its team, and the year of the season in question.
+A first ``JOIN`` allows us to have ``XXX`` and ``YYY`` in the same table, along with the coach's identity, its team, and the year of the season in question.
 
 The next step is the trickiest: we have to join the view we just created with the ``player_seasons`` table, so that we can compute the average of the weight, height, and age of the players who were in the team of a given coach, for a given season. Only the birthdate is stored (as it should), so we have to use the season's year to compute the age of a player at the time of the season.
 
-It turns out that there are NULL weights, so we had to add an additional criterion to prevent those values from corrupting the mean. The query we just discussed is very expensive, because it involves three joins and three ``AVG`` statements.
+It turns out that there are empty weights (``NULL``), so we had to add an additional criterion to prevent those values from corrupting the mean. The query we just discussed is very expensive, because it involves three joins and three ``AVG`` statements.
 
-However, once that step is done, it's simply a matter of filtering the resulting table according to the :XXX and :YYY parameteres, which are specified from the web interface we built.
+However, once that step is done, it's simply a matter of filtering the resulting table according to the ``:XXX`` and ``:YYY`` parameteres, which are specified from the web interface we built.
 
-As for the front-end, we simply have an HTML form with a select tag, allowing us to pick from the predefined values of :XXX and :YYY that were specified in the project statement. Finally, the view filters out the coach id, first name and last name for duplicates, in order to have a nice display where the seasons of each coach are grouped and easily distinguishable.
+As for the front-end, we simply have an HTML form with a select tag, allowing us to pick from the predefined values of ``:XXX`` and ``:YYY`` that were specified in the project statement. Finally, the view filters out the coach id, first name and last name for duplicates, in order to have a nice display where the seasons of each coach are grouped and easily distinguishable.
 
 .. literalinclude:: ../../../queries/basic_i.sql
    :language: sql
@@ -341,21 +341,41 @@ Explain Plan
 
 The Query plan using pure SQL:
 
-+-------+---------------------------+--------------+-------+----------+
-| Id    | Operation                 | Name         | Rows  | Time     |
-+=======+===========================+==============+=======+==========+
-|     0 | SELECT STATEMENT          |              |   178 | 00:00:01 |
-+-------+---------------------------+--------------+-------+----------+
-| \*  1 |  HASH JOIN                |              |   178 | 00:00:01 |
-+-------+---------------------------+--------------+-------+----------+
-| \*  2 |   VIEW                    |              |   178 | 00:00:01 |
-+-------+---------------------------+--------------+-------+----------+
-| \*  3 |    WINDOW SORT PUSHED RANK|              |   178 | 00:00:01 |
-+-------+---------------------------+--------------+-------+----------+
-| \*  4 |     TABLE ACCESS FULL     | TEAM_SEASONS |   178 | 00:00:01 |
-+-------+---------------------------+--------------+-------+----------+
-|     5 |   TABLE ACCESS FULL       | TEAMS        |   107 | 00:00:01 |
-+-------+--------------------------------------------------+----------+
++-----+---------------------------+----------------------+-------+----------+
+| Id  | Operation                 | Name                 | Rows  | Time     |
++=====+===========================+======================+=======+==========+
+|   0 | SELECT STATEMENT          |                      |    56 | 00:00:02 |
++-----+---------------------------+----------------------+-------+----------+
+|   1 |  SORT UNIQUE              |                      |    56 | 00:00:02 |
++-----+---------------------------+----------------------+-------+----------+
+| \*2 |   HASH JOIN               |                      |    56 | 00:00:02 |
++-----+---------------------------+----------------------+-------+----------+
+| \*3 |    HASH JOIN              |                      |    56 | 00:00:01 |
++-----+---------------------------+----------------------+-------+----------+
+| \*4 |     TABLE ACCESS FULL     | TEAMS                |     2 | 00:00:01 |
++-----+---------------------------+----------------------+-------+----------+
+| \*5 |     HASH JOIN             |                      |  3419 | 00:00:01 |
++-----+---------------------------+----------------------+-------+----------+
+| \*6 |      HASH JOIN            |                      |   467 | 00:00:01 |
++-----+---------------------------+----------------------+-------+----------+
+| \*7 |       TABLE ACCESS FULL   | TEAMS                |     2 | 00:00:01 |
++-----+---------------------------+----------------------+-------+----------+
+|   8 |       INDEX FAST FULL SCAN| PLAYER_SEASON_UNIQUE | 28678 | 00:00:01 |
++-----+---------------------------+----------------------+-------+----------+
+|   9 |      INDEX FAST FULL SCAN | PLAYER_SEASON_UNIQUE | 28678 | 00:00:01 |
++-----+---------------------------+----------------------+-------+----------+
+|  10 |    TABLE ACCESS FULL      | PEOPLE               |  8588 | 00:00:01 |
++-----+---------------------------+----------------------+-------+----------+
+
+::
+
+    2 - access("P"."ID"="PS"."PERSON_ID")
+    3 - access("PS2"."TEAM_ID"="T2"."ID")
+    4 - filter("T2"."CITY"='Chicago')
+    5 - access("PS2"."PERSON_ID"="PS"."PERSON_ID")
+    6 - access("PS"."TEAM_ID"="T"."ID")
+    7 - filter("T"."CITY"='Houston')
+
 
 .. image:: _static/3/explain_k.png
    :scale: 100%
